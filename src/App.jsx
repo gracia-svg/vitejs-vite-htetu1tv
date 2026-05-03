@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { initializeApp } from 'firebase/app';
 import { getFirestore, doc, setDoc, onSnapshot } from 'firebase/firestore';
 import { getAuth, signInAnonymously } from 'firebase/auth';
@@ -32,7 +32,10 @@ const ICON_PATHS = {
   Check: '<polyline points="20 6 9 17 4 12"/>',
   Pin: '<line x1="12" y1="17" x2="12" y2="22"/><path d="M5 17h14v-15l-2.5-3.5V5a2 2 0 0 0-4 0v7l-2.5 3.5Z"/>',
   BarChart3: '<path d="M3 3v18h18"/><rect width="4" height="7" x="7" y="10" rx="1"/><rect width="4" height="12" x="15" y="5" rx="1"/>',
-  Zap: '<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>'
+  Zap: '<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>',
+  Edit: '<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>',
+  Shuffle: '<polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/>',
+  X: '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>'
 };
 
 const Icon = ({ name, size = 24, strokeWidth = 2, className = "" }) => {
@@ -44,7 +47,7 @@ const Icon = ({ name, size = 24, strokeWidth = 2, className = "" }) => {
 };
 
 // ==========================================
-// 2. CONFIGURACIÓN FIREBASE Y DATOS INICIALES
+// 2. CONFIGURACIÓN FIREBASE Y TEMARIO TRADUCIDO
 // ==========================================
 const firebaseConfig = {
   apiKey: "AIzaSyAGkD-7KAe7h7OFPMQLswVKE4fOiJXYykU",
@@ -61,24 +64,94 @@ const auth = getAuth(app);
 
 const APP_ID_PATH = 'turtlestudy-v6';
 
-const EditableTitle = ({ value, onSave, className }) => {
-  const [isEditing, setIsEditing] = useState(false);
-  const [temp, setTemp] = useState(value);
-  if (isEditing) {
-    return (
-      <input autoFocus className={`bg-white border-2 border-emerald-300 rounded px-1 outline-none text-slate-900 ${className}`} 
-        value={temp} onChange={e=>setTemp(e.target.value)} onBlur={()=>{onSave(temp); setIsEditing(false);}}
-        onKeyDown={e=>{if(e.key==='Enter'){onSave(temp); setIsEditing(false);}}}
-      />
-    );
-  }
-  return <span onClick={()=>setIsEditing(true)} className={`cursor-pointer hover:underline rounded px-1 transition-colors ${className}`}>{value}</span>;
-};
+const RAW_TITLES = [
+  "Language learning in the educational curriculum. Language as communication. Learning and acquisition.",
+  "Communication. The communicative competence. Components.",
+  "The communication process. Functions and language use. Language in context.",
+  "The English language as a vehicle for culture. Integration of linguistic and cultural contents.",
+  "Oral language. Elements and rules of oral communication. Functions and strategies.",
+  "Written language. Reading and writing. Evolution, types, and strategies.",
+  "The phonological system I. Vowels and diphthongs. Comparison with the mother tongue.",
+  "The phonological system II. Consonants. Comparison with the mother tongue.",
+  "The phonological system III. Stress, rhythm, and intonation. Comparison with the mother tongue.",
+  "Concept of grammar. Main grammar models. Linguistic categories.",
+  "The Noun Phrase I. The noun: types, gender, and number.",
+  "The Noun Phrase II. The determiner: articles, pronouns, and adjectives.",
+  "The Verb Phrase I. The verb: tense, aspect, and mood.",
+  "The Verb Phrase II. Modal verbs.",
+  "The Adjective Phrase. Types, comparison, and order.",
+  "The Adverbial Phrase. Adverbs and adverbial locutions.",
+  "Prepositions and prepositional phrases.",
+  "The simple sentence. Constituents and types.",
+  "Coordination and subordination. Sentence linking.",
+  "Expression of quantity, quality, and degree.",
+  "Expression of time, space, and manner.",
+  "Expression of possession, focus, and emphasis.",
+  "Expression of cause, consequence, and purpose.",
+  "Expression of condition and concession.",
+  "Expression of assertion, negation, and doubt.",
+  "The passive voice and the impersonal voice.",
+  "Reported speech.",
+  "Lexicology. Word formation. Semantic relations.",
+  "Textual linguistics I. Cohesion and coherence.",
+  "Textual linguistics II. Macro-structure and micro-structure.",
+  "The narrative text. Characteristics and structures.",
+  "The descriptive text. Characteristics and structures.",
+  "The expository text. Characteristics and structures.",
+  "The argumentative text. Characteristics and structures.",
+  "The instructional text. Characteristics and structures.",
+  "The poetic text. Characteristics and structures.",
+  "The dramatic text. Characteristics and structures.",
+  "Discourse analysis I. Register and style.",
+  "Discourse analysis II. Pragmatics and speech acts.",
+  "The use of ICT in English language learning.",
+  "Old and Middle English literature. Beowulf and Chaucer.",
+  "The Renaissance and the Elizabethan Age. Shakespeare.",
+  "17th Century literature. Milton and the metaphysical poets.",
+  "The 18th Century. The rise of the novel. Defoe, Swift, and Richardson.",
+  "Romanticism. The Lake Poets and the second generation.",
+  "The American Revolution and the foundation of the USA.",
+  "Victorian literature I. The great novelists: Dickens, Bronte, Thackeray.",
+  "Victorian literature II. Poetry and drama: Tennyson, Browning, Wilde.",
+  "Modernism in Britain. James Joyce and Virginia Woolf.",
+  "Contemporary British literature. Main trends.",
+  "The development of English in the USA. Colonial period.",
+  "19th Century American literature. Hawthorne, Melville, and Poe.",
+  "American Romanticism. Transcendentalism: Emerson and Thoreau.",
+  "American Realism and Naturalism. Mark Twain and Henry James.",
+  "20th Century American literature I. The Lost Generation.",
+  "20th Century American literature II. The Southern Renaissance.",
+  "20th Century American literature III. Contemporary trends.",
+  "History and culture of the United Kingdom.",
+  "History and culture of the United States.",
+  "Commonwealth literature. Main authors and themes.",
+  "Institutions and political systems of the UK and the USA.",
+  "Social and educational systems in the English-speaking world.",
+  "The press and media in the UK and the USA.",
+  "Scientific and technical development in the English-speaking world.",
+  "Art and architecture in the UK and the USA.",
+  "Music and cinema in the English-speaking world.",
+  "Traditions and festivals in the UK and the USA.",
+  "Geography and natural resources of the UK and the USA.",
+  "Current challenges in the English-speaking world."
+];
 
-// DATOS BASE OBLIGATORIOS
-const INITIAL_TOPICS = Array.from({ length: 69 }, (_, i) => ({ 
-  id: i + 1, title: `Tema ${i + 1}`, redactado: false, estudiado: false, reviews: 0, mocks: 0, miniMocks: 0, finished: false, discarded: false, stars: 0 
-}));
+const INITIAL_TOPICS = Array.from({ length: 69 }, (_, i) => {
+  const t = RAW_TITLES[i];
+  return { 
+    id: i + 1, 
+    title: t, 
+    redactado: false, 
+    estudiado: false, 
+    reviews: 0, 
+    mocks: 0, 
+    miniMocks: 0, 
+    finished: false, 
+    discarded: false, 
+    stars: 0,
+    indexNotes: `Introduction\n\n${t.split('. ').join('\n')}\n\nTopic ${i+1} in the classroom\n\nBibliography\n\nConclusion\n\nBIBLIOGRAPHY`
+  };
+});
 
 const INITIAL_PLANNING = [
   { id: 'p1', title: 'Contextualización', status: 0 }, { id: 'p2', title: 'Objetivos y Competencias', status: 0 }, { id: 'p3', title: 'Saberes Básicos', status: 0 },
@@ -147,6 +220,7 @@ export default function App() {
   const [luckyNumbers, setLuckyNumbers] = useState([0,0,0,0]);
   const [activeDeckId, setActiveDeckId] = useState(null);
   const [examDeck, setExamDeck] = useState(null);
+  const [selectedTopicModal, setSelectedTopicModal] = useState(null);
 
   useEffect(() => {
     if (!document.getElementById('tailwind-cdn')) {
@@ -167,7 +241,6 @@ export default function App() {
         setPlanning(d.planning?.length ? d.planning : INITIAL_PLANNING); 
         setUnits(d.units?.length ? d.units : INITIAL_UNITS);
         setSkills(d.skills?.length ? d.skills : INITIAL_SKILLS); 
-        
         setDecks(d.decks || []);
         setTodos(d.todos || []); 
         setNotes(d.notes || []); 
@@ -275,7 +348,62 @@ export default function App() {
         body { background-color: #f8fafc; background-image: radial-gradient(#fbbf24 2px, transparent 2px), radial-gradient(#f472b6 2px, transparent 2px), radial-gradient(#60a5fa 2px, transparent 2px), radial-gradient(#34d399 2px, transparent 2px); background-size: 80px 80px; background-position: 0 0, 40px 40px, 20px 60px, 60px 20px; }
         .bento-card { border-radius: 28px; border: 2px solid #f1f5f9; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
         .map-bubble { width: 80px; height: 80px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; border: 6px solid white; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        .modal-overlay { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(8px); position: fixed; inset: 0; z-index: 500; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+        .modal-content { background: white; width: 100%; max-width: 600px; max-height: 85vh; border-radius: 40px; overflow-y: auto; position: relative; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
       `}</style>
+
+      {/* VENTANA EMERGENTE DE TEMA */}
+      {selectedTopicModal && (
+        <div className="modal-overlay animate-in fade-in duration-300" onClick={() => setSelectedTopicModal(null)}>
+          <div className="modal-content p-8 custom-scrollbar animate-in zoom-in-95 duration-300" onClick={e => e.stopPropagation()}>
+            <button onClick={() => setSelectedTopicModal(null)} className="absolute top-6 right-6 p-2 bg-slate-100 text-slate-400 rounded-full hover:bg-red-50 hover:text-red-500 transition-colors">
+              <Icon name="X" size={20} />
+            </button>
+            <div className="text-center space-y-6">
+              <div className={`mx-auto w-16 h-16 rounded-2xl flex items-center justify-center font-black text-2xl border-4 ${getTopicBlock(selectedTopicModal.id).badge}`}>
+                {selectedTopicModal.id}
+              </div>
+              <h3 className="text-2xl font-black text-slate-900 leading-tight">
+                {selectedTopicModal.title}
+              </h3>
+              
+              <div className="border-t-2 border-slate-50 pt-6 text-left">
+                <div className="flex justify-between items-center mb-4">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Index & Notes</span>
+                  <button 
+                    onClick={() => {
+                      if (selectedTopicModal.isEditing) {
+                        setTopics(prev => prev.map(t => t.id === selectedTopicModal.id ? { ...t, indexNotes: selectedTopicModal.tempNotes } : t));
+                        setSelectedTopicModal({ ...selectedTopicModal, isEditing: false, indexNotes: selectedTopicModal.tempNotes });
+                      } else {
+                        setSelectedTopicModal({ ...selectedTopicModal, isEditing: true, tempNotes: selectedTopicModal.indexNotes });
+                      }
+                    }}
+                    className={`p-2 rounded-xl transition-all ${selectedTopicModal.isEditing ? 'bg-emerald-500 text-white shadow-lg' : 'bg-slate-100 text-slate-500'}`}
+                  >
+                    <Icon name={selectedTopicModal.isEditing ? "Check" : "Edit"} size={18} />
+                  </button>
+                </div>
+                
+                {selectedTopicModal.isEditing ? (
+                  <textarea 
+                    autoFocus
+                    className="w-full h-96 p-4 bg-slate-50 rounded-2xl border-2 border-emerald-200 outline-none font-medium text-slate-700 leading-relaxed resize-none"
+                    value={selectedTopicModal.tempNotes}
+                    onChange={e => setSelectedTopicModal({ ...selectedTopicModal, tempNotes: e.target.value })}
+                  />
+                ) : (
+                  <pre className="whitespace-pre-wrap font-sans text-slate-600 leading-relaxed bg-slate-50 p-6 rounded-2xl border-2 border-slate-100 min-h-[200px]">
+                    {selectedTopicModal.indexNotes || "No notes yet..."}
+                  </pre>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <header className="sticky top-0 z-[100] bg-white/95 backdrop-blur-md border-b-2 border-slate-100 p-4 shadow-sm">
         <div className="max-w-5xl mx-auto flex justify-between items-center">
@@ -344,7 +472,7 @@ export default function App() {
 
       <main className="max-w-5xl mx-auto p-4 md:p-8">
         {activeTab === 'map' && <ProgressMap level={currentLevel} progress={points%200} examDate={examDate} setExamDate={setExamDate} levelDates={levelDates} addPoints={addPoints} />}
-        {activeTab === 'syllabus' && <Syllabus topics={topics} setTopics={setTopics} addPoints={addPoints} />}
+        {activeTab === 'syllabus' && <Syllabus topics={topics} setTopics={setTopics} addPoints={addPoints} onOpenModal={setSelectedTopicModal} />}
         {activeTab === 'planning' && <PlanningHub planning={planning} setPlanning={setPlanning} units={units} setUnits={setUnits} addPoints={addPoints} />}
         {activeTab === 'practico' && <PracticoView skills={skills} setSkills={setSkills} addPoints={addPoints} sessions={practicoSessions} setSessions={setPracticoSessions} />}
         {activeTab === 'flashcards' && !examDeck && !activeDeckId && <FlashcardsManager decks={decks} setDecks={setDecks} onSelect={setActiveDeckId} onExam={setExamDeck} />}
@@ -352,7 +480,7 @@ export default function App() {
         {activeTab === 'todo' && <TodoView todos={todos} setTodos={setTodos} addPoints={addPoints} />}
         {activeTab === 'notes' && <NotesView notes={notes} setNotes={setNotes} />}
         {activeTab === 'badges' && <BadgesView badges={BADGES} maxStreak={maxStreak} />}
-        {activeTab === 'stats' && <StatsView actionLogs={actionLogs} undoAction={undoAction} />}
+        {activeTab === 'stats' && <StatsView actionLogs={actionLogs} undoAction={undoAction} topics={topics} />}
       </main>
 
       <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t-2 border-slate-100 p-4 pb-8 z-50 shadow-lg">
@@ -370,7 +498,7 @@ export default function App() {
 // ==========================================
 // 4. VISTAS ESPECIALIZADAS
 // ==========================================
-function Syllabus({ topics, setTopics, addPoints }) {
+function Syllabus({ topics, setTopics, addPoints, onOpenModal }) {
   const [search, setSearch] = useState("");
   const updateField = (id, field, value, pts) => {
     setTopics(prev => prev.map(t => {
@@ -422,10 +550,15 @@ function Syllabus({ topics, setTopics, addPoints }) {
             <div key={t.id} className={`bento-card p-5 border-2 transition-all duration-300 ${cardStyle}`}>
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-4">
-                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-black text-xl border-2 ${badgeStyle}`}>{t.id}</div>
-                  <div className="text-left leading-tight">
+                  <div 
+                    onClick={() => onOpenModal(t)}
+                    className={`w-12 h-12 rounded-xl flex items-center justify-center font-black text-xl border-2 cursor-pointer active:scale-90 transition-transform ${badgeStyle}`}
+                  >
+                    {t.id}
+                  </div>
+                  <div className="text-left leading-tight flex-1">
                     <p className={`text-[10px] font-black uppercase opacity-80 tracking-widest ${textStyle}`}>{blk.name}</p>
-                    <EditableTitle value={t.title} onSave={(nv)=>updateField(t.id,'title',nv)} className={`text-sm font-black ${textStyle}`} />
+                    <p className={`text-sm font-black line-clamp-1 ${textStyle}`}>{t.title}</p>
                   </div>
                 </div>
                 <div className="flex gap-2">
@@ -478,13 +611,13 @@ function PlanningHub({ planning, setPlanning, units, setUnits, addPoints }) {
     return i; 
   }));
   return (
-    <div className="space-y-6">
-      <h2 className="text-2xl font-black bg-white/50 backdrop-blur inline-block px-4 py-2 rounded-2xl shadow-sm border border-white/50">Programación y UDs</h2>
+    <div className="space-y-6 text-left">
+      <h2 className="text-2xl font-black text-slate-950 bg-white/50 backdrop-blur inline-block px-4 py-2 rounded-2xl shadow-sm border border-white/50">Programación y UDs</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {[...planning, ...units].map(item => (
           <div key={item.id} className="bento-card bg-white p-5 border-teal-50 shadow-sm transition-all hover:border-teal-100">
             <div className="flex justify-between items-center mb-3 text-left">
-              <EditableTitle value={item.title} onSave={(nv)=>upd(item.id, item.id.startsWith('p')?planning:units, item.id.startsWith('p')?setPlanning:setUnits, 'title', nv)} className="text-sm font-black pr-4 leading-tight" />
+              <EditableTitle value={item.title} onSave={(nv)=>upd(item.id, item.id.startsWith('p')?planning:units, item.id.startsWith('p')?setPlanning:setUnits, 'title', nv)} className="text-sm font-black pr-4 leading-tight text-slate-900" />
               <button onClick={()=>{const ns = (item.status+1)%6; upd(item.id, item.id.startsWith('p')?planning:units, item.id.startsWith('p')?setPlanning:setUnits, 'status', ns, ns>item.status?15:0);}} className={`px-3 py-1.5 rounded-xl text-[9px] font-black border-2 transition-all shrink-0 ${item.status===5 ? 'bg-teal-600 text-white border-transparent shadow-md' : 'bg-white border-teal-50 text-teal-600 hover:bg-teal-50 shadow-sm'}`}>{PLANNING_STATUS[item.status]}</button>
             </div>
             <div className="flex gap-1 h-2">{Array.from({length:6}).map((_,i)=><div key={i} className={`flex-1 rounded-full transition-colors ${i<=item.status?'bg-teal-500 shadow-sm':'bg-slate-100'}`} />)}</div>
@@ -501,14 +634,14 @@ function PracticoView({ skills, setSkills, addPoints, sessions, setSessions }) {
   const updateSkillLabel = (id, newLabel) => { setSkills(skills.map(s => s.id === id ? { ...s, label: newLabel } : s)); };
 
   return (
-    <div className="space-y-6">
-      <h2 className="text-2xl font-black bg-white/50 backdrop-blur inline-block px-4 py-2 rounded-2xl shadow-sm border border-white/50">Examen Práctico</h2>
+    <div className="space-y-6 text-left">
+      <h2 className="text-2xl font-black text-slate-950 bg-white/50 backdrop-blur inline-block px-4 py-2 rounded-2xl shadow-sm border border-white/50">Examen Práctico</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="bento-card bg-white p-6 space-y-6 border-indigo-50 shadow-md">
           <form onSubmit={handleAddSkill} className="flex gap-2 mb-4"><input placeholder="Nueva habilidad..." value={newSkill} onChange={e => setNewSkill(e.target.value)} className="flex-1 bg-slate-50 rounded-xl px-3 py-2 text-xs font-black outline-none border-2 border-transparent focus:border-indigo-200" /><button type="submit" className="bg-indigo-600 text-white p-2 rounded-xl shadow-md active:scale-95 transition-transform"><Icon name="Plus" size={18}/></button></form>
           {skills.length === 0 && <p className="text-xs text-slate-400 font-bold italic text-center py-4">No hay habilidades. ¡Añade una!</p>}
           {skills.map(s => (
-            <div key={s.id} className="space-y-2">
+            <div key={s.id} className="space-y-2 text-left">
               <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-slate-500"><EditableTitle value={s.label} onSave={(nv) => updateSkillLabel(s.id, nv)} className="flex-1 mr-2 leading-tight" /><div className="flex gap-1 shrink-0"><button onClick={() => { if(s.level > 0) { setSkills(prev => prev.map(ps => ps.id === s.id ? { ...ps, level: ps.level - 1 } : ps)); addPoints(-25, "Ajuste: " + s.label, { entity: 'skill', id: s.id, prevValue: s.level }); } }} className="w-6 h-6 bg-slate-50 text-slate-400 rounded-lg shadow-sm hover:bg-slate-100 transition-colors font-black flex items-center justify-center active:scale-90">-</button><button onClick={() => { if(s.level < 10) { setSkills(prev => prev.map(ps => ps.id === s.id ? { ...ps, level: ps.level + 1 } : ps)); addPoints(25, s.label, { entity: 'skill', id: s.id, prevValue: s.level }); } }} className="w-6 h-6 bg-indigo-50 text-indigo-600 rounded-lg shadow-sm hover:bg-indigo-100 transition-colors font-black flex items-center justify-center active:scale-90">+</button></div></div>
               <div className="h-3 bg-slate-100 rounded-full overflow-hidden border border-slate-200"><div className="h-full bg-indigo-500 transition-all duration-700 shadow-sm" style={{ width: `${s.level * 10}%` }} /></div>
             </div>
@@ -528,10 +661,83 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam }) {
   const [open, setOpen] = useState(false);
   const [txt, setTxt] = useState("");
   const [name, setName] = useState("");
+  const [editingId, setEditingId] = useState(null);
+  const [shuffledId, setShuffledId] = useState(null);
+
   const startExamMode = () => { const allCards = decks.flatMap(d => d.cards.map(c => ({...c, deckName: d.name}))); if (allCards.length === 0) return alert("¡Sin tarjetas!"); onExam({ id: 'exam-mode', name: 'EXAMEN TOTAL', cards: allCards.sort(() => Math.random() - 0.5) }); };
-  const add = () => { if(txt.includes(':') && name){const cards = txt.split('\n').filter(l=>l.includes(':')).map(l=>{const [q,a]=l.split(':'); return {q:q.trim(),a:a.trim(),id:Math.random().toString(36)};}); setDecks([{id:Date.now().toString(), name, cards}, ...decks]); setOpen(false); setName(""); setTxt(""); } };
+  
+  const saveDeck = () => { 
+    if(txt.includes(':') && name){
+      const cards = txt.split('\n').filter(l=>l.includes(':')).map(l=>{const [q,a]=l.split(':'); return {q:q.trim(),a:a.trim(),id:Math.random().toString(36)};}); 
+      if (editingId) {
+        setDecks(decks.map(d => d.id === editingId ? { ...d, name, cards } : d));
+      } else {
+        setDecks([{id:Date.now().toString(), name, cards}, ...decks]);
+      }
+      setOpen(false); setName(""); setTxt(""); setEditingId(null);
+    } 
+  };
+
+  const loadForEdit = (deck) => {
+    setName(deck.name);
+    setTxt(deck.cards.map(c => `${c.q} : ${c.a}`).join('\n'));
+    setEditingId(deck.id);
+    setOpen(true);
+  };
+
+  const shuffleDeck = (id) => {
+    setDecks(prev => prev.map(d => {
+      if(d.id === id) {
+        return { ...d, cards: [...d.cards].sort(() => Math.random() - 0.5) };
+      }
+      return d;
+    }));
+    setShuffledId(id);
+    setTimeout(() => setShuffledId(null), 1000);
+  };
+  
   return (
-    <div className="space-y-6"><div className="flex justify-between items-center bg-white/50 backdrop-blur px-4 py-2 rounded-2xl shadow-sm border border-white/50"><h2 className="text-2xl font-black text-rose-950">Flashcards</h2><button onClick={startExamMode} className="p-3 bg-rose-100 text-rose-700 rounded-xl font-black text-[10px] flex items-center gap-2 border border-rose-200 active:scale-95 transition-all shadow-sm"><Icon name="Zap" size={14} className="fill-rose-700"/> MODO EXAMEN</button></div><button onClick={()=>setOpen(!open)} className="w-full p-4 bg-rose-600 text-white rounded-2xl font-black shadow-lg shadow-rose-100 active:scale-95 transition-all">NUEVO MAZO</button>{open && <div className="bento-card p-6 border-rose-100 space-y-4 shadow-xl animate-in zoom-in-95 bg-white"><input placeholder="Nombre del mazo..." value={name} onChange={e=>setName(e.target.value)} className="w-full bg-slate-50 p-3 rounded-xl font-black outline-none border-2 border-transparent focus:border-rose-200 shadow-inner" /><textarea placeholder="Pregunta : Respuesta" value={txt} onChange={e=>setTxt(e.target.value)} className="w-full h-32 bg-slate-50 p-3 rounded-xl font-black outline-none resize-none border-2 border-transparent focus:border-rose-200 shadow-inner" /><button onClick={add} className="w-full p-3 bg-rose-600 text-white rounded-xl font-black shadow-md">GUARDAR MAZO</button></div>}<div className="grid grid-cols-1 md:grid-cols-2 gap-4">{decks.map(d=>(<div key={d.id} onClick={()=>onSelect(d.id.toString())} className="bento-card bg-white p-5 flex justify-between items-center cursor-pointer hover:border-rose-300 transition-all shadow-sm group"><div><p className="font-black text-left text-slate-800 leading-tight">{d.name}</p><p className="text-[9px] text-rose-400 font-black uppercase tracking-widest mt-1">{d.cards.length} tarjetas</p></div><button onClick={(e)=>{e.stopPropagation(); setDecks(decks.filter(x=>x.id.toString()!==d.id.toString()))}} className="text-slate-300 hover:text-red-500 transition-colors"><Icon name="Trash2" size={18}/></button></div>))}</div></div>
+    <div className="space-y-6 text-left">
+      <div className="flex justify-between items-center bg-white/50 backdrop-blur px-4 py-2 rounded-2xl shadow-sm border border-white/50">
+        <h2 className="text-2xl font-black text-rose-950">Flashcards</h2>
+        <button onClick={startExamMode} className="p-3 bg-rose-100 text-rose-700 rounded-xl font-black text-[10px] flex items-center gap-2 border border-rose-200 active:scale-95 transition-all shadow-sm">
+          <Icon name="Zap" size={14} className="fill-rose-700"/> MODO EXAMEN
+        </button>
+      </div>
+      
+      <button onClick={()=>{setOpen(!open); setEditingId(null); setName(""); setTxt("");}} className="w-full p-4 bg-rose-600 text-white rounded-2xl font-black shadow-lg shadow-rose-100 active:scale-95 transition-all">
+        {editingId ? 'EDITANDO MAZO' : 'NUEVO MAZO'}
+      </button>
+
+      {open && (
+        <div className="bento-card p-6 border-rose-100 space-y-4 shadow-xl animate-in zoom-in-95 bg-white">
+          <input placeholder="Nombre del mazo..." value={name} onChange={e=>setName(e.target.value)} className="w-full bg-slate-50 p-3 rounded-xl font-black outline-none border-2 border-transparent focus:border-rose-200 shadow-inner" />
+          <textarea placeholder="Pregunta : Respuesta (Una por línea)" value={txt} onChange={e=>setTxt(e.target.value)} className="w-full h-32 bg-slate-50 p-3 rounded-xl font-black outline-none resize-none border-2 border-transparent focus:border-rose-200 shadow-inner" />
+          <button onClick={saveDeck} className="w-full p-3 bg-rose-600 text-white rounded-xl font-black shadow-md uppercase">
+            {editingId ? 'Guardar Cambios' : 'Guardar Nuevo Mazo'}
+          </button>
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {decks.map(d=>(
+          <div key={d.id} onClick={()=>onSelect(d.id.toString())} className="bento-card bg-white p-5 flex justify-between items-center cursor-pointer hover:border-rose-300 transition-all shadow-sm group">
+            <div>
+              <p className="font-black text-left text-slate-800 leading-tight">{d.name}</p>
+              <p className="text-[9px] text-rose-400 font-black uppercase tracking-widest mt-1 flex items-center gap-2">
+                {d.cards.length} tarjetas 
+                {shuffledId === d.id && <Icon name="Shuffle" size={10} className="animate-bounce" />}
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <button onClick={(e)=>{e.stopPropagation(); shuffleDeck(d.id)}} className="text-slate-300 hover:text-rose-500 transition-colors p-1" title="Mezclar tarjetas"><Icon name="Shuffle" size={18}/></button>
+              <button onClick={(e)=>{e.stopPropagation(); loadForEdit(d)}} className="text-slate-300 hover:text-emerald-500 transition-colors p-1" title="Editar mazo"><Icon name="Edit" size={18}/></button>
+              <button onClick={(e)=>{e.stopPropagation(); setDecks(decks.filter(x=>x.id.toString()!==d.id.toString()))}} className="text-slate-300 hover:text-red-500 transition-colors p-1" title="Borrar mazo"><Icon name="Trash2" size={18}/></button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -541,7 +747,7 @@ function DeckStudyView({ deck, onBack, addPoints }) {
   const card = deck?.cards[idx];
   if(!card) return null;
   return (
-    <div className="max-w-xl mx-auto py-10 space-y-8"><button onClick={onBack} className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-rose-600 transition-all"><Icon name="ChevronRight" className="rotate-180" size={16}/> Volver a Biblioteca</button><div className="h-80 w-full relative" style={{ perspective: '1000px' }} onClick={()=>{if(!flipped) addPoints(2,"Flashcard"); setFlipped(!flipped);}}><div className={`relative w-full h-full transition-transform duration-500 rounded-[40px] shadow-2xl cursor-pointer ${flipped ? '[transform:rotateY(180deg)]' : ''}`} style={{ transformStyle: 'preserve-3d' }}><div className="absolute inset-0 bg-white border-8 border-rose-50 rounded-[40px] flex flex-col items-center justify-center p-10 text-center [backface-visibility:hidden] shadow-inner">{card?.deckName && <span className="absolute top-6 px-3 py-1 bg-rose-50 text-rose-500 text-[8px] font-black rounded-full uppercase border border-rose-100">{card.deckName}</span>}<p className="text-2xl font-black text-slate-800">{card?.q}</p></div><div className="absolute inset-0 bg-rose-600 text-white rounded-[40px] flex items-center justify-center p-10 text-center [transform:rotateY(180deg)] [backface-visibility:hidden] shadow-xl shadow-rose-200"><p className="text-xl font-medium italic">{card?.a}</p></div></div></div><div className="flex gap-4"><button onClick={()=>{setIdx(p=>Math.max(0,p-1)); setFlipped(false);}} className="flex-1 py-4 bg-white border-2 border-rose-100 rounded-2xl font-black text-rose-600 shadow-sm active:scale-95 transition-all" disabled={idx===0}>ANTERIOR</button><button onClick={()=>{setIdx(p=>Math.min(deck.cards.length-1,p+1)); setFlipped(false);}} className="flex-1 py-4 bg-rose-600 text-white rounded-2xl font-black shadow-xl shadow-rose-100 active:scale-95 transition-all" disabled={idx===deck.cards.length-1}>SIGUIENTE</button></div></div>
+    <div className="max-w-xl mx-auto py-10 space-y-8 text-left"><button onClick={onBack} className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-rose-600 transition-all"><Icon name="ChevronRight" className="rotate-180" size={16}/> Volver a Biblioteca</button><div className="h-80 w-full relative" style={{ perspective: '1000px' }} onClick={()=>{if(!flipped) addPoints(2,"Flashcard"); setFlipped(!flipped);}}><div className={`relative w-full h-full transition-transform duration-500 rounded-[40px] shadow-2xl cursor-pointer ${flipped ? '[transform:rotateY(180deg)]' : ''}`} style={{ transformStyle: 'preserve-3d' }}><div className="absolute inset-0 bg-white border-8 border-rose-50 rounded-[40px] flex flex-col items-center justify-center p-10 text-center [backface-visibility:hidden] shadow-inner">{card?.deckName && <span className="absolute top-6 px-3 py-1 bg-rose-50 text-rose-500 text-[8px] font-black rounded-full uppercase border border-rose-100">{card.deckName}</span>}<p className="text-2xl font-black text-slate-800">{card?.q}</p></div><div className="absolute inset-0 bg-rose-600 text-white rounded-[40px] flex items-center justify-center p-10 text-center [transform:rotateY(180deg)] [backface-visibility:hidden] shadow-xl shadow-rose-200"><p className="text-xl font-medium italic">{card?.a}</p></div></div></div><div className="flex gap-4"><button onClick={()=>{setIdx(p=>Math.max(0,p-1)); setFlipped(false);}} className="flex-1 py-4 bg-white border-2 border-rose-100 rounded-2xl font-black text-rose-600 shadow-sm active:scale-95 transition-all" disabled={idx===0}>ANTERIOR</button><button onClick={()=>{setIdx(p=>Math.min(deck.cards.length-1,p+1)); setFlipped(false);}} className="flex-1 py-4 bg-rose-600 text-white rounded-2xl font-black shadow-xl shadow-rose-100 active:scale-95 transition-all" disabled={idx===deck.cards.length-1}>SIGUIENTE</button></div></div>
   );
 }
 
@@ -557,7 +763,7 @@ function ProgressMap({ level, progress, examDate, setExamDate, levelDates, addPo
     <div className="space-y-12 max-w-xl mx-auto py-8">
       <div className="grid grid-cols-2 gap-4">
         <div className="bento-card bg-white p-6 text-center border-emerald-100 shadow-sm flex flex-col justify-center items-center">
-          <p onClick={() => setShowDate(!showDate)} className="text-3xl font-black text-emerald-950 tabular-nums cursor-pointer hover:scale-105 transition-transform">{days}</p>
+          <p onClick={() => setShowDate(!showDate)} className="text-4xl font-black text-emerald-950 tabular-nums cursor-pointer hover:scale-105 transition-transform">{days}</p>
           {showDate && <input type="date" value={examDate} onChange={e=>{setExamDate(e.target.value); setShowDate(false);}} className="mt-2 text-[10px] font-black bg-emerald-50 p-2 rounded-xl outline-none shadow-inner w-full text-center" />}
         </div>
         
@@ -589,7 +795,7 @@ function ProgressMap({ level, progress, examDate, setExamDate, levelDates, addPo
 
 function BadgesView({ badges, maxStreak }) {
   return (
-    <div className="space-y-8"><div className="bento-card bg-white p-8 border-4 border-amber-50 text-center space-y-2 shadow-inner shadow-amber-50"><Icon name="Flame" size={48} className="fill-orange-500 text-orange-500 mx-auto" /><p className="text-5xl font-black text-slate-900 tabular-nums">{maxStreak}</p><p className="text-[10px] font-bold text-orange-500 uppercase tracking-widest leading-none">Racha Histórica Máxima</p></div><div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">{badges.map(b => (<div key={b.id} className={`bento-card bg-white p-6 flex flex-col items-center text-center transition-all ${b.cond ? 'bg-amber-50 border-amber-200 shadow-lg scale-105' : 'opacity-20 grayscale scale-95'}`}><span className="text-4xl mb-2">{b.icon}</span><p className="text-sm font-black text-slate-800 leading-tight mb-1">{b.title}</p><p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter leading-none">{b.desc}</p></div>))}</div></div>
+    <div className="space-y-8 text-left"><div className="bento-card bg-white p-8 border-4 border-amber-50 text-center space-y-2 shadow-inner shadow-amber-50"><Icon name="Flame" size={48} className="fill-orange-500 text-orange-500 mx-auto" /><p className="text-5xl font-black text-slate-900 tabular-nums">{maxStreak}</p><p className="text-[10px] font-bold text-orange-500 uppercase tracking-widest leading-none">Racha Histórica Máxima</p></div><div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">{badges.map(b => (<div key={b.id} className={`bento-card bg-white p-6 flex flex-col items-center text-center transition-all ${b.cond ? 'bg-amber-50 border-amber-200 shadow-lg scale-105' : 'opacity-20 grayscale scale-95'}`}><span className="text-4xl mb-2">{b.icon}</span><p className="text-sm font-black text-slate-800 leading-tight mb-1">{b.title}</p><p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter leading-none">{b.desc}</p></div>))}</div></div>
   );
 }
 
@@ -598,15 +804,56 @@ function NotesView({ notes, setNotes }) {
   const [selColor, setSelColor] = useState(NOTE_COLORS[0]);
   const add = () => { if(txt.trim()){setNotes([{id:Date.now().toString(),text:txt,color:selColor,rot:Math.floor(Math.random()*6)-3}, ...notes]); setTxt(""); } };
   return (
-    <div className="space-y-6"><div className="bento-card bg-white p-6 border-yellow-100 shadow-xl shadow-yellow-50"><textarea placeholder="Anota un concepto o idea..." value={txt} onChange={e=>setTxt(e.target.value)} className="w-full h-24 bg-transparent border-none font-bold outline-none resize-none text-slate-800" /><div className="flex justify-between items-center pt-4 border-t border-slate-50"><div className="flex gap-2">{NOTE_COLORS.map(c=>(<button key={c.id} onClick={()=>setSelColor(c)} className={`w-6 h-6 rounded-full border-2 transition-all ${c.bg} ${selColor.id===c.id ? 'border-slate-800 scale-125 shadow-md':'border-white hover:border-slate-200'}`} />))}</div><button onClick={add} className="px-6 py-2 bg-yellow-500 text-white rounded-xl font-black text-xs shadow-md active:scale-95 transition-transform">PINCHAR NOTA</button></div></div><div className="grid grid-cols-2 sm:grid-cols-3 gap-6">{notes.map(n=>(<div key={n.id} style={{transform:`rotate(${n.rot}deg)`}} className={`relative p-5 aspect-square rounded shadow-lg border-t-[8px] ${n.color.bg} ${n.color.border} group transition-all hover:scale-105 shadow-yellow-100`}><Icon name="Pin" size={16} className={`absolute top-2 left-1/2 -translate-x-1/2 opacity-20 ${n.color.pin}`} /><p className={`text-[11px] font-black h-full ${n.color.text} text-left overflow-y-auto custom-scrollbar`}>{n.text}</p><button onClick={()=>setNotes(notes.filter(x=>x.id!==n.id))} className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-500 transition-all"><Icon name="Trash2" size={14}/></button></div>))}</div></div>
+    <div className="space-y-6 text-left"><div className="bento-card bg-white p-6 border-yellow-100 shadow-xl shadow-yellow-50"><textarea placeholder="Anota un concepto o idea..." value={txt} onChange={e=>setTxt(e.target.value)} className="w-full h-24 bg-transparent border-none font-bold outline-none resize-none text-slate-800" /><div className="flex justify-between items-center pt-4 border-t border-slate-50"><div className="flex gap-2">{NOTE_COLORS.map(c=>(<button key={c.id} onClick={()=>setSelColor(c)} className={`w-6 h-6 rounded-full border-2 transition-all ${c.bg} ${selColor.id===c.id ? 'border-slate-800 scale-125 shadow-md':'border-white hover:border-slate-200'}`} />))}</div><button onClick={add} className="px-6 py-2 bg-yellow-500 text-white rounded-xl font-black text-xs shadow-md active:scale-95 transition-transform">PINCHAR NOTA</button></div></div><div className="grid grid-cols-2 sm:grid-cols-3 gap-6">{notes.map(n=>(<div key={n.id} style={{transform:`rotate(${n.rot}deg)`}} className={`relative p-5 aspect-square rounded shadow-lg border-t-[8px] ${n.color.bg} ${n.color.border} group transition-all hover:scale-105 shadow-yellow-100`}><Icon name="Pin" size={16} className={`absolute top-2 left-1/2 -translate-x-1/2 opacity-20 ${n.color.pin}`} /><p className={`text-[11px] font-black h-full ${n.color.text} text-left overflow-y-auto custom-scrollbar`}>{n.text}</p><button onClick={()=>setNotes(notes.filter(x=>x.id!==n.id))} className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-500 transition-all"><Icon name="Trash2" size={14}/></button></div>))}</div></div>
   );
 }
 
-function StatsView({ actionLogs, undoAction }) {
+function StatsView({ actionLogs, undoAction, topics }) {
   const [tab, setTab] = useState('hist');
+  
+  const stats = useMemo(() => {
+    const useful = topics.filter(t => !t.discarded);
+    const total = useful.length;
+    const done = useful.filter(t => t.finished).length;
+    const started = useful.filter(t => (t.redactado || t.estudiado) && !t.finished).length;
+    const pending = total - done - started;
+    return { total, done, started, pending, 
+      donePct: Math.round((done/total)*100) || 0,
+      startedPct: Math.round((started/total)*100) || 0,
+      pendingPct: Math.round((pending/total)*100) || 0
+    };
+  }, [topics]);
+
   const groupLogs = (mode) => { const groups = {}; actionLogs.forEach(l => { const d = new Date(l.timestamp); const key = mode === 'week' ? `Semana ${Math.ceil(d.getDate()/7)} - ${d.toLocaleString('es-ES',{month:'short'})}` : d.toLocaleString('es-ES',{month:'long',year:'numeric'}); if(!groups[key]) groups[key] = { pts: 0, count: 0 }; groups[key].pts += l.amount; groups[key].count += 1; }); return Object.entries(groups).reverse(); };
+  
   return (
-    <div className="space-y-6"><div className="flex justify-between items-center bg-white/50 backdrop-blur px-4 py-2 rounded-2xl overflow-x-auto shadow-sm border border-white/50"><h2 className="text-xl font-black text-violet-950">Estadísticas</h2><div className="flex bg-slate-200 p-1 rounded-xl shrink-0">{['hist','week','month'].map(t=>(<button key={t} onClick={()=>setTab(t)} className={`px-3 py-1 text-[10px] font-black rounded-lg uppercase transition-all ${tab===t?'bg-white shadow-md text-violet-600':'text-slate-500'}`}>{t==='hist'?'Historial':t==='week'?'Semanas':'Meses'}</button>))}</div></div><div className="min-h-[400px]">{tab === 'hist' ? (<div className="space-y-3 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">{actionLogs.length === 0 ? <p className="italic text-slate-300 font-bold">No hay registros.</p> : actionLogs.slice(0,50).map(l=>(<div key={l.id} className="bento-card bg-white p-4 flex justify-between items-center border-violet-50 transition-all hover:border-violet-200 shadow-sm"><div className="text-left leading-tight"><p className="text-sm font-black text-slate-800">{l.description}</p><p className="text-[9px] font-bold text-slate-400 uppercase">{new Date(l.timestamp).toLocaleString()}</p></div><div className="flex items-center gap-3"><span className="text-xs font-black text-violet-700 bg-violet-50 px-2 py-1 rounded-lg shadow-inner">+{l.amount}</span><button onClick={()=>undoAction(l.id)} className="text-slate-300 hover:text-violet-600 transition-colors" title="Deshacer permanentemente"><Icon name="Undo2" size={18}/></button></div></div>))}</div>) : (<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">{groupLogs(tab).map(([key, data]) => (<div key={key} className="bento-card bg-white p-6 border-violet-100 flex justify-between items-center shadow-md"><div className="text-left leading-tight"><p className="text-xs font-black text-violet-900 uppercase tracking-tighter">{key}</p><p className="text-[10px] font-bold text-slate-400">{data.count} acciones</p></div><div className="text-right"><p className="text-2xl font-black text-violet-600">+{data.pts}</p><p className="text-[8px] font-black opacity-40 uppercase tracking-widest">Puntos</p></div></div>))}</div>)}</div></div>
+    <div className="space-y-6 text-left">
+      {/* GRÁFICO DE QUESITO */}
+      <div className="bento-card bg-white p-8 border-violet-100 shadow-xl">
+        <h3 className="text-center font-black text-slate-900 mb-6 uppercase tracking-widest text-sm">Progreso Real (Sin descartados)</h3>
+        <div className="flex flex-col md:flex-row items-center justify-center gap-12">
+          <div className="relative w-48 h-48 rounded-full shadow-inner border-8 border-slate-50 flex items-center justify-center" 
+               style={{ background: `conic-gradient(#10b981 ${stats.donePct}%, #8b5cf6 ${stats.donePct}% ${stats.donePct + stats.startedPct}%, #f1f5f9 ${stats.donePct + stats.startedPct}% 100%)` }}>
+            <div className="w-32 h-32 bg-white rounded-full shadow-2xl flex flex-col items-center justify-center">
+              <span className="text-3xl font-black text-slate-900">{stats.donePct}%</span>
+              <span className="text-[8px] font-bold text-slate-400 uppercase">Completado</span>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 gap-4">
+            <div className="flex items-center gap-3"><div className="w-4 h-4 rounded-full bg-emerald-500 shadow-sm" /><div className="text-left leading-none"><p className="text-xs font-black text-slate-800">{stats.done} Terminados</p><p className="text-[10px] font-bold text-slate-400">Totalmente listos</p></div></div>
+            <div className="flex items-center gap-3"><div className="w-4 h-4 rounded-full bg-violet-500 shadow-sm" /><div className="text-left leading-none"><p className="text-xs font-black text-slate-800">{stats.started} En proceso</p><p className="text-[10px] font-bold text-slate-400">Redactando/Estudiando</p></div></div>
+            <div className="flex items-center gap-3"><div className="w-4 h-4 rounded-full bg-slate-200 shadow-sm" /><div className="text-left leading-none"><p className="text-xs font-black text-slate-800">{stats.pending} Pendientes</p><p className="text-[10px] font-bold text-slate-400">Sin tocar aún</p></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex justify-between items-center bg-white/50 backdrop-blur px-4 py-2 rounded-2xl overflow-x-auto shadow-sm border border-white/50">
+        <h2 className="text-xl font-black text-violet-950">Historial</h2>
+        <div className="flex bg-slate-200 p-1 rounded-xl shrink-0">{['hist','week','month'].map(t=>(<button key={t} onClick={()=>setTab(t)} className={`px-3 py-1 text-[10px] font-black rounded-lg uppercase transition-all ${tab===t?'bg-white shadow-md text-violet-600':'text-slate-500'}`}>{t==='hist'?'Historial':t==='week'?'Semanas':'Meses'}</button>))}</div>
+      </div>
+      
+      <div className="min-h-[400px]">{tab === 'hist' ? (<div className="space-y-3 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">{actionLogs.length === 0 ? <p className="italic text-slate-300 font-bold">No hay registros.</p> : actionLogs.slice(0,50).map(l=>(<div key={l.id} className="bento-card bg-white p-4 flex justify-between items-center border-violet-50 transition-all hover:border-violet-200 shadow-sm"><div className="text-left leading-tight"><p className="text-sm font-black text-slate-800">{l.description}</p><p className="text-[9px] font-bold text-slate-400 uppercase">{new Date(l.timestamp).toLocaleString()}</p></div><div className="flex items-center gap-3"><span className="text-xs font-black text-violet-700 bg-violet-50 px-2 py-1 rounded-lg shadow-inner">+{l.amount}</span><button onClick={()=>undoAction(l.id)} className="text-slate-300 hover:text-violet-600 transition-colors" title="Deshacer permanentemente"><Icon name="Undo2" size={18}/></button></div></div>))}</div>) : (<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">{groupLogs(tab).map(([key, data]) => (<div key={key} className="bento-card bg-white p-6 border-violet-100 flex justify-between items-center shadow-md"><div className="text-left leading-tight"><p className="text-xs font-black text-violet-900 uppercase tracking-tighter">{key}</p><p className="text-[10px] font-bold text-slate-400">{data.count} acciones</p></div><div className="text-right"><p className="text-2xl font-black text-violet-600">+{data.pts}</p><p className="text-[8px] font-black opacity-40 uppercase tracking-widest">Puntos</p></div></div>))}</div>)}</div>
+    </div>
   );
 }
 
@@ -614,7 +861,7 @@ function TodoView({ todos, setTodos, addPoints }) {
   const [type, setType] = useState('goal');
   const [inp, setInp] = useState("");
   return (
-    <div className="space-y-6"><div className="flex p-1 bg-slate-100 rounded-2xl shadow-inner"><button onClick={()=>setType('goal')} className={`flex-1 py-3 rounded-xl text-xs font-black transition-all ${type==='goal'?'bg-white text-orange-600 shadow-md':'text-slate-400'}`}>OBJETIVOS</button><button onClick={()=>setType('review')} className={`flex-1 py-3 rounded-xl text-xs font-black transition-all ${type==='review'?'bg-white text-orange-600 shadow-md':'text-slate-400'}`}>REPASOS</button></div><form onSubmit={(e)=>{e.preventDefault(); if(inp.trim()){setTodos([{id:Date.now().toString(),text:inp,completed:false,type}, ...todos]); setInp("");}}} className="flex gap-2"><input placeholder="Tarea..." value={inp} onChange={e=>setInp(e.target.value)} className="flex-1 bento-card bg-white px-4 py-3 text-sm font-black outline-none border-orange-50 focus:border-orange-200 shadow-sm" /><button type="submit" className="p-3 bg-orange-600 text-white rounded-xl shadow-lg shadow-orange-100 active:scale-95 transition-all"><Icon name="Plus" size={24}/></button></form><div className="space-y-3">{todos.filter(t=>t.type===type).map(t=>(<div key={t.id} className="bento-card bg-white p-4 flex items-center justify-between shadow-sm hover:shadow-md transition-all"><div className="flex items-center gap-3"><button onClick={()=>{setTodos(todos.map(pt=>pt.id===t.id?{...pt,completed:!pt.completed}:pt)); if(!t.completed) addPoints(5,t.text, { entity: 'todo', id: t.id, prevValue: t.completed });}} className={`w-8 h-8 rounded-lg border-2 flex items-center justify-center transition-all ${t.completed?'bg-emerald-500 border-emerald-500 text-white shadow-sm':'border-orange-100 hover:border-orange-300'}`}>{t.completed && <Icon name="Check" size={16}/>}</button><span className={`text-sm font-black text-left transition-all ${t.completed?'line-through text-slate-300':'text-slate-700'}`}>{t.text}</span></div><button onClick={()=>setTodos(todos.filter(x=>x.id!==t.id))} className="text-slate-200 hover:text-red-500 transition-colors active:scale-90"><Icon name="Trash2" size={18}/></button></div>))}</div></div>
+    <div className="space-y-6 text-left"><div className="flex p-1 bg-slate-100 rounded-2xl shadow-inner"><button onClick={()=>setType('goal')} className={`flex-1 py-3 rounded-xl text-xs font-black transition-all ${type==='goal'?'bg-white text-orange-600 shadow-md':'text-slate-400'}`}>OBJETIVOS</button><button onClick={()=>setType('review')} className={`flex-1 py-3 rounded-xl text-xs font-black transition-all ${type==='review'?'bg-white text-orange-600 shadow-md':'text-slate-400'}`}>REPASOS</button></div><form onSubmit={(e)=>{e.preventDefault(); if(inp.trim()){setTodos([{id:Date.now().toString(),text:inp,completed:false,type}, ...todos]); setInp("");}}} className="flex gap-2"><input placeholder="Tarea..." value={inp} onChange={e=>setInp(e.target.value)} className="flex-1 bento-card bg-white px-4 py-3 text-sm font-black outline-none border-orange-50 focus:border-orange-200 shadow-sm" /><button type="submit" className="p-3 bg-orange-600 text-white rounded-xl shadow-lg shadow-orange-100 active:scale-95 transition-all"><Icon name="Plus" size={24}/></button></form><div className="space-y-3">{todos.filter(t=>t.type===type).map(t=>(<div key={t.id} className="bento-card bg-white p-4 flex items-center justify-between shadow-sm hover:shadow-md transition-all"><div className="flex items-center gap-3"><button onClick={()=>{setTodos(todos.map(pt=>pt.id===t.id?{...pt,completed:!pt.completed}:pt)); if(!t.completed) addPoints(5,t.text, { entity: 'todo', id: t.id, prevValue: t.completed });}} className={`w-8 h-8 rounded-lg border-2 flex items-center justify-center transition-all ${t.completed?'bg-emerald-500 border-emerald-500 text-white shadow-sm':'border-orange-100 hover:border-orange-300'}`}>{t.completed && <Icon name="Check" size={16}/>}</button><span className={`text-sm font-black text-left transition-all ${t.completed?'line-through text-slate-300':'text-slate-700'}`}>{t.text}</span></div><button onClick={()=>setTodos(todos.filter(x=>x.id!==t.id))} className="text-slate-200 hover:text-red-500 transition-colors active:scale-90"><Icon name="Trash2" size={18}/></button></div>))}</div></div>
   );
 }
 
