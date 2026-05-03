@@ -59,7 +59,6 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-// ¡RUTA v6 PARA LIMPIEZA ABSOLUTA!
 const APP_ID_PATH = 'turtlestudy-v6';
 
 const EditableTitle = ({ value, onSave, className }) => {
@@ -76,7 +75,7 @@ const EditableTitle = ({ value, onSave, className }) => {
   return <span onClick={()=>setIsEditing(true)} className={`cursor-pointer hover:underline rounded px-1 transition-colors ${className}`}>{value}</span>;
 };
 
-// DATOS BASE OBLIGATORIOS (AHORA CONECTADOS CORRECTAMENTE AL ARRANQUE)
+// DATOS BASE OBLIGATORIOS
 const INITIAL_TOPICS = Array.from({ length: 69 }, (_, i) => ({ 
   id: i + 1, title: `Tema ${i + 1}`, redactado: false, estudiado: false, reviews: 0, mocks: 0, miniMocks: 0, finished: false, discarded: false, stars: 0 
 }));
@@ -125,7 +124,6 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('map');
   const [isToolsExpanded, setIsToolsExpanded] = useState(false);
 
-  // ESTADOS INICIALIZADOS CORRECTAMENTE PARA QUE NUNCA ESTÉN EN BLANCO
   const [points, setPoints] = useState(0);
   const [topics, setTopics] = useState(INITIAL_TOPICS);
   const [planning, setPlanning] = useState(INITIAL_PLANNING);
@@ -248,7 +246,6 @@ export default function App() {
     return () => clearInterval(int);
   }, [isTimerActive, timeLeft]);
 
-  // RECOMPENSAS
   const currentLevel = Math.floor(points/200)+1;
   const fullyCount = topics.filter(t => t.redactado && t.estudiado && t.finished).length;
   const totalCards = decks.reduce((a,d)=>a+d.cards.length, 0);
@@ -295,7 +292,7 @@ export default function App() {
             <div className="relative">
               <button 
                 onClick={() => setShowTimerMenu(!showTimerMenu)}
-                className={`px-3 py-2 rounded-2xl font-black flex items-center gap-2 border transition-all text-sm ${isTimerActive ? 'bg-emerald-600 text-white border-transparent shadow-emerald-200' : 'bg-white text-emerald-600 border-slate-200'}`}
+                className={`px-3 py-2 rounded-2xl font-black flex items-center gap-2 border transition-all text-sm ${isTimerActive ? 'bg-emerald-600 text-white border-transparent shadow-emerald-200 shadow-lg' : 'bg-white text-emerald-600 border-slate-200'}`}
               >
                 <Icon name="Clock" size={16} className={isTimerActive ? 'animate-spin' : ''} />
                 <span className="tabular-nums">{timeLeft > 0 ? (Math.floor(timeLeft/60)+":"+(timeLeft%60).toString().padStart(2,'0')) : '00:00'}</span>
@@ -346,7 +343,7 @@ export default function App() {
       </header>
 
       <main className="max-w-5xl mx-auto p-4 md:p-8">
-        {activeTab === 'map' && <ProgressMap level={currentLevel} progress={points%200} examDate={examDate} setExamDate={setExamDate} levelDates={levelDates} />}
+        {activeTab === 'map' && <ProgressMap level={currentLevel} progress={points%200} examDate={examDate} setExamDate={setExamDate} levelDates={levelDates} addPoints={addPoints} />}
         {activeTab === 'syllabus' && <Syllabus topics={topics} setTopics={setTopics} addPoints={addPoints} />}
         {activeTab === 'planning' && <PlanningHub planning={planning} setPlanning={setPlanning} units={units} setUnits={setUnits} addPoints={addPoints} />}
         {activeTab === 'practico' && <PracticoView skills={skills} setSkills={setSkills} addPoints={addPoints} sessions={practicoSessions} setSessions={setPracticoSessions} />}
@@ -466,7 +463,7 @@ function Counter({ label, count, onAdd, color, finished }) {
       <p className={`text-[7px] font-black uppercase opacity-80 mb-1 leading-none ${finished ? '!text-white/80' : 'text-slate-400'}`}>{label}</p>
       <div className="flex items-center gap-2">
         <span className={`text-xs font-black ${color}`}>{count}</span>
-        <button onClick={onAdd} className={`w-5 h-5 rounded flex items-center justify-center text-xs font-black shadow-sm active:scale-90 transition-all ${finished ? '!bg-white/20 !text-white !border-transparent hover:!bg-white/30' : 'bg-white border border-slate-200 hover:bg-slate-100 text-slate-600'}`}>+</button>
+        <button onClick={onAdd} className={`w-5 h-5 rounded flex items-center justify-center text-xs font-black shadow-sm active:scale-90 transition-transform ${finished ? 'bg-white/20 text-white border border-white/30 hover:bg-white/30' : 'bg-white border border-slate-200 hover:bg-slate-100 text-slate-600'}`}>+</button>
       </div>
     </div>
   );
@@ -548,19 +545,43 @@ function DeckStudyView({ deck, onBack, addPoints }) {
   );
 }
 
-function ProgressMap({ level, progress, examDate, setExamDate, levelDates }) {
+function ProgressMap({ level, progress, examDate, setExamDate, levelDates, addPoints }) {
   const diff = new Date(examDate) - new Date();
   const days = Math.ceil(diff / (1000*60*60*24));
   const levelsToShow = [level + 2, level + 1, level, level - 1, level - 2].filter(l => l > 0);
+  
+  const [showDate, setShowDate] = useState(false);
+  const [showPts, setShowPts] = useState(false);
+
   return (
     <div className="space-y-12 max-w-xl mx-auto py-8">
       <div className="grid grid-cols-2 gap-4">
-        <div className="bento-card bg-white p-6 text-center border-emerald-100 shadow-sm"><p className="text-3xl font-black text-emerald-950 tabular-nums">{days} DÍAS</p><input type="date" value={examDate} onChange={e=>setExamDate(e.target.value)} className="mt-2 text-[10px] font-black bg-emerald-50 p-1 rounded outline-none shadow-inner" /></div>
-        <div className="bento-card bg-white p-6 flex flex-col justify-center items-center border-emerald-100 shadow-sm">
-          <div className="flex justify-between items-end w-full mb-1"><span className="text-sm font-black text-emerald-600 uppercase tracking-tighter">Nivel Actual</span><span className="text-[10px] font-black text-emerald-500 uppercase tabular-nums">{progress} / 200 PTS</span></div>
-          <div className="w-full h-3 bg-emerald-50 rounded-full mt-1 overflow-hidden shadow-inner"><div className="h-full bg-emerald-500 transition-all duration-1000 shadow-sm" style={{width:`${(progress/200)*100}%`}}/></div>
+        <div className="bento-card bg-white p-6 text-center border-emerald-100 shadow-sm flex flex-col justify-center items-center">
+          <p onClick={() => setShowDate(!showDate)} className="text-3xl font-black text-emerald-950 tabular-nums cursor-pointer hover:scale-105 transition-transform">{days}</p>
+          {showDate && <input type="date" value={examDate} onChange={e=>{setExamDate(e.target.value); setShowDate(false);}} className="mt-2 text-[10px] font-black bg-emerald-50 p-2 rounded-xl outline-none shadow-inner w-full text-center" />}
+        </div>
+        
+        <div className="relative">
+          <div onClick={() => setShowPts(!showPts)} className="bento-card bg-white p-6 flex flex-col justify-center items-center border-emerald-100 shadow-sm cursor-pointer hover:border-emerald-300 transition-colors h-full">
+            <div className="flex justify-between items-end w-full mb-1">
+              <span className="text-sm font-black text-emerald-600 uppercase tracking-tighter">Nivel Actual</span>
+              <span className="text-[10px] font-black text-emerald-500 uppercase tabular-nums">{progress} / 200 PTS</span>
+            </div>
+            <div className="w-full h-3 bg-emerald-50 rounded-full mt-1 overflow-hidden shadow-inner">
+              <div className="h-full bg-emerald-500 transition-all duration-1000 shadow-sm" style={{width:`${(progress/200)*100}%`}}/>
+            </div>
+          </div>
+          
+          {showPts && (
+            <div className="absolute top-full left-0 right-0 mt-2 bg-white border-2 border-emerald-100 rounded-2xl p-3 shadow-2xl z-50 flex flex-col gap-2 animate-in zoom-in-95">
+              <button onClick={(e) => { e.stopPropagation(); addPoints(10, '30 min de estudio'); setShowPts(false); }} className="w-full bg-emerald-50 text-emerald-700 py-3 rounded-xl text-xs font-black uppercase shadow-sm active:scale-95 transition-transform">+30 MIN (10 PTS)</button>
+              <button onClick={(e) => { e.stopPropagation(); addPoints(25, '1 hora de estudio'); setShowPts(false); }} className="w-full bg-emerald-600 text-white py-3 rounded-xl text-xs font-black uppercase shadow-md active:scale-95 transition-transform">+1 HORA (25 PTS)</button>
+              <button onClick={(e) => { e.stopPropagation(); addPoints(5, 'Puntos extra'); setShowPts(false); }} className="w-full bg-slate-50 text-slate-500 py-2 rounded-xl text-[10px] font-black uppercase active:scale-95 transition-transform">+5 EXTRA</button>
+            </div>
+          )}
         </div>
       </div>
+      
       <div className="flex flex-col items-center gap-16 relative"><div className="absolute top-0 bottom-0 w-2 bg-emerald-100/30 rounded-full -z-10" />{levelsToShow.map(l => (<div key={l} className={`map-bubble transition-all duration-500 ${l === level ? 'bg-white border-emerald-500 scale-125 z-10 shadow-emerald-200' : l < level ? 'bg-emerald-500 border-emerald-200 text-white shadow-sm' : 'bg-slate-50 border-slate-100 text-slate-300'}`}>{l === level && <Icon name="Turtle" size={20} className="absolute -top-10 text-emerald-600 animate-bounce" />}<span className="text-2xl font-black tabular-nums">{l}</span>{levelDates[l] && <span className={`text-[8px] font-black uppercase mt-1 ${l < level ? 'text-emerald-100' : 'text-emerald-500'}`}>{levelDates[l]}</span>}</div>))}</div>
     </div>
   );
