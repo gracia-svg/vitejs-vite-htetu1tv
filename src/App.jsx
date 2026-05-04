@@ -52,7 +52,7 @@ const Icon = ({ name, size = 24, strokeWidth = 2, className = "" }) => {
 };
 
 // ==========================================
-// 2. DATA MAPPING (LOMLOE CV)
+// 2. DATA MAPPING
 // ==========================================
 const getCurricularMapping = (id) => {
   let ce = "1, 2, 3, 4, 5, 6";
@@ -191,7 +191,7 @@ const INITIAL_PLANNING = [
 ];
 
 const INITIAL_UNITS = Array.from({ length: 6 }, (_, i) => ({ 
-  id: `ud${i + 1}`, title: `Unidad Didáctica ${i + 1}`, status: 0, indexNotes: "", priority: null, ce: "", sb: "", do: "", cr: ""
+  id: `ud${i + 1}`, title: `Unidad Didáctica ${i + 1}`, status: 0, indexNotes: "", priority: null, ce: "", sb: "", do: "", cr: "", leg: "LOMLOE"
 }));
 
 const INITIAL_SKILLS = [
@@ -228,14 +228,28 @@ const getPlanningStatusLabel = (status) => {
 const EditableText = ({ value, onSave, className, isArea = false }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [temp, setTemp] = useState(value);
+
   if (isEditing) {
     return isArea ? (
-      <textarea autoFocus className={`bg-white border-2 border-emerald-300 rounded p-2 outline-none text-slate-900 w-full resize-none ${className}`} value={temp} onChange={e=>setTemp(e.target.value)} onBlur={()=>{if(temp!==value)onSave(temp); setIsEditing(false);}} />
+      <textarea 
+        autoFocus 
+        className={`bg-white border-2 border-emerald-300 rounded p-2 outline-none text-slate-900 w-full resize-none ${className}`} 
+        value={temp} 
+        onChange={e => setTemp(e.target.value)} 
+        onBlur={() => { if(temp !== value) onSave(temp); setIsEditing(false); }} 
+      />
     ) : (
-      <input autoFocus className={`bg-white border-2 border-emerald-300 rounded px-1 outline-none text-slate-900 ${className}`} value={temp} onChange={e=>setTemp(e.target.value)} onBlur={()=>{if(temp!==value)onSave(temp); setIsEditing(false);}} onKeyDown={e=>{if(e.key==='Enter'){if(temp!==value)onSave(temp); setIsEditing(false);}}} />
+      <input 
+        autoFocus 
+        className={`bg-white border-2 border-emerald-300 rounded px-1 outline-none text-slate-900 ${className}`} 
+        value={temp} 
+        onChange={e => setTemp(e.target.value)} 
+        onBlur={() => { if(temp !== value) onSave(temp); setIsEditing(false); }} 
+        onKeyDown={e => { if(e.key === 'Enter') { if(temp !== value) onSave(temp); setIsEditing(false); } }} 
+      />
     );
   }
-  return <span onClick={()=>setIsEditing(true)} className={`cursor-pointer hover:bg-emerald-50 rounded transition-colors ${className}`}>{value || "..."}</span>;
+  return <span onClick={() => setIsEditing(true)} className={`cursor-pointer hover:bg-emerald-50 rounded transition-colors ${className}`}>{value || "..."}</span>;
 };
 
 // ==========================================
@@ -283,7 +297,6 @@ export default function App() {
   const [timeLeft, setTimeLeft] = useState(0);
   const [isTimerActive, setIsTimerActive] = useState(false);
   const [showTimerMenu, setShowTimerMenu] = useState(false);
-  const [customMinutes, setCustomMinutes] = useState("");
   const [luckyNumbers, setLuckyNumbers] = useState([0,0,0,0]);
   const [activeDeckId, setActiveDeckId] = useState(null);
   const [examDeck, setExamDeck] = useState(null);
@@ -358,6 +371,7 @@ export default function App() {
   const addPoints = (amount, desc, actionData = null) => {
     let finalLogs = [...actionLogs];
 
+    // Payload Cleanup 24h
     const twentyFourHoursAgo = Date.now() - 86400000;
     finalLogs = finalLogs.map(log => {
       if (log.actionData && log.timestamp < twentyFourHoursAgo) {
@@ -465,7 +479,6 @@ export default function App() {
       <style>{`
         body { background-color: #f8fafc; background-image: radial-gradient(#fbbf24 2px, transparent 2px), radial-gradient(#f472b6 2px, transparent 2px), radial-gradient(#60a5fa 2px, transparent 2px), radial-gradient(#34d399 2px, transparent 2px); background-size: 80px 80px; background-position: 0 0, 40px 40px, 20px 60px, 60px 20px; }
         .bento-card { border-radius: 28px; border: 2px solid #f1f5f9; box-shadow: 0 4px 15px rgba(0,0,0,0.05); transition: all 0.3s ease; background: white; }
-        .map-bubble { width: 80px; height: 80px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; border: 6px solid white; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
         .modal-overlay { background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(8px); position: fixed; inset: 0; z-index: 500; display: flex; align-items: center; justify-content: center; padding: 1rem; }
         .modal-content { background: white; width: 100%; max-width: 600px; max-height: 85vh; border-radius: 40px; overflow-y: auto; position: relative; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
         .modal-fullscreen { max-width: 100vw !important; max-height: 100vh !important; height: 100vh !important; border-radius: 0 !important; }
@@ -478,19 +491,30 @@ export default function App() {
         <div className="modal-overlay animate-in fade-in duration-300" onClick={() => { setSelectedTopicModal(null); setIsModalFullscreen(false); }}>
           <div className={`modal-content p-8 custom-scrollbar animate-in zoom-in-95 duration-300 ${isModalFullscreen ? 'modal-fullscreen' : ''}`} onClick={e => e.stopPropagation()}>
             <div className="absolute top-6 right-6 flex gap-2">
-              <button onClick={() => setIsModalFullscreen(!isModalFullscreen)} className="p-2 bg-slate-100 text-slate-400 rounded-full hover:bg-emerald-50 hover:text-emerald-500 transition-colors"><Icon name={isModalFullscreen ? "Minimize" : "Maximize"} size={20} /></button>
-              <button onClick={() => { setSelectedTopicModal(null); setIsModalFullscreen(false); }} className="p-2 bg-slate-100 text-slate-400 rounded-full hover:bg-red-50 hover:text-red-500 transition-colors"><Icon name="X" size={20} /></button>
+              <button onClick={() => setIsModalFullscreen(!isModalFullscreen)} className="p-2 bg-slate-100 text-slate-400 rounded-full hover:bg-emerald-50 hover:text-emerald-500 transition-colors">
+                <Icon name={isModalFullscreen ? "Minimize" : "Maximize"} size={20} />
+              </button>
+              <button onClick={() => { setSelectedTopicModal(null); setIsModalFullscreen(false); }} className="p-2 bg-slate-100 text-slate-400 rounded-full hover:bg-red-50 hover:text-red-500 transition-colors">
+                <Icon name="X" size={20} />
+              </button>
             </div>
+            
             <div className="text-center space-y-6">
-              <div className={`mx-auto w-16 h-16 rounded-2xl flex items-center justify-center font-black text-2xl border-4 ${getTopicBlock(selectedTopicModal.id).badge}`}>{selectedTopicModal.id.toString().startsWith('ud') ? selectedTopicModal.id.replace('ud','') : selectedTopicModal.id.toString().startsWith('p') ? selectedTopicModal.id.replace('p','') : selectedTopicModal.id}</div>
+              <div className={`mx-auto w-16 h-16 rounded-2xl flex items-center justify-center font-black text-2xl border-4 ${getTopicBlock(selectedTopicModal.id).badge}`}>
+                {selectedTopicModal.id.toString().startsWith('ud') ? selectedTopicModal.id.replace('ud','') : selectedTopicModal.id.toString().startsWith('p') ? selectedTopicModal.id.replace('p','') : selectedTopicModal.id}
+              </div>
               
               <div className="px-4">
-                <EditableText value={selectedTopicModal.title} onSave={(nv) => { 
-                  const listName = selectedTopicModal.id.toString().startsWith('p') ? 'planning' : selectedTopicModal.id.toString().startsWith('ud') ? 'units' : 'topics';
-                  const setter = listName === 'planning' ? setPlanning : listName === 'units' ? setUnits : setTopics;
-                  setter(prev => prev.map(t => t.id === selectedTopicModal.id ? { ...t, title: nv } : t));
-                  setSelectedTopicModal({...selectedTopicModal, title: nv});
-                }} className="text-2xl font-black text-slate-900 leading-tight block" />
+                <EditableText 
+                  value={selectedTopicModal.title} 
+                  onSave={(nv) => { 
+                    const listName = selectedTopicModal.id.toString().startsWith('p') ? 'planning' : selectedTopicModal.id.toString().startsWith('ud') ? 'units' : 'topics';
+                    const setter = listName === 'planning' ? setPlanning : listName === 'units' ? setUnits : setTopics;
+                    setter(prev => prev.map(t => t.id === selectedTopicModal.id ? { ...t, title: nv } : t));
+                    setSelectedTopicModal({...selectedTopicModal, title: nv});
+                  }} 
+                  className="text-2xl font-black text-slate-900 leading-tight block" 
+                />
               </div>
 
               {/* CURRICULAR ALIGNMENT */}
@@ -499,7 +523,14 @@ export default function App() {
                   {['ce', 'sb', 'do', 'cr', 'leg'].map(key => (
                     <div key={key} className="flex flex-col items-center">
                       <span className="text-[7px] font-black uppercase text-slate-400 mb-1">{key}</span>
-                      <EditableText value={selectedTopicModal[key]} onSave={(nv) => { setUnits(prev => prev.map(u => u.id === selectedTopicModal.id ? { ...u, [key]: nv } : u)); setSelectedTopicModal({...selectedTopicModal, [key]: nv}); }} className="px-2 py-1 bg-slate-50 text-slate-600 rounded-lg text-[9px] font-black border border-slate-100" />
+                      <EditableText 
+                        value={selectedTopicModal[key]} 
+                        onSave={(nv) => { 
+                          setUnits(prev => prev.map(u => u.id === selectedTopicModal.id ? { ...u, [key]: nv } : u)); 
+                          setSelectedTopicModal({...selectedTopicModal, [key]: nv}); 
+                        }} 
+                        className="px-2 py-1 bg-slate-50 text-slate-600 rounded-lg text-[9px] font-black border border-slate-100" 
+                      />
                     </div>
                   ))}
                 </div>
@@ -507,22 +538,50 @@ export default function App() {
                 <div className="flex justify-center gap-2 px-4 border-b border-slate-50 pb-6">
                   <div className="flex flex-col items-center">
                     <span className="text-[7px] font-black uppercase text-slate-400 mb-1">Legislación</span>
-                    <EditableText value={selectedTopicModal.leg || "LOMLOE"} onSave={(nv) => { setPlanning(prev => prev.map(p => p.id === selectedTopicModal.id ? { ...p, leg: nv } : p)); setSelectedTopicModal({...selectedTopicModal, leg: nv}); }} className="px-2 py-1 bg-blue-50 text-blue-600 rounded-lg text-[9px] font-black border border-blue-100" />
+                    <EditableText 
+                      value={selectedTopicModal.leg || "LOMLOE"} 
+                      onSave={(nv) => { 
+                        setPlanning(prev => prev.map(p => p.id === selectedTopicModal.id ? { ...p, leg: nv } : p)); 
+                        setSelectedTopicModal({...selectedTopicModal, leg: nv}); 
+                      }} 
+                      className="px-2 py-1 bg-blue-50 text-blue-600 rounded-lg text-[9px] font-black border border-blue-100" 
+                    />
                   </div>
                 </div>
               ) : (
                 <div className="flex flex-wrap justify-center gap-2 px-4 border-b border-slate-50 pb-6">
                   <div className="flex flex-col items-center">
                     <span className="text-[7px] font-black uppercase text-slate-400 mb-1">CE</span>
-                    <EditableText value={selectedTopicModal.ce} onSave={(nv) => { setTopics(prev => prev.map(t => t.id === selectedTopicModal.id ? { ...t, ce: nv } : t)); setSelectedTopicModal({...selectedTopicModal, ce: nv}); }} className="px-2 py-1 bg-emerald-50 text-emerald-600 rounded-lg text-[9px] font-black border border-emerald-100" />
+                    <EditableText 
+                      value={selectedTopicModal.ce} 
+                      onSave={(nv) => { 
+                        setTopics(prev => prev.map(t => t.id === selectedTopicModal.id ? { ...t, ce: nv } : t)); 
+                        setSelectedTopicModal({...selectedTopicModal, ce: nv}); 
+                      }} 
+                      className="px-2 py-1 bg-emerald-50 text-emerald-600 rounded-lg text-[9px] font-black border border-emerald-100" 
+                    />
                   </div>
                   <div className="flex flex-col items-center">
                     <span className="text-[7px] font-black uppercase text-slate-400 mb-1">SB</span>
-                    <EditableText value={selectedTopicModal.sb} onSave={(nv) => { setTopics(prev => prev.map(t => t.id === selectedTopicModal.id ? { ...t, sb: nv } : t)); setSelectedTopicModal({...selectedTopicModal, sb: nv}); }} className="px-2 py-1 bg-violet-50 text-violet-600 rounded-lg text-[9px] font-black border border-violet-100" />
+                    <EditableText 
+                      value={selectedTopicModal.sb} 
+                      onSave={(nv) => { 
+                        setTopics(prev => prev.map(t => t.id === selectedTopicModal.id ? { ...t, sb: nv } : t)); 
+                        setSelectedTopicModal({...selectedTopicModal, sb: nv}); 
+                      }} 
+                      className="px-2 py-1 bg-violet-50 text-violet-600 rounded-lg text-[9px] font-black border border-violet-100" 
+                    />
                   </div>
                   <div className="flex flex-col items-center">
                     <span className="text-[7px] font-black uppercase text-slate-400 mb-1">Leg</span>
-                    <EditableText value={selectedTopicModal.leg} onSave={(nv) => { setTopics(prev => prev.map(t => t.id === selectedTopicModal.id ? { ...t, leg: nv } : t)); setSelectedTopicModal({...selectedTopicModal, leg: nv}); }} className="px-2 py-1 bg-amber-50 text-amber-600 rounded-lg text-[9px] font-black border border-amber-100" />
+                    <EditableText 
+                      value={selectedTopicModal.leg} 
+                      onSave={(nv) => { 
+                        setTopics(prev => prev.map(t => t.id === selectedTopicModal.id ? { ...t, leg: nv } : t)); 
+                        setSelectedTopicModal({...selectedTopicModal, leg: nv}); 
+                      }} 
+                      className="px-2 py-1 bg-amber-50 text-amber-600 rounded-lg text-[9px] font-black border border-amber-100" 
+                    />
                   </div>
                 </div>
               )}
@@ -547,12 +606,21 @@ export default function App() {
                     } else {
                       setSelectedTopicModal({ ...selectedTopicModal, isEditing: true, tempNotes: selectedTopicModal.indexNotes });
                     }
-                  }} className={`p-2 rounded-xl transition-all ${selectedTopicModal.isEditing ? 'bg-emerald-500 text-white shadow-lg' : 'bg-slate-100 text-slate-500'}`}><Icon name={selectedTopicModal.isEditing ? "Check" : "Edit"} size={18} /></button>
+                  }} className={`p-2 rounded-xl transition-all ${selectedTopicModal.isEditing ? 'bg-emerald-500 text-white shadow-lg' : 'bg-slate-100 text-slate-500'}`}>
+                    <Icon name={selectedTopicModal.isEditing ? "Check" : "Edit"} size={18} />
+                  </button>
                 </div>
                 {selectedTopicModal.isEditing ? (
-                  <textarea autoFocus className="w-full h-96 p-4 bg-slate-50 rounded-2xl border-2 border-emerald-200 outline-none font-medium text-slate-700 leading-relaxed resize-none" value={selectedTopicModal.tempNotes} onChange={e => setSelectedTopicModal({ ...selectedTopicModal, tempNotes: e.target.value })} />
+                  <textarea 
+                    autoFocus 
+                    className="w-full h-96 p-4 bg-slate-50 rounded-2xl border-2 border-emerald-200 outline-none font-medium text-slate-700 leading-relaxed resize-none" 
+                    value={selectedTopicModal.tempNotes} 
+                    onChange={e => setSelectedTopicModal({ ...selectedTopicModal, tempNotes: e.target.value })} 
+                  />
                 ) : (
-                  <pre className="whitespace-pre-wrap font-sans text-slate-600 leading-relaxed bg-slate-50 p-6 rounded-2xl border-2 border-slate-100 min-h-[200px]">{selectedTopicModal.indexNotes || "Notes..."}</pre>
+                  <pre className="whitespace-pre-wrap font-sans text-slate-600 leading-relaxed bg-slate-50 p-6 rounded-2xl border-2 border-slate-100 min-h-[200px]">
+                    {selectedTopicModal.indexNotes || "Notes..."}
+                  </pre>
                 )}
               </div>
             </div>
@@ -607,11 +675,25 @@ export default function App() {
             <div className="grid grid-cols-2 gap-3">
               <div className="flex items-center justify-center gap-3 p-3 bg-orange-50 rounded-2xl border border-orange-100 text-orange-700 shadow-sm transition-all hover:bg-orange-100">
                 <Icon name="Flame" size={20} className="fill-orange-500" />
-                <div className="text-left leading-none"><p className="text-[10px] font-black uppercase opacity-60">Racha Diaria</p><p className="text-sm font-black">{streak} días</p></div>
+                <div className="text-left leading-none">
+                  <p className="text-[10px] font-black uppercase opacity-60">Racha Diaria</p>
+                  <p className="text-sm font-black">{streak} días</p>
+                </div>
               </div>
-              <button onClick={() => { const drawn = []; const pool = Array.from({length:69}, (_,i)=>i+1); for(let i=0;i<4;i++) drawn.push(pool.splice(Math.floor(Math.random()*pool.length),1)[0]); setLuckyNumbers(drawn.sort((a,b)=>a-b)); addPoints(5, "Lucky Numbers Draw"); }} className="flex items-center justify-center gap-3 p-3 bg-amber-50 rounded-2xl border border-amber-100 text-amber-700 shadow-sm active:scale-95 transition-all hover:bg-amber-100">
+              <button 
+                onClick={() => { 
+                  const drawn = []; 
+                  const pool = Array.from({length:69}, (_,i)=>i+1); 
+                  for(let i=0; i<4; i++) drawn.push(pool.splice(Math.floor(Math.random()*pool.length),1)[0]); 
+                  setLuckyNumbers(drawn.sort((a,b)=>a-b)); 
+                  // Sorteo NO da puntos
+                }} 
+                className="flex items-center justify-center gap-3 p-3 bg-amber-50 rounded-2xl border border-amber-100 text-amber-700 shadow-sm active:scale-95 transition-all hover:bg-amber-100"
+              >
                 <Icon name="Dices" size={20} />
-                <div className="flex gap-1">{luckyNumbers.map((n,i)=><span key={i} className="text-xs font-black w-6 h-6 bg-white border border-amber-200 rounded flex items-center justify-center">{n||'?'}</span>)}</div>
+                <div className="flex gap-1">
+                  {luckyNumbers.map((n,i)=><span key={i} className="text-xs font-black w-6 h-6 bg-white border border-amber-200 rounded flex items-center justify-center">{n||'?'}</span>)}
+                </div>
               </button>
             </div>
           </div>
@@ -620,7 +702,7 @@ export default function App() {
 
       {/* MAIN CONTAINER */}
       <main className="max-w-5xl mx-auto p-4 md:p-8">
-        {activeTab === 'map' && <ProgressMap points={points} level={Math.floor(points/200)+1} examDate={examDate} setExamDate={setExamDate} addPoints={addPoints} levelDates={levelDates} />}
+        {activeTab === 'map' && <ProgressMap points={points} level={Math.floor(points/200)+1} xp={points%200} examDate={examDate} setExamDate={setExamDate} addPoints={addPoints} levelDates={levelDates} />}
         {activeTab === 'syllabus' && <SyllabusView topics={topics} setTopics={setTopics} addPoints={addPoints} onOpenModal={setSelectedTopicModal} actionLogs={actionLogs} onReset={handleResetTopics} />}
         {activeTab === 'planning' && <PlanningHub planning={planning} setPlanning={setPlanning} units={units} setUnits={setUnits} addPoints={addPoints} submissionDate={submissionDate} setSubmissionDate={setSubmissionDate} actionLogs={actionLogs} onOpenModal={setSelectedTopicModal} onReset={handleResetPlanning} />}
         {activeTab === 'practico' && <PracticoView skills={skills} setSkills={setSkills} addPoints={addPoints} sessions={practicoSessions} setSessions={setPracticoSessions} onReset={handleResetPractico} />}
@@ -649,8 +731,81 @@ export default function App() {
 // 5. COMPONENTES DE VISTA (MINI-REACT)
 // ==========================================
 
+function ProgressMap({ points, level, xp, examDate, setExamDate, addPoints, levelDates }) {
+  const diff = new Date(examDate) - new Date();
+  const days = Math.ceil(diff / 864e5);
+  const [showDate, setShowDate] = useState(false);
+  const [ptsMenu, setPtsMenu] = useState('closed');
+
+  return (
+    <div className="space-y-12 max-w-xl mx-auto py-8 text-center animate-in fade-in">
+      <div className="grid grid-cols-2 gap-4">
+        
+        <div className="bento-card p-6 border-emerald-100 shadow-md relative overflow-hidden">
+          <Icon name="Calendar" className="absolute -right-4 -bottom-4 text-emerald-50 opacity-50" size={100} />
+          <p className="text-4xl font-black text-emerald-950 tabular-nums cursor-pointer relative z-10" onClick={() => setShowDate(!showDate)}>{days}</p>
+          <p className="text-[8px] font-black uppercase text-slate-400 mt-1 relative z-10">Days to D-Day</p>
+          {showDate && <input type="date" value={examDate} onChange={e=>{setExamDate(e.target.value); setShowDate(false);}} className="absolute top-2 left-2 bg-white text-[8px] font-black text-emerald-600 outline-none rounded p-1 shadow z-50" />}
+        </div>
+        
+        <div className="relative">
+          <div onClick={() => setPtsMenu(ptsMenu === 'closed' ? 'main' : 'closed')} className="bento-card p-6 border-emerald-100 shadow-md cursor-pointer h-full flex flex-col items-center justify-center hover:border-emerald-300">
+            <div className="flex justify-between items-end w-full mb-1">
+              <span className="text-sm font-black text-emerald-600 uppercase">Lvl {level}</span>
+              <span className="text-[10px] font-black text-emerald-500 tabular-nums">{xp || 0}/200</span>
+            </div>
+            <div className="w-full h-3 bg-slate-50 rounded-full overflow-hidden border shadow-inner">
+              <div className="h-full bg-emerald-500 transition-all duration-1000 shadow-lg" style={{width:`${((xp||0)/200)*100}%`}}/>
+            </div>
+          </div>
+          
+          {ptsMenu !== 'closed' && (
+            <div className="absolute top-full left-0 right-0 mt-2 bg-white border-2 border-emerald-100 rounded-2xl p-3 shadow-2xl z-50 flex flex-col gap-2 animate-in zoom-in-95">
+              {ptsMenu === 'main' && (
+                <div className="flex gap-2">
+                  <button onClick={(e) => { e.stopPropagation(); setPtsMenu('add'); }} className="flex-1 py-3 bg-emerald-50 text-emerald-600 rounded-xl font-black hover:bg-emerald-100 transition-colors"><Icon name="Plus" size={20} className="mx-auto" /></button>
+                  <button onClick={(e) => { e.stopPropagation(); setPtsMenu('sub'); }} className="flex-1 py-3 bg-red-50 text-red-600 rounded-xl font-black hover:bg-red-100 transition-colors"><Icon name="Minus" size={20} className="mx-auto" /></button>
+                </div>
+              )}
+              {ptsMenu === 'add' && (
+                <div className="grid grid-cols-2 gap-2">
+                  {[5, 10, 15, 25].map(v => (
+                    <button key={v} onClick={(e) => { e.stopPropagation(); addPoints(v, `+${v} Pts (Manual)`); setPtsMenu('closed'); }} className="p-2 bg-emerald-500 text-white rounded-xl font-black text-xs hover:bg-emerald-600 transition-colors">+{v}</button>
+                  ))}
+                  <button onClick={(e) => { e.stopPropagation(); setPtsMenu('main'); }} className="col-span-2 p-2 bg-slate-100 text-slate-500 rounded-xl text-[10px] font-black uppercase hover:bg-slate-200 transition-colors">Volver</button>
+                </div>
+              )}
+              {ptsMenu === 'sub' && (
+                <div className="grid grid-cols-2 gap-2">
+                  {[5, 10, 15, 25].map(v => (
+                    <button key={v} onClick={(e) => { e.stopPropagation(); addPoints(-v, `-${v} Pts (Manual)`); setPtsMenu('closed'); }} className="p-2 bg-red-500 text-white rounded-xl font-black text-xs hover:bg-red-600 transition-colors">-{v}</button>
+                  ))}
+                  <button onClick={(e) => { e.stopPropagation(); setPtsMenu('main'); }} className="col-span-2 p-2 bg-slate-100 text-slate-500 rounded-xl text-[10px] font-black uppercase hover:bg-slate-200 transition-colors">Volver</button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+      </div>
+
+      <div className="flex flex-col items-center gap-16 relative mt-10">
+        <div className="absolute top-0 bottom-0 w-2 bg-emerald-50 rounded-full -z-10" />
+        {[level+1, level, level-1, level-2].filter(l=>l>0).map(l => (
+          <div key={l} className={`w-20 h-20 rounded-full border-4 flex flex-col items-center justify-center transition-all relative ${l === level ? 'bg-white border-emerald-500 scale-125 shadow-xl ring-8 ring-emerald-50' : 'bg-slate-50 border-slate-200 text-slate-300 opacity-60'}`}>
+            <span className="text-2xl font-black tabular-nums">{l}</span>
+            {levelDates && levelDates[l] && <span className={`absolute -bottom-5 text-[7px] font-black uppercase tracking-widest whitespace-nowrap ${l === level ? 'text-emerald-500' : 'text-slate-400'}`}>{levelDates[l]}</span>}
+            {l === level && <Icon name="Turtle" size={24} className="absolute -top-8 text-emerald-600 animate-bounce" />}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function SyllabusView({ topics, setTopics, addPoints, onOpenModal, actionLogs, onReset }) {
   const [search, setSearch] = useState("");
+  
   const updateField = (id, field, value, pts) => {
     setTopics(prev => prev.map(t => {
       if (t.id === id) {
@@ -688,7 +843,7 @@ function SyllabusView({ topics, setTopics, addPoints, onOpenModal, actionLogs, o
       <div className="flex flex-col sm:flex-row justify-between items-center gap-4 bg-white/50 backdrop-blur p-4 rounded-3xl border border-white/50 shadow-sm">
         <div className="flex items-center gap-3"><Icon name="BookOpen" className="text-amber-600" /><h2 className="text-2xl font-black text-slate-950">Temas</h2></div>
         <div className="flex items-center gap-3 w-full sm:w-auto">
-          <div className="relative flex-1 sm:w-64"><Icon name="Search" size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" /><input placeholder="Filter by title or number..." value={search} onChange={e=>setSearch(e.target.value)} className="w-full bg-white border-2 border-slate-100 rounded-2xl pl-10 pr-4 py-2 text-sm font-black outline-none focus:border-emerald-200 transition-all" /></div>
+          <div className="relative flex-1 sm:w-64"><Icon name="Search" size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" /><input placeholder="Buscar por título o número..." value={search} onChange={e=>setSearch(e.target.value)} className="w-full bg-white border-2 border-slate-100 rounded-2xl pl-10 pr-4 py-2 text-sm font-black outline-none focus:border-emerald-200 transition-all" /></div>
           <button onClick={onReset} className="px-3 py-2 bg-red-50 text-red-600 font-black text-[10px] rounded-xl hover:bg-red-100 transition-all shrink-0 uppercase tracking-widest">Reset</button>
         </div>
       </div>
@@ -704,6 +859,7 @@ function SyllabusView({ topics, setTopics, addPoints, onOpenModal, actionLogs, o
           return (
             <div key={t.id} className={`bento-card p-5 border-2 transition-all duration-300 relative overflow-hidden ${cardStyle}`}>
               <div onClick={() => cyclePriority(t.id, t.priority)} className={`absolute left-0 top-0 bottom-0 w-2.5 ${getPriorityColor(t)} cursor-pointer transition-all hover:w-4 z-10`} />
+              
               <div className="flex items-center justify-between mb-4 pl-4">
                 <div className="flex items-center gap-4">
                   <div onClick={() => onOpenModal(t)} className={`w-12 h-12 rounded-xl flex items-center justify-center font-black text-lg border-2 cursor-pointer active:scale-90 transition-transform ${badgeStyle}`}>{t.id}</div>
@@ -717,13 +873,17 @@ function SyllabusView({ topics, setTopics, addPoints, onOpenModal, actionLogs, o
                   <button onClick={()=>updateField(t.id,'discarded',!t.discarded, 0)} className={`p-2 rounded-xl transition-all active:scale-90 ${t.discarded ? '!text-slate-600 !bg-slate-300 shadow-inner' : (t.finished ? '!text-white !bg-black/20' : 'text-slate-300 bg-slate-50 hover:bg-slate-100')}`}><Icon name="Archive" size={16}/></button>
                 </div>
               </div>
+
               <div className="grid grid-cols-2 gap-2 mb-4 pl-4">
-                <button onClick={() => updateField(t.id, 'redactado', !t.redactado, t.redactado ? -15 : 15)} className={`py-2.5 rounded-2xl text-[10px] font-black border-2 transition-all active:scale-95 ${t.redactado ? (t.finished ? '!bg-white !text-slate-900 !border-transparent' : 'bg-emerald-500 text-white border-transparent shadow-md') : (t.finished ? '!bg-black/20 !text-white !border-transparent' : 'bg-white text-slate-400 border-slate-50')}`}>WRITTEN</button>
+                <button onClick={() => updateField(t.id, 'redactado', !t.redactado, t.redactado ? -15 : 15)} className={`py-2.5 rounded-2xl text-[10px] font-black border-2 transition-all active:scale-95 ${t.redactado ? (t.finished ? '!bg-white !text-slate-900 !border-transparent' : 'bg-emerald-500 text-white border-transparent shadow-md') : (t.finished ? '!bg-black/20 !text-white !border-transparent' : 'bg-white text-slate-400 border-slate-50')}`}>
+                  WRITTEN
+                </button>
                 <button onClick={() => { const next = (t.estudiado + 1) % 4; updateField(t.id, 'estudiado', next, next === 0 ? -75 : 25); }} className={`py-2.5 rounded-2xl text-[10px] font-black border-2 transition-all relative overflow-hidden active:scale-95 ${t.estudiado > 0 ? (t.finished ? '!bg-white !text-slate-900 !border-transparent' : 'bg-orange-500 text-white border-transparent shadow-md') : (t.finished ? '!bg-black/20 !text-white !border-transparent' : 'bg-white text-slate-400 border-slate-50')}`}>
                   {t.estudiado > 0 && t.estudiado < 3 && !t.finished && <div className="absolute left-0 top-0 bottom-0 bg-white/20 transition-all" style={{ width: `${(t.estudiado/3)*100}%` }} />}
                   <span className="relative z-10 uppercase">Studied {t.estudiado > 0 ? `(${t.estudiado}/3)` : ''}</span>
                 </button>
               </div>
+
               <div className="grid grid-cols-3 gap-2 pl-4">
                 <CounterPill label="REVIEWS" count={t.reviews} onAdd={()=>updateField(t.id,'reviews',Number(t.reviews||0)+1,10)} onSub={()=>updateField(t.id,'reviews',Math.max(0,Number(t.reviews||0)-1),-10)} />
                 <CounterPill label="MOCKS" count={t.mocks} onAdd={()=>updateField(t.id,'mocks',Number(t.mocks||0)+1,40)} onSub={()=>updateField(t.id,'mocks',Math.max(0,Number(t.mocks||0)-1),-40)} />
@@ -811,8 +971,9 @@ function PlanningHub({ planning, setPlanning, units, setUnits, addPoints, submis
         {[...planning, ...units].map(item => {
           const isU = item.id.toString().startsWith('ud');
           return (
-            <div key={item.id} className={`bento-card bg-white p-5 border-2 ${isU ? 'border-teal-100 hover:border-teal-300' : 'border-blue-100 hover:border-blue-300'} transition-all`}>
+            <div key={item.id} className={`bento-card bg-white p-5 border-2 ${isU ? 'border-teal-100 hover:border-teal-300' : 'border-blue-100 hover:border-blue-300'} transition-all relative overflow-hidden`}>
               <div onClick={() => cyclePriority(item.id, item.priority, isU)} className={`absolute left-0 top-0 bottom-0 w-2.5 ${getPriorityColor(item, isU)} cursor-pointer transition-all hover:w-4 z-10`} />
+              
               <div className="flex justify-between items-center mb-4 pl-3">
                 <div className="flex items-center gap-4 flex-1">
                   <div onClick={() => onOpenModal(item)} className={`w-12 h-12 rounded-2xl flex items-center justify-center font-black text-sm border-2 cursor-pointer shadow-sm active:scale-90 transition-transform shrink-0 ${isU ? 'bg-teal-50 text-teal-600 border-teal-100' : 'bg-blue-50 text-blue-600 border-blue-100'}`}>{isU ? item.id.replace('ud','') : item.id.replace('p','')}</div>
@@ -820,6 +981,7 @@ function PlanningHub({ planning, setPlanning, units, setUnits, addPoints, submis
                 </div>
                 <button onClick={(e)=>{e.stopPropagation(); if(window.confirm("¿Eliminar sección?")) (isU?setUnits:setPlanning)(p=>p.filter(x=>x.id!==item.id))}} className="text-slate-200 hover:text-red-500 p-2 transition-colors"><Icon name="Trash2" size={16}/></button>
               </div>
+
               <div className="pl-3">
                 <button onClick={()=>{const ns = (item.status===10) ? 0 : item.status+1; upd(item.id, isU?units:planning, isU?setUnits:setPlanning, 'status', ns, ns===0 ? -(item.status*15) : 15);}} className={`w-full py-2 px-3 rounded-xl text-[10px] font-black border-2 transition-all relative overflow-hidden text-center active:scale-95 ${item.status > 0 ? (item.status===10 ? (isU ? 'bg-emerald-500 text-white border-transparent shadow-md' : 'bg-emerald-500 text-white border-transparent shadow-md') : (item.status <= 3 ? 'bg-amber-50 text-amber-700 border-amber-200' : item.status <= 6 ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-purple-50 text-purple-700 border-purple-200')) : 'bg-white text-slate-400 border-slate-100 shadow-sm'}`}>
                   {item.status > 0 && item.status < 10 && <div className={`absolute left-0 top-0 bottom-0 opacity-20 transition-all duration-500 ${item.status <= 3 ? 'bg-amber-500' : item.status <= 6 ? 'bg-blue-500' : 'bg-purple-500'}`} style={{ width: `${((item.status % 3 || 3)/3)*100}%` }} />}
@@ -870,49 +1032,45 @@ function PracticoView({ skills, setSkills, addPoints, sessions, setSessions, onR
   );
 }
 
-function ProgressMap({ points, level, xp, examDate, setExamDate, addPoints, levelDates }) {
-  const diff = new Date(examDate) - new Date();
-  const days = Math.ceil(diff / 864e5);
-  const [showDate, setShowDate] = useState(false);
-  const [showPts, setShowPts] = useState(false);
+function NoteItem({ n, notes, setNotes }) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [temp, setTemp] = useState(n.text);
   return (
-    <div className="space-y-12 max-w-xl mx-auto py-8 text-center animate-in fade-in">
-      <div className="grid grid-cols-2 gap-4">
-        <div className="bento-card p-6 border-emerald-100 shadow-md relative overflow-hidden">
-          <Icon name="Calendar" className="absolute -right-4 -bottom-4 text-emerald-50 opacity-50" size={100} />
-          <p className="text-4xl font-black text-emerald-950 tabular-nums cursor-pointer relative z-10" onClick={() => setShowDate(!showDate)}>{days}</p>
-          <p className="text-[8px] font-black uppercase text-slate-400 mt-1 relative z-10">Days to D-Day</p>
-          {showDate && <input type="date" value={examDate} onChange={e=>{setExamDate(e.target.value); setShowDate(false);}} className="absolute top-2 left-2 bg-white text-[8px] font-black text-emerald-600 outline-none rounded p-1 shadow z-50" />}
-        </div>
-        <div className="relative" onClick={() => setShowPts(!showPts)}>
-          <div className="bento-card p-6 border-emerald-100 shadow-md cursor-pointer h-full flex flex-col items-center justify-center hover:border-emerald-300">
-            <div className="flex justify-between items-end w-full mb-1">
-              <span className="text-sm font-black text-emerald-600 uppercase">Lvl {level}</span>
-              <span className="text-[10px] font-black text-emerald-500 tabular-nums">{xp || 0}/200</span>
-            </div>
-            <div className="w-full h-3 bg-slate-50 rounded-full overflow-hidden border shadow-inner">
-              <div className="h-full bg-emerald-500 transition-all duration-1000 shadow-lg" style={{width:`${((xp||0)/200)*100}%`}}/>
-            </div>
-          </div>
-          {showPts && (
-            <div className="absolute top-full left-0 right-0 mt-2 bg-white border-2 border-emerald-100 rounded-2xl p-3 shadow-2xl z-50 flex gap-2 animate-in zoom-in-95">
-              <button onClick={(e) => { e.stopPropagation(); addPoints(-5, 'Ajuste'); setShowPts(false); }} className="flex-1 flex flex-col items-center p-2 bg-red-50 text-red-600 rounded-xl hover:bg-red-100 active:scale-95 transition-all"><Icon name="Minus" size={16} /><span className="text-[8px] font-black mt-1">-5</span></button>
-              <button onClick={(e) => { e.stopPropagation(); addPoints(10, '30 min session'); setShowPts(false); }} className="flex-1 flex flex-col items-center p-2 bg-emerald-50 text-emerald-700 rounded-xl hover:bg-emerald-100 active:scale-95 transition-all"><Icon name="Clock" size={16} /><span className="text-[8px] font-black mt-1">+10</span></button>
-              <button onClick={(e) => { e.stopPropagation(); addPoints(25, '1 hour study'); setShowPts(false); }} className="flex-1 flex flex-col items-center p-2 bg-emerald-600 text-white rounded-xl shadow-md hover:bg-emerald-700 active:scale-95 transition-all"><Icon name="Target" size={16} /><span className="text-[8px] font-black mt-1">+25</span></button>
-              <button onClick={(e) => { e.stopPropagation(); addPoints(5, 'Bonus'); setShowPts(false); }} className="flex-1 flex flex-col items-center p-2 bg-amber-50 text-amber-600 rounded-xl hover:bg-amber-100 active:scale-95 transition-all"><Icon name="Star" size={16} /><span className="text-[8px] font-black mt-1">+5</span></button>
-            </div>
-          )}
+    <div style={{transform:`rotate(${n.rot}deg)`}} className={`relative p-5 aspect-square rounded shadow-lg border-t-[8px] ${n.color.bg} ${n.color.border} group transition-all hover:scale-105 shadow-yellow-100`}>
+      <Icon name="Pin" size={16} className={`absolute top-2 left-1/2 -translate-x-1/2 opacity-20 ${n.color.pin}`} />
+      <div className="pt-2 h-full">
+        {isEditing ? (
+          <textarea autoFocus value={temp} onChange={e=>setTemp(e.target.value)} onBlur={() => { if(temp.trim()) setNotes(notes.map(x=>x.id===n.id?{...x,text:temp}:x)); setIsEditing(false); }} className={`w-full h-full bg-transparent resize-none outline-none text-[11px] font-black ${n.color.text} custom-scrollbar`} />
+        ) : (
+          <p onClick={()=>setIsEditing(true)} className={`text-[11px] font-black h-full ${n.color.text} text-left overflow-y-auto custom-scrollbar cursor-pointer`}>{n.text}</p>
+        )}
+      </div>
+      <button onClick={()=>setNotes(notes.filter(x=>x.id!==n.id))} className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-500 transition-all"><Icon name="Trash2" size={14}/></button>
+    </div>
+  );
+}
+
+function NotesView({ notes, setNotes }) {
+  const [txt, setTxt] = useState("");
+  const [selColor, setSelColor] = useState({ id: 'yellow', bg: 'bg-yellow-200', border: 'border-yellow-300', text: 'text-yellow-900', pin: 'text-yellow-600' });
+  const NOTE_COLORS = [
+    { id: 'yellow', bg: 'bg-yellow-200', border: 'border-yellow-300', text: 'text-yellow-900', pin: 'text-yellow-600' },
+    { id: 'blue', bg: 'bg-blue-200', border: 'border-blue-300', text: 'text-blue-900', pin: 'text-blue-600' },
+    { id: 'green', bg: 'bg-green-200', border: 'border-green-300', text: 'text-green-900', pin: 'text-green-600' },
+    { id: 'pink', bg: 'bg-pink-200', border: 'border-pink-300', text: 'text-pink-900', pin: 'text-pink-600' },
+    { id: 'purple', bg: 'bg-purple-200', border: 'border-purple-300', text: 'text-purple-900', pin: 'text-purple-600' },
+  ];
+  return (
+    <div className="space-y-6 text-left">
+      <div className="bento-card bg-white p-6 border-yellow-100 shadow-xl shadow-yellow-50">
+        <textarea placeholder="Sticky idea..." value={txt} onChange={e=>setTxt(e.target.value)} className="w-full h-24 bg-transparent border-none font-bold outline-none resize-none text-slate-800" />
+        <div className="flex justify-between items-center pt-4 border-t border-slate-50">
+          <div className="flex gap-2">{NOTE_COLORS.map(c=>(<button key={c.id} onClick={()=>setSelColor(c)} className={`w-6 h-6 rounded-full border-2 transition-all ${c.bg} ${selColor.id===c.id ? 'border-slate-800 scale-125 shadow-md':'border-white hover:border-slate-200'}`} />))}</div>
+          <button onClick={()=>{if(txt.trim()){setNotes([{id:Date.now().toString(),text:txt,color:selColor,rot:Math.floor(Math.random()*6)-3}, ...notes]); setTxt("");}}} className="px-6 py-2 bg-yellow-500 text-white rounded-xl font-black text-xs shadow-md active:scale-95 transition-transform">PIN IT</button>
         </div>
       </div>
-      <div className="flex flex-col items-center gap-16 relative mt-10">
-        <div className="absolute top-0 bottom-0 w-2 bg-emerald-50 rounded-full -z-10" />
-        {[level+1, level, level-1, level-2].filter(l=>l>0).map(l => (
-          <div key={l} className={`w-20 h-20 rounded-full border-4 flex flex-col items-center justify-center transition-all relative ${l === level ? 'bg-white border-emerald-500 scale-125 shadow-xl ring-8 ring-emerald-50' : 'bg-slate-50 border-slate-200 text-slate-300 opacity-60'}`}>
-            <span className="text-2xl font-black tabular-nums">{l}</span>
-            {levelDates && levelDates[l] && <span className={`absolute -bottom-5 text-[7px] font-black uppercase tracking-widest whitespace-nowrap ${l === level ? 'text-emerald-500' : 'text-slate-400'}`}>{levelDates[l]}</span>}
-            {l === level && <Icon name="Turtle" size={24} className="absolute -top-8 text-emerald-600 animate-bounce" />}
-          </div>
-        ))}
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-6">
+        {notes.map(n => <NoteItem key={n.id} n={n} notes={notes} setNotes={setNotes} />)}
       </div>
     </div>
   );
@@ -1009,19 +1167,6 @@ function BadgesView({ points, streak, maxStreak, topics, planning, units, skills
   );
 }
 
-function NotesView({ notes, setNotes }) {
-  const [txt, setTxt] = useState("");
-  const [selColor, setSelColor] = useState({ id: 'yellow', bg: 'bg-yellow-200', border: 'border-yellow-300', text: 'text-yellow-900', pin: 'text-yellow-600' });
-  const NOTE_COLORS = [
-    { id: 'yellow', bg: 'bg-yellow-200', border: 'border-yellow-300', text: 'text-yellow-900', pin: 'text-yellow-600' },
-    { id: 'blue', bg: 'bg-blue-200', border: 'border-blue-300', text: 'text-blue-900', pin: 'text-blue-600' },
-    { id: 'green', bg: 'bg-green-200', border: 'border-green-300', text: 'text-green-900', pin: 'text-green-600' },
-    { id: 'pink', bg: 'bg-pink-200', border: 'border-pink-300', text: 'text-pink-900', pin: 'text-pink-600' },
-    { id: 'purple', bg: 'bg-purple-200', border: 'border-purple-300', text: 'text-purple-900', pin: 'text-purple-600' },
-  ];
-  return (<div className="space-y-6 text-left"><div className="bento-card bg-white p-6 border-yellow-100 shadow-xl shadow-yellow-50"><textarea placeholder="Sticky idea..." value={txt} onChange={e=>setTxt(e.target.value)} className="w-full h-24 bg-transparent border-none font-bold outline-none resize-none text-slate-800" /><div className="flex justify-between items-center pt-4 border-t border-slate-50"><div className="flex gap-2">{NOTE_COLORS.map(c=>(<button key={c.id} onClick={()=>setSelColor(c)} className={`w-6 h-6 rounded-full border-2 transition-all ${c.bg} ${selColor.id===c.id ? 'border-slate-800 scale-125 shadow-md':'border-white hover:border-slate-200'}`} />))}</div><button onClick={()=>{if(txt.trim()){setNotes([{id:Date.now().toString(),text:txt,color:selColor,rot:Math.floor(Math.random()*6)-3}, ...notes]); setTxt("");}}} className="px-6 py-2 bg-yellow-500 text-white rounded-xl font-black text-xs shadow-md active:scale-95 transition-transform">PIN IT</button></div></div><div className="grid grid-cols-2 sm:grid-cols-3 gap-6">{notes.map(n=>(<div key={n.id} style={{transform:`rotate(${n.rot}deg)`}} className={`relative p-5 aspect-square rounded shadow-lg border-t-[8px] ${n.color.bg} ${n.color.border} group transition-all hover:scale-105 shadow-yellow-100`}><Icon name="Pin" size={16} className={`absolute top-2 left-1/2 -translate-x-1/2 opacity-20 ${n.color.pin}`} /><p className={`text-[11px] font-black h-full ${n.color.text} text-left overflow-y-auto custom-scrollbar`}>{n.text}</p><button onClick={()=>setNotes(notes.filter(x=>x.id!==n.id))} className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-500 transition-all"><Icon name="Trash2" size={14}/></button></div>))}</div></div>);
-}
-
 function StatsView({ actionLogs, undoAction, topics, planning, units }) {
   const [tab, setTab] = useState('hist');
   const [statsView, setStatsView] = useState('syllabus');
@@ -1064,7 +1209,7 @@ function StatsView({ actionLogs, undoAction, topics, planning, units }) {
         </div>
       </div>
       <div id="activity-log" className="flex justify-between items-center bg-white/50 backdrop-blur px-4 py-2 rounded-2xl overflow-x-auto shadow-sm border border-white/50"><h2 className="text-xl font-black text-violet-950">Activity Log</h2><div className="flex bg-slate-200 p-1 rounded-xl shrink-0">{['hist','week','month'].map(t=>(<button key={t} onClick={()=>setTab(t)} className={`px-3 py-1 text-[10px] font-black rounded-lg uppercase transition-all ${tab===t?'bg-white shadow-md text-violet-600':'text-slate-500'}`}>{t==='hist'?'History':t==='week'?'Weeks':'Months'}</button>))}</div></div>
-      <div className="min-h-[400px]">{tab === 'hist' ? (<div className="space-y-3 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">{actionLogs.length === 0 ? <p className="italic text-slate-300 font-bold">No records found.</p> : actionLogs.slice(0,50).map(l=>(<div key={l.id} className="bento-card bg-white p-4 flex justify-between items-center border-violet-50 hover:border-violet-200 transition-all"><div className="text-left leading-tight"><p className="text-sm font-black text-slate-800 line-clamp-1">{l.description}</p><p className="text-[9px] font-bold text-slate-400 uppercase mt-1">{new Date(l.timestamp).toLocaleString()}</p></div><div className="flex items-center gap-3"><span className="text-xs font-black text-violet-700 bg-violet-50 px-2 py-1 rounded-lg shadow-inner">{l.amount > 0 ? '+'+l.amount : l.amount}</span><button onClick={()=>undoAction(l.id)} className="text-slate-300 hover:text-red-500 transition-colors" title="Undo"><Icon name="Undo2" size={16}/></button></div></div>))}</div>) : (<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">{groupLogs(tab).map(([key, data]) => (<div key={key} className="bento-card bg-white p-6 border-violet-100 flex justify-between items-center shadow-md"><div className="text-left leading-tight"><p className="text-xs font-black text-violet-900 uppercase tracking-tighter">{key}</p><p className="text-[10px] font-bold text-slate-400">{data.count} actions</p></div><div className="text-right"><p className="text-2xl font-black text-violet-600">+{data.pts}</p><p className="text-[8px] font-black opacity-40 uppercase tracking-widest">Points</p></div></div>))}</div>)}</div>
+      <div className="min-h-[400px]">{tab === 'hist' ? (<div className="space-y-3 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">{actionLogs.length === 0 ? <p className="italic text-slate-300 font-bold">No records found.</p> : actionLogs.slice(0,50).map(l=>(<div key={l.id} className="bento-card bg-white p-4 flex justify-between items-center border-violet-50 hover:border-violet-200 transition-all"><div className="text-left leading-tight"><p className="text-sm font-black text-slate-800 line-clamp-1">{l.description}</p><p className="text-[9px] font-bold text-slate-400 uppercase mt-1">{new Date(l.timestamp).toLocaleString()}</p></div><div className="flex items-center gap-3"><span className={`text-xs font-black px-2 py-1 rounded-lg shadow-inner ${l.amount > 0 ? 'text-violet-700 bg-violet-50' : l.amount < 0 ? 'text-red-700 bg-red-50' : 'text-slate-500 bg-slate-100'}`}>{l.amount > 0 ? '+'+l.amount : l.amount}</span><button onClick={()=>undoAction(l.id)} className="text-slate-300 hover:text-red-500 transition-colors" title="Undo"><Icon name="Undo2" size={16}/></button></div></div>))}</div>) : (<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">{groupLogs(tab).map(([key, data]) => (<div key={key} className="bento-card bg-white p-6 border-violet-100 flex justify-between items-center shadow-md"><div className="text-left leading-tight"><p className="text-xs font-black text-violet-900 uppercase tracking-tighter">{key}</p><p className="text-[10px] font-bold text-slate-400">{data.count} actions</p></div><div className="text-right"><p className="text-2xl font-black text-violet-600">{data.pts > 0 ? '+'+data.pts : data.pts}</p><p className="text-[8px] font-black opacity-40 uppercase tracking-widest">Points</p></div></div>))}</div>)}</div>
     </div>
   );
 }
