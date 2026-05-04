@@ -52,7 +52,7 @@ const Icon = ({ name, size = 24, strokeWidth = 2, className = "" }) => {
 };
 
 // ==========================================
-// 2. DATA MAPPING
+// 2. DATA MAPPING (LOMLOE CV)
 // ==========================================
 const getCurricularMapping = (id) => {
   let ce = "1, 2, 3, 4, 5, 6";
@@ -191,7 +191,7 @@ const INITIAL_PLANNING = [
 ];
 
 const INITIAL_UNITS = Array.from({ length: 6 }, (_, i) => ({ 
-  id: `ud${i + 1}`, title: `Unidad Didáctica ${i + 1}`, status: 0, indexNotes: "", priority: null, ce: "", sb: "", do: "", cr: "", leg: "LOMLOE"
+  id: `ud${i + 1}`, title: `Unidad Didáctica ${i + 1}`, status: 0, indexNotes: "", priority: null, ce: "", sb: "", do: "", cr: ""
 }));
 
 const INITIAL_SKILLS = [
@@ -296,7 +296,9 @@ export default function App() {
 
   const [timeLeft, setTimeLeft] = useState(0);
   const [isTimerActive, setIsTimerActive] = useState(false);
+  const [endTime, setEndTime] = useState(null);
   const [showTimerMenu, setShowTimerMenu] = useState(false);
+
   const [luckyNumbers, setLuckyNumbers] = useState([0,0,0,0]);
   const [activeDeckId, setActiveDeckId] = useState(null);
   const [examDeck, setExamDeck] = useState(null);
@@ -464,10 +466,22 @@ export default function App() {
 
   useEffect(() => {
     let int;
-    if (isTimerActive && timeLeft > 0) int = setInterval(() => setTimeLeft(t => t - 1), 1000);
-    else if (timeLeft === 0) setIsTimerActive(false);
+    if (isTimerActive && endTime) {
+      const checkTime = () => {
+        const remaining = Math.max(0, Math.round((endTime - Date.now()) / 1000));
+        setTimeLeft(remaining);
+        if (remaining <= 0) {
+          setIsTimerActive(false);
+          setEndTime(null);
+        }
+      };
+      checkTime();
+      int = setInterval(checkTime, 1000);
+    } else if (!isTimerActive && timeLeft === 0) {
+      setEndTime(null);
+    }
     return () => clearInterval(int);
-  }, [isTimerActive, timeLeft]);
+  }, [isTimerActive, endTime]);
 
   const currentLevel = Math.floor(points/200)+1;
 
@@ -479,6 +493,7 @@ export default function App() {
       <style>{`
         body { background-color: #f8fafc; background-image: radial-gradient(#fbbf24 2px, transparent 2px), radial-gradient(#f472b6 2px, transparent 2px), radial-gradient(#60a5fa 2px, transparent 2px), radial-gradient(#34d399 2px, transparent 2px); background-size: 80px 80px; background-position: 0 0, 40px 40px, 20px 60px, 60px 20px; }
         .bento-card { border-radius: 28px; border: 2px solid #f1f5f9; box-shadow: 0 4px 15px rgba(0,0,0,0.05); transition: all 0.3s ease; background: white; }
+        .map-bubble { width: 80px; height: 80px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; border: 6px solid white; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
         .modal-overlay { background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(8px); position: fixed; inset: 0; z-index: 500; display: flex; align-items: center; justify-content: center; padding: 1rem; }
         .modal-content { background: white; width: 100%; max-width: 600px; max-height: 85vh; border-radius: 40px; overflow-y: auto; position: relative; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
         .modal-fullscreen { max-width: 100vw !important; max-height: 100vh !important; height: 100vh !important; border-radius: 0 !important; }
@@ -649,10 +664,10 @@ export default function App() {
               {showTimerMenu && (
                 <div className="absolute top-full right-0 mt-2 bg-white border-2 border-slate-100 rounded-2xl p-4 shadow-2xl z-[200] w-64 animate-in zoom-in-95">
                   <div className="grid grid-cols-2 gap-2 mb-3">
-                    <button onClick={()=>{setTimeLeft(7200); setIsTimerActive(true); setShowTimerMenu(false)}} className="p-2 bg-slate-50 hover:bg-emerald-50 rounded-xl text-[10px] font-black uppercase">2H Focus</button>
-                    <button onClick={()=>{setTimeLeft(3600); setIsTimerActive(true); setShowTimerMenu(false)}} className="p-2 bg-slate-50 hover:bg-emerald-50 rounded-xl text-[10px] font-black uppercase">1H Plan</button>
+                    <button onClick={()=>{setTimeLeft(7200); setEndTime(Date.now() + 7200000); setIsTimerActive(true); setShowTimerMenu(false)}} className="p-2 bg-slate-50 hover:bg-emerald-50 rounded-xl text-[10px] font-black uppercase">2H Focus</button>
+                    <button onClick={()=>{setTimeLeft(3600); setEndTime(Date.now() + 3600000); setIsTimerActive(true); setShowTimerMenu(false)}} className="p-2 bg-slate-50 hover:bg-emerald-50 rounded-xl text-[10px] font-black uppercase">1H Plan</button>
                   </div>
-                  <button onClick={()=>{setTimeLeft(0); setIsTimerActive(false); setShowTimerMenu(false)}} className="w-full p-2 bg-red-50 text-red-600 rounded-xl text-[10px] font-black uppercase tracking-widest">Reset Timer</button>
+                  <button onClick={()=>{setTimeLeft(0); setEndTime(null); setIsTimerActive(false); setShowTimerMenu(false)}} className="w-full p-2 bg-red-50 text-red-600 rounded-xl text-[10px] font-black uppercase tracking-widest">Reset Timer</button>
                 </div>
               )}
             </div>
@@ -686,7 +701,6 @@ export default function App() {
                   const pool = Array.from({length:69}, (_,i)=>i+1); 
                   for(let i=0; i<4; i++) drawn.push(pool.splice(Math.floor(Math.random()*pool.length),1)[0]); 
                   setLuckyNumbers(drawn.sort((a,b)=>a-b)); 
-                  // Sorteo NO da puntos
                 }} 
                 className="flex items-center justify-center gap-3 p-3 bg-amber-50 rounded-2xl border border-amber-100 text-amber-700 shadow-sm active:scale-95 transition-all hover:bg-amber-100"
               >
@@ -836,7 +850,7 @@ function SyllabusView({ topics, setTopics, addPoints, onOpenModal, actionLogs, o
     return diff < 7 ? 'bg-emerald-500/40' : diff < 15 ? 'bg-amber-500/40' : 'bg-red-500/40';
   };
 
-  const displayList = topics.filter(t => !t.discarded && (t.title.toLowerCase().includes(search.toLowerCase()) || t.id.toString().includes(search))).sort((a, b) => a.discarded !== b.discarded ? (a.discarded ? 1 : -1) : a.id - b.id);
+  const displayList = topics.filter(t => (t.title.toLowerCase().includes(search.toLowerCase()) || t.id.toString().includes(search))).sort((a, b) => a.discarded !== b.discarded ? (a.discarded ? 1 : -1) : a.id - b.id);
 
   return (
     <div className="space-y-6 animate-in fade-in">
