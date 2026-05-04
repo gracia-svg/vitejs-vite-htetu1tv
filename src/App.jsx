@@ -16,6 +16,7 @@ const ICON_PATHS = {
   ChevronDown: '<polyline points="6 9 12 15 18 9"/>',
   Target: '<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',
   Plus: '<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>',
+  Minus: '<line x1="5" y1="12" x2="19" y2="12"/>',
   Star: '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',
   Dices: '<rect width="12" height="12" x="2" y="10" rx="2" ry="2"/><path d="m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3l-5-4.92a2.24 2.24 0 0 0-3 0L10 6"/>',
   Award: '<circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/>',
@@ -37,7 +38,9 @@ const ICON_PATHS = {
   Shuffle: '<polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/>',
   X: '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>',
   Maximize: '<path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/>',
-  Minimize: '<path d="M8 3v3a2 2 0 0 1-2 2H3"/><path d="M21 8h-3a2 2 0 0 1-2-2V3"/><path d="M3 16h3a2 2 0 0 1 2 2v3"/><path d="M16 21v-3a2 2 0 0 1 2-2h3"/>'
+  Minimize: '<path d="M8 3v3a2 2 0 0 1-2 2H3"/><path d="M21 8h-3a2 2 0 0 1-2-2V3"/><path d="M3 16h3a2 2 0 0 1 2 2v3"/><path d="M16 21v-3a2 2 0 0 1 2-2h3"/>',
+  Calendar: '<rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',
+  AlertTriangle: '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>'
 };
 
 const Icon = ({ name, size = 24, strokeWidth = 2, className = "" }) => {
@@ -49,22 +52,41 @@ const Icon = ({ name, size = 24, strokeWidth = 2, className = "" }) => {
 };
 
 // ==========================================
-// 2. CONFIGURACIÓN FIREBASE Y TEMARIO TRADUCIDO
+// 2. DATA MAPPING (LOMLOE CV)
 // ==========================================
-const firebaseConfig = {
-  apiKey: "AIzaSyAGkD-7KAe7h7OFPMQLswVKE4fOiJXYykU",
-  authDomain: "turtlestudy-83103.firebaseapp.com",
-  projectId: "turtlestudy-83103",
-  storageBucket: "turtlestudy-83103.firebasestorage.app",
-  messagingSenderId: "270840155415",
-  appId: "1:270840155415:web:cab89669409275e1a2fb52",
+const getCurricularMapping = (id) => {
+  let ce = "1, 2, 3, 4, 5, 6";
+  let sb = "Block B";
+  let leg = "LOMLOE + Decreto 107/2022 (CV)";
+
+  if (id === 1 || id === 2) { ce = "1, 2, 3, 4"; sb = "Block A"; leg += " + Ley 1/2024"; }
+  else if (id === 3) { ce = "1, 3"; sb = "Block A"; }
+  else if (id === 4) { ce = "1, 2"; sb = "Block A"; }
+  else if (id === 5) { ce = "1, 2, 3"; sb = "Block A"; }
+  else if (id === 6) { ce = "5"; sb = "Block A & B"; }
+  else if (id === 7) { ce = "1, 2"; sb = "Block A & B"; }
+  else if (id === 8 || id === 9) { ce = "1, 2"; sb = "Block A"; }
+  else if (id === 10) { ce = "1, 2, 3"; sb = "Block A"; }
+  else if (id === 11) { ce = "1, 2"; sb = "Block A"; }
+  else if (id >= 12 && id <= 23) { ce = "6"; sb = "Block C"; }
+  else if (id >= 24 && id <= 27) { ce = "1, 6"; sb = "Block A & C"; }
+  else if (id >= 28 && id <= 34) { ce = "1, 6"; sb = "Block A & C"; }
+  else if (id >= 35 && id <= 39) { ce = "1, 6"; sb = "Block A & C"; }
+  else if (id >= 40 && id <= 44) { ce = "1, 3, 6"; sb = "Block A & C"; }
+  else if (id >= 45 && id <= 54) { ce = "6"; sb = "Block C"; }
+  else if (id === 55) { leg += " + Ley 1/2024"; }
+  else if (id === 57) { ce = "1, 3"; sb = "Block A"; }
+  else if (id === 58) { ce = "1"; sb = "Block A"; }
+  else if (id === 59) { ce = "2"; sb = "Block A"; }
+  else if (id === 60) { ce = "1, 2, 5"; sb = "Block A & B"; }
+  else if (id === 61) { ce = "1, 6"; sb = "Block A & C"; }
+  else if (id === 62) { ce = "1, 3, 6"; sb = "Block C"; }
+  else if (id === 65 || id === 66) { leg += " + Ley 1/2024"; }
+  else if (id === 68) { leg += " + Decreto 104/2018 (Inclusión)"; }
+  else if (id === 69) { sb = "Block B & C"; }
+
+  return { ce, sb, leg };
 };
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const auth = getAuth(app);
-
-const APP_ID_PATH = 'turtlestudy-v6';
 
 const RAW_TITLES = [
   "Language learning in the educational curriculum. Language as communication. Learning and acquisition.",
@@ -138,31 +160,51 @@ const RAW_TITLES = [
   "Current challenges in the English-speaking world."
 ];
 
-const getBaseSchema = (id, title) => `Introduction\n\n${title.split('. ').join('\n')}\n\nTopic ${id} in the classroom\n\nBibliography\n\nConclusion\n\nBIBLIOGRAPHY`;
+const getEnhancedSchema = (id, title) => {
+  const map = getCurricularMapping(id);
+  return `Introduction\n\n${title.split('. ').join('\n')}\n\nTopic ${id} in the classroom\n\nCURRICULAR MAPPING (LOMLOE - CV):\n• Specific Competences: ${map.ce}\n• Basic Knowledge: ${map.sb}\n• Key Legislation: ${map.leg}\n\nBibliography\nConclusion\n\nBIBLIOGRAPHY`;
+};
 
 const INITIAL_TOPICS = Array.from({ length: 69 }, (_, i) => {
   const t = RAW_TITLES[i];
   return { 
-    id: i + 1, title: t, redactado: false, estudiado: false, reviews: 0, mocks: 0, miniMocks: 0, finished: false, discarded: false, stars: 0,
-    indexNotes: getBaseSchema(i + 1, t),
+    id: i + 1, title: t, redactado: false, estudiado: 0, reviews: 0, mocks: 0, miniMocks: 0, finished: false, discarded: false, stars: 0,
+    indexNotes: getEnhancedSchema(i + 1, t),
     priority: null
   };
 });
 
 const INITIAL_PLANNING = [
-  { id: 'p1', title: 'Contextualización', status: 0 }, { id: 'p2', title: 'Objetivos y Competencias', status: 0 }, { id: 'p3', title: 'Saberes Básicos', status: 0 },
-  { id: 'p4', title: 'Metodología y Situaciones', status: 0 }, { id: 'p5', title: 'Evaluación', status: 0 }, { id: 'p6', title: 'Atención a la Diversidad', status: 0 },
+  { id: 'p1', title: 'Introducción y Justificación', status: 0, indexNotes: "", priority: null, leg: "LOMLOE" },
+  { id: 'p2', title: 'Contextualización', status: 0, indexNotes: "", priority: null, leg: "LOMLOE" },
+  { id: 'p3', title: 'Marco Legal', status: 0, indexNotes: "", priority: null, leg: "LOMLOE" },
+  { id: 'p4', title: 'Objetivos', status: 0, indexNotes: "", priority: null, leg: "LOMLOE" },
+  { id: 'p5', title: 'Competencias', status: 0, indexNotes: "", priority: null, leg: "LOMLOE" },
+  { id: 'p6', title: 'Saberes Básicos', status: 0, indexNotes: "", priority: null, leg: "LOMLOE" },
+  { id: 'p7', title: 'Metodología y DUA', status: 0, indexNotes: "", priority: null, leg: "LOMLOE" },
+  { id: 'p8', title: 'Elementos Transversales', status: 0, indexNotes: "", priority: null, leg: "LOMLOE" },
+  { id: 'p9', title: 'Interdisciplinariedad', status: 0, indexNotes: "", priority: null, leg: "LOMLOE" },
+  { id: 'p10', title: 'Evaluación y Criterios', status: 0, indexNotes: "", priority: null, leg: "LOMLOE" },
+  { id: 'p11', title: 'Recursos y Materiales', status: 0, indexNotes: "", priority: null, leg: "LOMLOE" },
+  { id: 'p12', title: 'Actividades Complementarias', status: 0, indexNotes: "", priority: null, leg: "LOMLOE" },
+  { id: 'p13', title: 'Conclusión y Bibliografía', status: 0, indexNotes: "", priority: null, leg: "LOMLOE" }
 ];
 
-const INITIAL_UNITS = Array.from({ length: 6 }, (_, i) => ({ id: `ud${i + 1}`, title: `Unidad Didáctica ${i + 1}`, status: 0 }));
+const INITIAL_UNITS = Array.from({ length: 6 }, (_, i) => ({ 
+  id: `ud${i + 1}`, title: `Unidad Didáctica ${i + 1}`, status: 0, indexNotes: "", priority: null, ce: "", sb: "", do: "", cr: ""
+}));
 
 const INITIAL_SKILLS = [
-  { id: 's1', label: 'Use of English', level: 0 },
-  { id: 's2', label: 'Traducción', level: 0 },
-  { id: 's3', label: 'Listening', level: 0 }
+  { id: 's1', label: 'Translation', level: 0 },
+  { id: 's2', label: 'Use of English', level: 0 },
+  { id: 's3', label: 'Didactical Application', level: 0 },
+  { id: 's4', label: 'Phonetics', level: 0 }
 ];
 
 const getTopicBlock = (id) => {
+  if (typeof id === 'string' && id.startsWith('ud')) return { name: 'Unit', badge: 'bg-teal-100 text-teal-700 border-teal-200', color: '!bg-teal-500' };
+  if (typeof id === 'string' && id.startsWith('p')) return { name: 'Planning', badge: 'bg-blue-100 text-blue-700 border-blue-200', color: '!bg-blue-500' };
+  
   if ([1, 2].includes(id)) return { name: 'Metodología', badge: 'bg-orange-100 text-orange-700 border-orange-200', color: '!bg-orange-500' };
   if ([3, 4, 5, 6, 28, 40].includes(id)) return { name: 'Comunicación', badge: 'bg-purple-100 text-purple-700 border-purple-200', color: '!bg-purple-500' };
   if ([7, 8, 9].includes(id)) return { name: 'Fonética', badge: 'bg-slate-200 text-slate-800 border-slate-300', color: '!bg-slate-500' };
@@ -174,31 +216,46 @@ const getTopicBlock = (id) => {
   return { name: 'General', badge: 'bg-gray-100 text-gray-700 border-gray-200', color: '!bg-slate-600' };
 };
 
-const PLANNING_STATUS = ['Nada', 'Esbozo', 'Escrita', 'Repasada', 'Ensayada', 'Finalizada'];
-const NOTE_COLORS = [
-  { id: 'yellow', bg: 'bg-yellow-200', border: 'border-yellow-300', text: 'text-yellow-900', pin: 'text-yellow-600' },
-  { id: 'blue', bg: 'bg-blue-200', border: 'border-blue-300', text: 'text-blue-900', pin: 'text-blue-600' },
-  { id: 'green', bg: 'bg-green-200', border: 'border-green-300', text: 'text-green-900', pin: 'text-green-600' },
-  { id: 'pink', bg: 'bg-pink-200', border: 'border-pink-300', text: 'text-pink-900', pin: 'text-pink-600' },
-  { id: 'purple', bg: 'bg-purple-200', border: 'border-purple-300', text: 'text-purple-900', pin: 'text-purple-600' },
-];
+const getPlanningStatusLabel = (status) => {
+  if (status === 0) return 'NADA';
+  if (status <= 3) return `ESBOZO (${status}/3)`;
+  if (status <= 6) return `REDACCIÓN (${status-3}/3)`;
+  if (status <= 9) return `ENSAYO (${status-6}/3)`;
+  if (status === 10) return 'FINALIZADA';
+  return 'NADA';
+};
 
 const EditableText = ({ value, onSave, className, isArea = false }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [temp, setTemp] = useState(value);
   if (isEditing) {
     return isArea ? (
-      <textarea autoFocus className={`bg-white border-2 border-emerald-300 rounded p-2 outline-none text-slate-900 w-full resize-none ${className}`} value={temp} onChange={e=>setTemp(e.target.value)} onBlur={()=>{onSave(temp); setIsEditing(false);}} />
+      <textarea autoFocus className={`bg-white border-2 border-emerald-300 rounded p-2 outline-none text-slate-900 w-full resize-none ${className}`} value={temp} onChange={e=>setTemp(e.target.value)} onBlur={()=>{if(temp!==value)onSave(temp); setIsEditing(false);}} />
     ) : (
-      <input autoFocus className={`bg-white border-2 border-emerald-300 rounded px-1 outline-none text-slate-900 ${className}`} value={temp} onChange={e=>setTemp(e.target.value)} onBlur={()=>{onSave(temp); setIsEditing(false);}} onKeyDown={e=>{if(e.key==='Enter'){onSave(temp); setIsEditing(false);}}} />
+      <input autoFocus className={`bg-white border-2 border-emerald-300 rounded px-1 outline-none text-slate-900 ${className}`} value={temp} onChange={e=>setTemp(e.target.value)} onBlur={()=>{if(temp!==value)onSave(temp); setIsEditing(false);}} onKeyDown={e=>{if(e.key==='Enter'){if(temp!==value)onSave(temp); setIsEditing(false);}}} />
     );
   }
-  return <span onClick={()=>setIsEditing(true)} className={`cursor-pointer hover:bg-emerald-50 rounded transition-colors ${className}`}>{value}</span>;
+  return <span onClick={()=>setIsEditing(true)} className={`cursor-pointer hover:bg-emerald-50 rounded transition-colors ${className}`}>{value || "..."}</span>;
 };
 
 // ==========================================
 // 3. APP PRINCIPAL
 // ==========================================
+const firebaseConfig = {
+  apiKey: "AIzaSyAGkD-7KAe7h7OFPMQLswVKE4fOiJXYykU",
+  authDomain: "turtlestudy-83103.firebaseapp.com",
+  projectId: "turtlestudy-83103",
+  storageBucket: "turtlestudy-83103.firebasestorage.app",
+  messagingSenderId: "270840155415",
+  appId: "1:270840155415:web:cab89669409275e1a2fb52",
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+const APP_ID_PATH = 'turtlestudy-v6';
+
 export default function App() {
   const [syncCode, setSyncCode] = useState(() => localStorage.getItem('turtle_sync_code') || "");
   const [isLogged, setIsLogged] = useState(false);
@@ -219,6 +276,7 @@ export default function App() {
   const [maxStreak, setMaxStreak] = useState(0);
   const [levelDates, setLevelDates] = useState({ 1: new Date().toLocaleDateString() });
   const [examDate, setExamDate] = useState("2026-06-20");
+  const [submissionDate, setSubmissionDate] = useState("2026-06-01");
   const [practicoSessions, setPracticoSessions] = useState(0);
   const [lastActiveDate, setLastActiveDate] = useState(null);
 
@@ -247,20 +305,37 @@ export default function App() {
       if (snap.exists() && !isDataLoaded) {
         const d = snap.data();
         setPoints(d.points || 0); 
+        
         const mergedTopics = INITIAL_TOPICS.map(tInitial => {
           const tSaved = d.topics?.find(ts => ts.id === tInitial.id);
           if (!tSaved) return tInitial;
-          return { ...tSaved, title: tSaved.title || tInitial.title, indexNotes: tSaved.indexNotes || tInitial.indexNotes, priority: tSaved.priority ?? null };
+          return { ...tSaved, title: tSaved.title || tInitial.title, indexNotes: tSaved.indexNotes || tInitial.indexNotes, priority: tSaved.priority ?? null, ce: tSaved.ce || tInitial.ce, sb: tSaved.sb || tInitial.sb, leg: tSaved.leg || tInitial.leg, estudiado: tSaved.estudiado ?? 0 };
         });
         setTopics(mergedTopics);
-        setPlanning(d.planning?.length ? d.planning : INITIAL_PLANNING); 
-        setUnits(d.units?.length ? d.units : INITIAL_UNITS);
-        setSkills(d.skills?.length ? d.skills : INITIAL_SKILLS); 
+
+        const mergedPlanning = INITIAL_PLANNING.map(pInitial => {
+          const pSaved = d.planning?.find(ps => ps.id === pInitial.id);
+          return pSaved ? { ...pSaved, title: pSaved.title || pInitial.title, indexNotes: pSaved.indexNotes || "", priority: pSaved.priority ?? null, leg: pSaved.leg || pInitial.leg } : pInitial;
+        });
+        const extraPlanning = d.planning?.filter(ps => !INITIAL_PLANNING.some(pInitial => pInitial.id === ps.id)) || [];
+        setPlanning([...mergedPlanning, ...extraPlanning]);
+
+        const mergedUnits = INITIAL_UNITS.map(uInitial => {
+          const uSaved = d.units?.find(us => us.id === uInitial.id);
+          return uSaved ? { ...uSaved, title: uSaved.title || uInitial.title, indexNotes: uSaved.indexNotes || "", priority: uSaved.priority ?? null, ce: uSaved.ce || "", sb: uSaved.sb || "", do: uSaved.do || "", cr: uSaved.cr || "", leg: uSaved.leg || uInitial.leg } : uInitial;
+        });
+        setUnits(mergedUnits);
+
+        let loadedSkills = d.skills?.length ? d.skills : INITIAL_SKILLS;
+        if (loadedSkills.length === 3 && loadedSkills[0].label === 'Use of English') { loadedSkills = INITIAL_SKILLS; }
+        setSkills(loadedSkills); 
+
         setDecks(d.decks || []);
         setTodos(d.todos || []); 
         setNotes(d.notes || []); 
         setActionLogs(d.actionLogs || []);
         setExamDate(d.examDate || "2026-06-20"); 
+        setSubmissionDate(d.submissionDate || "2026-06-01");
         setStreak(d.streak || 0);
         setMaxStreak(d.maxStreak || 0); 
         setPracticoSessions(d.practicoSessions || 0);
@@ -275,17 +350,32 @@ export default function App() {
     if (!isDataLoaded || !isLogged) return;
     const save = async () => {
       const docRef = doc(db, 'artifacts', APP_ID_PATH, 'public', 'data', 'turtle_users', syncCode);
-      await setDoc(docRef, { points, topics, planning: planning.length ? planning : INITIAL_PLANNING, units: units.length ? units : INITIAL_UNITS, skills: skills.length ? skills : INITIAL_SKILLS, decks, todos, notes, actionLogs, examDate, streak, maxStreak, practicoSessions, levelDates, lastActiveDate });
+      await setDoc(docRef, { points, topics, planning, units, skills, decks, todos, notes, actionLogs, examDate, submissionDate, streak, maxStreak, practicoSessions, levelDates, lastActiveDate });
     };
     const t = setTimeout(save, 1500); return () => clearTimeout(t);
-  }, [points, topics, planning, units, skills, decks, todos, notes, actionLogs, examDate, streak, maxStreak, practicoSessions, levelDates, lastActiveDate, isDataLoaded]);
+  }, [points, topics, planning, units, skills, decks, todos, notes, actionLogs, examDate, submissionDate, streak, maxStreak, practicoSessions, levelDates, lastActiveDate, isDataLoaded]);
 
   const addPoints = (amount, desc, actionData = null) => {
+    let finalLogs = [...actionLogs];
+
+    // Payload Cleanup: Borrar 'actionData' en logs mayores de 24 horas (86400000 ms)
+    const twentyFourHoursAgo = Date.now() - 86400000;
+    finalLogs = finalLogs.map(log => {
+      if (log.actionData && log.timestamp < twentyFourHoursAgo) {
+        const cleanedLog = { ...log };
+        delete cleanedLog.actionData;
+        return cleanedLog;
+      }
+      return log;
+    });
+
     const oldLevel = Math.floor(points / 200) + 1;
     const newPoints = Math.max(0, points + amount);
     const newLevel = Math.floor(newPoints / 200) + 1;
     setPoints(newPoints);
+    
     if (newLevel > oldLevel) setLevelDates(prev => ({ ...prev, [newLevel]: new Date().toLocaleDateString() }));
+    
     if (amount > 0) {
       const today = new Date().toDateString();
       if (lastActiveDate !== today) {
@@ -295,24 +385,68 @@ export default function App() {
         setLastActiveDate(today);
       }
     }
-    setActionLogs(prev => [{ id: Date.now().toString(), amount, description: desc, timestamp: Date.now(), actionData }, ...prev]);
+
+    finalLogs.unshift({ id: Date.now().toString(), amount, description: desc, timestamp: Date.now(), actionData });
+    setActionLogs(finalLogs);
   };
 
   const undoAction = (id) => {
     const log = actionLogs.find(l => l.id === id);
     if (log) { 
-      setPoints(p => Math.max(0, p - log.amount)); 
+      // Si el log no tiene actionData, no podemos revertir de forma segura.
+      if (!log.actionData && log.amount !== 0) {
+         alert("Esta acción es demasiado antigua para deshacer sus cambios específicos de forma segura. Sin embargo, se restaurarán tus puntos a nivel general.");
+      }
+
+      const newPoints = Math.max(0, points - log.amount);
+      const oldLevel = Math.floor(points / 200) + 1;
+      const newLevel = Math.floor(newPoints / 200) + 1;
+      
+      if (newLevel < oldLevel) {
+        setLevelDates(prev => {
+          const nextDates = { ...prev };
+          for (let i = newLevel + 1; i <= oldLevel; i++) delete nextDates[i];
+          return nextDates;
+        });
+      }
+      setPoints(newPoints);
+
       if (log.actionData) {
         const { entity, id: entityId, field, prevValue } = log.actionData;
         if (entity === 'topic') setTopics(prev => prev.map(t => t.id === entityId ? { ...t, [field]: prevValue } : t));
-        else if (entity === 'planning') {
-          if (entityId.startsWith('p')) setPlanning(prev => prev.map(p => p.id === entityId ? { ...p, [field]: prevValue } : p));
-          else setUnits(prev => prev.map(u => u.id === entityId ? { ...u, [field]: prevValue } : u));
-        } else if (entity === 'skill') setSkills(prev => prev.map(s => s.id === entityId ? { ...s, level: prevValue } : s));
+        else if (entity === 'planning') setPlanning(prev => prev.map(p => p.id === entityId ? { ...p, [field]: prevValue } : p));
+        else if (entity === 'unit') setUnits(prev => prev.map(u => u.id === entityId ? { ...u, [field]: prevValue } : u));
+        else if (entity === 'skill') setSkills(prev => prev.map(s => s.id === entityId ? { ...s, level: prevValue } : s));
         else if (entity === 'practico_sessions') setPracticoSessions(prevValue);
         else if (entity === 'todo') setTodos(prev => prev.map(t => t.id === entityId ? { ...t, completed: prevValue } : t));
+        else if (entity === 'topics_reset') setTopics(prevValue);
+        else if (entity === 'planning_reset') { setPlanning(prevValue.planning); setUnits(prevValue.units); }
+        else if (entity === 'practico_reset') { setSkills(prevValue.skills); setPracticoSessions(prevValue.sessions); }
       }
       setActionLogs(prev => prev.filter(l => l.id !== id)); 
+    }
+  };
+
+  const handleResetTopics = () => {
+    if(window.confirm("¿Resetear TODO el progreso de los Temas?")) {
+      addPoints(0, "Reset Temas", { entity: 'topics_reset', prevValue: topics });
+      setTopics(topics.map(t => ({...t, redactado: false, estudiado: 0, reviews: 0, mocks: 0, miniMocks: 0, finished: false, stars: 0})));
+    }
+  };
+
+  const handleResetPlanning = () => {
+    if(window.confirm("¿Resetear progreso de Programación y UDs?")) {
+      addPoints(0, "Reset Programación", { entity: 'planning_reset', prevValue: { planning, units } });
+      setPlanning(planning.map(p => ({...p, status: 0})));
+      setUnits(units.map(u => ({...u, status: 0})));
+    }
+  };
+
+  const handleResetPractico = () => {
+    if(window.confirm("¿Resetear progreso Práctico?")) {
+      addPoints(0, "Reset Práctico", { entity: 'practico_reset', prevValue: { skills, sessions: practicoSessions } });
+      setSkills(skills.map(s => ({...s, level: 0})));
+      setPracticoSessions(0);
     }
   };
 
@@ -324,24 +458,6 @@ export default function App() {
   }, [isTimerActive, timeLeft]);
 
   const currentLevel = Math.floor(points/200)+1;
-  const fullyCount = topics.filter(t => t.redactado && t.estudiado && t.finished).length;
-  const totalCards = decks.reduce((a,d)=>a+d.cards.length, 0);
-  const BADGES = [
-    { id: 'l1', icon: '🐢', title: 'Primeros Pasos', desc: 'Nivel 5', cond: currentLevel >= 5 },
-    { id: 'l2', icon: '🥷', title: 'Tortuga Ninja', desc: 'Nivel 25', cond: currentLevel >= 25 },
-    { id: 'l3', icon: '🥋', title: 'Cinturón Negro', desc: 'Nivel 75', cond: currentLevel >= 75 },
-    { id: 'l4', icon: '🐉', title: 'Maestro Jedi', desc: 'Nivel 150', cond: currentLevel >= 150 },
-    { id: 'l5', icon: '🌌', title: 'Dios de la Opo', desc: 'Nivel 200', cond: currentLevel >= 200 },
-    { id: 's1', icon: '🔥', title: 'Hábito Hierro', desc: '30 días racha', cond: maxStreak >= 30 },
-    { id: 's2', icon: '🧘', title: 'Modo Monje', desc: '100 días racha', cond: maxStreak >= 100 },
-    { id: 't1', icon: '📖', title: 'Iniciado', desc: '10 temas OK', cond: fullyCount >= 10 },
-    { id: 't2', icon: '⚖️', title: 'Medio Camino', desc: '21 temas OK', cond: fullyCount >= 21 },
-    { id: 't3', icon: '🏆', title: 'Maestro Absoluto', desc: '42 temas OK', cond: fullyCount >= 42 },
-    { id: 'p1', icon: '🏅', title: 'Analista', desc: '10 supuestos', cond: practicoSessions >= 10 },
-    { id: 'p2', icon: '🕵️', title: 'Sherlock', desc: '30 supuestos', cond: practicoSessions >= 30 },
-    { id: 'f1', icon: '📸', title: 'Memoria Visual', desc: '50 Flashcards', cond: totalCards >= 50 },
-    { id: 'm1', icon: '✨', title: 'Perfeccionista', desc: 'Skills Nivel 10', cond: skills.length > 0 && skills.every(s=>s.level>=10) }
-  ];
 
   if (!isLogged) return <LoginScreen onLogin={(c) => { setSyncCode(c); localStorage.setItem('turtle_sync_code', c); }} />;
   if (!isDataLoaded) return <LoadingScreen />;
@@ -350,47 +466,95 @@ export default function App() {
     <div className="min-h-screen pb-32 font-sans relative overflow-x-hidden">
       <style>{`
         body { background-color: #f8fafc; background-image: radial-gradient(#fbbf24 2px, transparent 2px), radial-gradient(#f472b6 2px, transparent 2px), radial-gradient(#60a5fa 2px, transparent 2px), radial-gradient(#34d399 2px, transparent 2px); background-size: 80px 80px; background-position: 0 0, 40px 40px, 20px 60px, 60px 20px; }
-        .bento-card { border-radius: 28px; border: 2px solid #f1f5f9; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .bento-card { border-radius: 28px; border: 2px solid #f1f5f9; box-shadow: 0 4px 15px rgba(0,0,0,0.05); transition: all 0.3s ease; background: white; }
         .map-bubble { width: 80px; height: 80px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; border: 6px solid white; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
-        .modal-overlay { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(8px); position: fixed; inset: 0; z-index: 500; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+        .modal-overlay { background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(8px); position: fixed; inset: 0; z-index: 500; display: flex; align-items: center; justify-content: center; padding: 1rem; }
         .modal-content { background: white; width: 100%; max-width: 600px; max-height: 85vh; border-radius: 40px; overflow-y: auto; position: relative; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
         .modal-fullscreen { max-width: 100vw !important; max-height: 100vh !important; height: 100vh !important; border-radius: 0 !important; }
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
       `}</style>
 
+      {/* MODAL GLOBAL */}
       {selectedTopicModal && (
         <div className="modal-overlay animate-in fade-in duration-300" onClick={() => { setSelectedTopicModal(null); setIsModalFullscreen(false); }}>
           <div className={`modal-content p-8 custom-scrollbar animate-in zoom-in-95 duration-300 ${isModalFullscreen ? 'modal-fullscreen' : ''}`} onClick={e => e.stopPropagation()}>
             <div className="absolute top-6 right-6 flex gap-2">
-              <button onClick={() => setIsModalFullscreen(!isModalFullscreen)} className="p-2 bg-slate-100 text-slate-400 rounded-full hover:bg-emerald-50 hover:text-emerald-500 transition-colors">
-                <Icon name={isModalFullscreen ? "Minimize" : "Maximize"} size={20} />
-              </button>
-              <button onClick={() => { setSelectedTopicModal(null); setIsModalFullscreen(false); }} className="p-2 bg-slate-100 text-slate-400 rounded-full hover:bg-red-50 hover:text-red-500 transition-colors">
-                <Icon name="X" size={20} />
-              </button>
+              <button onClick={() => setIsModalFullscreen(!isModalFullscreen)} className="p-2 bg-slate-100 text-slate-400 rounded-full hover:bg-emerald-50 hover:text-emerald-500 transition-colors"><Icon name={isModalFullscreen ? "Minimize" : "Maximize"} size={20} /></button>
+              <button onClick={() => { setSelectedTopicModal(null); setIsModalFullscreen(false); }} className="p-2 bg-slate-100 text-slate-400 rounded-full hover:bg-red-50 hover:text-red-500 transition-colors"><Icon name="X" size={20} /></button>
             </div>
             <div className="text-center space-y-6">
-              <div className={`mx-auto w-16 h-16 rounded-2xl flex items-center justify-center font-black text-2xl border-4 ${getTopicBlock(selectedTopicModal.id).badge}`}>{selectedTopicModal.id}</div>
+              <div className={`mx-auto w-16 h-16 rounded-2xl flex items-center justify-center font-black text-2xl border-4 ${getTopicBlock(selectedTopicModal.id).badge}`}>{selectedTopicModal.id.toString().startsWith('ud') ? selectedTopicModal.id.replace('ud','') : selectedTopicModal.id.toString().startsWith('p') ? selectedTopicModal.id.replace('p','') : selectedTopicModal.id}</div>
+              
               <div className="px-4">
-                <EditableText 
-                  value={selectedTopicModal.title} 
-                  onSave={(nv) => {
-                    setTopics(prev => prev.map(t => t.id === selectedTopicModal.id ? { ...t, title: nv } : t));
-                    setSelectedTopicModal({...selectedTopicModal, title: nv});
-                  }}
-                  className="text-2xl font-black text-slate-900 leading-tight block"
-                />
+                <EditableText value={selectedTopicModal.title} onSave={(nv) => { 
+                  const listName = selectedTopicModal.id.toString().startsWith('p') ? 'planning' : selectedTopicModal.id.toString().startsWith('ud') ? 'units' : 'topics';
+                  const setter = listName === 'planning' ? setPlanning : listName === 'units' ? setUnits : setTopics;
+                  setter(prev => prev.map(t => t.id === selectedTopicModal.id ? { ...t, title: nv } : t));
+                  setSelectedTopicModal({...selectedTopicModal, title: nv});
+                }} className="text-2xl font-black text-slate-900 leading-tight block" />
               </div>
+
+              {/* CURRICULAR ALIGNMENT */}
+              {selectedTopicModal.id.toString().startsWith('ud') ? (
+                <div className="flex flex-wrap justify-center gap-2 px-4 border-b border-slate-50 pb-6">
+                  {['ce', 'sb', 'do', 'cr', 'leg'].map(key => (
+                    <div key={key} className="flex flex-col items-center">
+                      <span className="text-[7px] font-black uppercase text-slate-400 mb-1">{key}</span>
+                      <EditableText value={selectedTopicModal[key]} onSave={(nv) => { setUnits(prev => prev.map(u => u.id === selectedTopicModal.id ? { ...u, [key]: nv } : u)); setSelectedTopicModal({...selectedTopicModal, [key]: nv}); }} className="px-2 py-1 bg-slate-50 text-slate-600 rounded-lg text-[9px] font-black border border-slate-100" />
+                    </div>
+                  ))}
+                </div>
+              ) : selectedTopicModal.id.toString().startsWith('p') ? (
+                <div className="flex justify-center gap-2 px-4 border-b border-slate-50 pb-6">
+                  <div className="flex flex-col items-center">
+                    <span className="text-[7px] font-black uppercase text-slate-400 mb-1">Legislación</span>
+                    <EditableText value={selectedTopicModal.leg || "LOMLOE"} onSave={(nv) => { setPlanning(prev => prev.map(p => p.id === selectedTopicModal.id ? { ...p, leg: nv } : p)); setSelectedTopicModal({...selectedTopicModal, leg: nv}); }} className="px-2 py-1 bg-blue-50 text-blue-600 rounded-lg text-[9px] font-black border border-blue-100" />
+                  </div>
+                </div>
+              ) : (
+                <div className="flex flex-wrap justify-center gap-2 px-4 border-b border-slate-50 pb-6">
+                  <div className="flex flex-col items-center">
+                    <span className="text-[7px] font-black uppercase text-slate-400 mb-1">CE</span>
+                    <EditableText value={selectedTopicModal.ce} onSave={(nv) => { setTopics(prev => prev.map(t => t.id === selectedTopicModal.id ? { ...t, ce: nv } : t)); setSelectedTopicModal({...selectedTopicModal, ce: nv}); }} className="px-2 py-1 bg-emerald-50 text-emerald-600 rounded-lg text-[9px] font-black border border-emerald-100" />
+                  </div>
+                  <div className="flex flex-col items-center">
+                    <span className="text-[7px] font-black uppercase text-slate-400 mb-1">SB</span>
+                    <EditableText value={selectedTopicModal.sb} onSave={(nv) => { setTopics(prev => prev.map(t => t.id === selectedTopicModal.id ? { ...t, sb: nv } : t)); setSelectedTopicModal({...selectedTopicModal, sb: nv}); }} className="px-2 py-1 bg-violet-50 text-violet-600 rounded-lg text-[9px] font-black border border-violet-100" />
+                  </div>
+                  <div className="flex flex-col items-center">
+                    <span className="text-[7px] font-black uppercase text-slate-400 mb-1">Leg</span>
+                    <EditableText value={selectedTopicModal.leg} onSave={(nv) => { setTopics(prev => prev.map(t => t.id === selectedTopicModal.id ? { ...t, leg: nv } : t)); setSelectedTopicModal({...selectedTopicModal, leg: nv}); }} className="px-2 py-1 bg-amber-50 text-amber-600 rounded-lg text-[9px] font-black border border-amber-100" />
+                  </div>
+                </div>
+              )}
+
+              {/* LEY ALERT */}
+              {!selectedTopicModal.id.toString().startsWith('p') && !selectedTopicModal.id.toString().startsWith('ud') && [1, 2, 55, 65, 66].includes(selectedTopicModal.id) && (
+                <div className="mx-4 p-3 bg-amber-50 border-2 border-amber-200 rounded-2xl flex items-center gap-3 text-amber-700 animate-pulse">
+                  <Icon name="AlertTriangle" size={24} />
+                  <p className="text-[10px] font-black text-left uppercase leading-tight">Must comply with Ley 1/2024 (Libertad Educativa CV)</p>
+                </div>
+              )}
+
               <div className="border-t-2 border-slate-50 pt-6 text-left">
                 <div className="flex justify-between items-center mb-4">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Schema & Notes</span>
-                  <button onClick={() => { if (selectedTopicModal.isEditing) { setTopics(prev => prev.map(t => t.id === selectedTopicModal.id ? { ...t, indexNotes: selectedTopicModal.tempNotes } : t)); setSelectedTopicModal({ ...selectedTopicModal, isEditing: false, indexNotes: selectedTopicModal.tempNotes }); } else { setSelectedTopicModal({ ...selectedTopicModal, isEditing: true, tempNotes: selectedTopicModal.indexNotes }); } }} className={`p-2 rounded-xl transition-all ${selectedTopicModal.isEditing ? 'bg-emerald-500 text-white shadow-lg' : 'bg-slate-100 text-slate-500'}`}><Icon name={selectedTopicModal.isEditing ? "Check" : "Edit"} size={18} /></button>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Content & Script</span>
+                  <button onClick={() => { 
+                    const listName = selectedTopicModal.id.toString().startsWith('p') ? 'planning' : selectedTopicModal.id.toString().startsWith('ud') ? 'units' : 'topics';
+                    const setter = listName === 'planning' ? setPlanning : listName === 'units' ? setUnits : setTopics;
+                    if (selectedTopicModal.isEditing) {
+                      setter(prev => prev.map(t => t.id === selectedTopicModal.id ? { ...t, indexNotes: selectedTopicModal.tempNotes } : t));
+                      setSelectedTopicModal({ ...selectedTopicModal, isEditing: false, indexNotes: selectedTopicModal.tempNotes });
+                    } else {
+                      setSelectedTopicModal({ ...selectedTopicModal, isEditing: true, tempNotes: selectedTopicModal.indexNotes });
+                    }
+                  }} className={`p-2 rounded-xl transition-all ${selectedTopicModal.isEditing ? 'bg-emerald-500 text-white shadow-lg' : 'bg-slate-100 text-slate-500'}`}><Icon name={selectedTopicModal.isEditing ? "Check" : "Edit"} size={18} /></button>
                 </div>
                 {selectedTopicModal.isEditing ? (
                   <textarea autoFocus className="w-full h-96 p-4 bg-slate-50 rounded-2xl border-2 border-emerald-200 outline-none font-medium text-slate-700 leading-relaxed resize-none" value={selectedTopicModal.tempNotes} onChange={e => setSelectedTopicModal({ ...selectedTopicModal, tempNotes: e.target.value })} />
                 ) : (
-                  <pre className="whitespace-pre-wrap font-sans text-slate-600 leading-relaxed bg-slate-50 p-6 rounded-2xl border-2 border-slate-100 min-h-[200px]">{selectedTopicModal.indexNotes || "No notes yet..."}</pre>
+                  <pre className="whitespace-pre-wrap font-sans text-slate-600 leading-relaxed bg-slate-50 p-6 rounded-2xl border-2 border-slate-100 min-h-[200px]">{selectedTopicModal.indexNotes || "Notes..."}</pre>
                 )}
               </div>
             </div>
@@ -398,32 +562,41 @@ export default function App() {
         </div>
       )}
 
+      {/* HEADER PREMIUM */}
       <header className="sticky top-0 z-[100] bg-white/95 backdrop-blur-md border-b-2 border-slate-100 p-4 shadow-sm">
         <div className="max-w-5xl mx-auto flex justify-between items-center">
-          <div className="flex items-center gap-2 cursor-pointer" onClick={() => setActiveTab('map')}><div className="p-2 bg-emerald-600 rounded-xl text-white shadow-lg"><Icon name="Turtle" size={24} /></div><span className="font-black text-emerald-950 text-xl tracking-tighter hidden sm:block">TurtleStudy</span></div>
+          <div className="flex items-center gap-2 cursor-pointer transition-transform active:scale-95" onClick={() => setActiveTab('map')}>
+            <div className="p-2 bg-emerald-600 rounded-xl text-white shadow-lg"><Icon name="Turtle" size={24} /></div>
+            <span className="font-black text-emerald-950 text-xl tracking-tighter">TurtleStudy</span>
+          </div>
+
           <div className="flex items-center gap-2">
-            <button 
-              onClick={() => { setActiveTab('stats'); setIsToolsExpanded(true); }}
-              className="px-3 py-2 bg-emerald-50 text-emerald-700 rounded-2xl border border-emerald-100 font-black flex items-center gap-2 text-sm shadow-sm hover:bg-emerald-100 transition-colors"
-            >
+            <button onClick={() => { setActiveTab('stats'); setIsToolsExpanded(true); }} className="px-3 py-2 bg-emerald-50 text-emerald-700 rounded-2xl border border-emerald-100 font-black flex items-center gap-2 text-sm shadow-sm hover:bg-emerald-100 transition-colors">
               <Icon name="Trophy" size={16} /><span>{points} pts</span>
             </button>
+            
             <div className="relative">
-              <button onClick={() => setShowTimerMenu(!showTimerMenu)} className={`px-3 py-2 rounded-2xl font-black flex items-center gap-2 border transition-all text-sm ${isTimerActive ? 'bg-emerald-600 text-white border-transparent shadow-emerald-200 shadow-lg' : 'bg-white text-emerald-600 border-slate-200'}`}><Icon name="Clock" size={16} className={isTimerActive ? 'animate-spin' : ''} /><span className="tabular-nums">{timeLeft > 0 ? (Math.floor(timeLeft/60)+":"+(timeLeft%60).toString().padStart(2,'0')) : '00:00'}</span></button>
+              <button onClick={() => setShowTimerMenu(!showTimerMenu)} className={`px-3 py-2 rounded-2xl font-black flex items-center gap-2 border transition-all text-sm ${isTimerActive ? 'bg-emerald-600 text-white shadow-emerald-200 shadow-lg' : 'bg-white text-emerald-600 border-slate-200'}`}>
+                <Icon name="Clock" size={16} className={isTimerActive ? 'animate-spin' : ''} />
+                <span className="tabular-nums">{timeLeft > 0 ? (Math.floor(timeLeft/60)+":"+(timeLeft%60).toString().padStart(2,'0')) : '00:00'}</span>
+              </button>
               {showTimerMenu && (
                 <div className="absolute top-full right-0 mt-2 bg-white border-2 border-slate-100 rounded-2xl p-4 shadow-2xl z-[200] w-64 animate-in zoom-in-95">
                   <div className="grid grid-cols-2 gap-2 mb-3">
-                    <button onClick={()=>{setTimeLeft(7200); setIsTimerActive(true); setShowTimerMenu(false)}} className="p-2 bg-slate-50 hover:bg-emerald-50 rounded-xl text-[10px] font-black uppercase">2H Tema</button>
-                    <button onClick={()=>{setTimeLeft(3600); setIsTimerActive(true); setShowTimerMenu(false)}} className="p-2 bg-slate-50 hover:bg-emerald-50 rounded-xl text-[10px] font-black uppercase">1H Prog</button>
+                    <button onClick={()=>{setTimeLeft(7200); setIsTimerActive(true); setShowTimerMenu(false)}} className="p-2 bg-slate-50 hover:bg-emerald-50 rounded-xl text-[10px] font-black uppercase">2H Focus</button>
+                    <button onClick={()=>{setTimeLeft(3600); setIsTimerActive(true); setShowTimerMenu(false)}} className="p-2 bg-slate-50 hover:bg-emerald-50 rounded-xl text-[10px] font-black uppercase">1H Plan</button>
                   </div>
-                  <div className="flex gap-2"><input type="number" placeholder="Mins..." value={customMinutes} onChange={e=>setCustomMinutes(e.target.value)} className="flex-1 bg-slate-50 rounded-xl px-3 py-2 text-xs font-black outline-none border-2 border-transparent focus:border-emerald-200" /><button onClick={()=>{if(customMinutes){setTimeLeft(parseInt(customMinutes)*60); setIsTimerActive(true); setShowTimerMenu(false);}}} className="bg-emerald-600 text-white p-2 rounded-xl shadow-md"><Icon name="Check" size={18}/></button></div>
-                  <button onClick={()=>{setTimeLeft(0); setIsTimerActive(false); setShowTimerMenu(false)}} className="w-full mt-3 p-2 bg-red-50 text-red-600 rounded-xl text-[10px] font-black uppercase">Parar</button>
+                  <button onClick={()=>{setTimeLeft(0); setIsTimerActive(false); setShowTimerMenu(false)}} className="w-full p-2 bg-red-50 text-red-600 rounded-xl text-[10px] font-black uppercase tracking-widest">Reset Timer</button>
                 </div>
               )}
             </div>
-            <button onClick={() => setIsToolsExpanded(!isToolsExpanded)} className={`p-2 rounded-xl transition-all ${isToolsExpanded ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-500'}`}><Icon name="ChevronDown" size={24} className={isToolsExpanded ? 'rotate-180' : ''} /></button>
+
+            <button onClick={() => setIsToolsExpanded(!isToolsExpanded)} className={`p-2 rounded-xl transition-all ${isToolsExpanded ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-500'}`}>
+              <Icon name="ChevronDown" size={24} className={isToolsExpanded ? 'rotate-180' : ''} />
+            </button>
           </div>
         </div>
+
         {isToolsExpanded && (
           <div className="max-w-5xl mx-auto pt-4 border-t border-slate-100 mt-4 animate-in slide-in-from-top-2">
             <div className="grid grid-cols-5 gap-2 mb-4">
@@ -431,29 +604,37 @@ export default function App() {
               <HeaderToolBtn active={activeTab==='flashcards'} icon="Library" label="CARDS" color="rose" onClick={()=>setActiveTab('flashcards')} />
               <HeaderToolBtn active={activeTab==='notes'} icon="StickyNote" label="NOTAS" color="yellow" onClick={()=>setActiveTab('notes')} />
               <HeaderToolBtn active={activeTab==='todo'} icon="ListTodo" label="TAREAS" color="orange" onClick={()=>setActiveTab('todo')} />
-              <HeaderToolBtn active={activeTab==='stats'} icon="BarChart3" label="ESTATS" color="violet" onClick={()=>setActiveTab('stats')} />
+              <HeaderToolBtn active={activeTab==='stats'} icon="BarChart3" label="STATS" color="violet" onClick={()=>setActiveTab('stats')} />
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <div className="flex items-center justify-center gap-3 p-3 bg-orange-50 rounded-2xl border border-orange-100 text-orange-700 shadow-sm"><Icon name="Flame" size={20} className="fill-orange-500" /><div className="text-left leading-none"><p className="text-[10px] font-black uppercase opacity-60">Racha / Máx</p><p className="text-sm font-black">{streak} / {maxStreak}</p></div></div>
-              <button onClick={() => { const pool = Array.from({length: 69}, (_,i)=>i+1); const drawn = []; for(let i=0; i<4; i++) drawn.push(pool.splice(Math.floor(Math.random()*pool.length),1)[0]); setLuckyNumbers(drawn.sort((a,b)=>a-b)); }} className="flex items-center justify-center gap-3 p-3 bg-amber-50 rounded-2xl border border-amber-100 text-amber-700 active:scale-95 transition-transform shadow-sm"><Icon name="Dices" size={20} /><div className="flex gap-1">{luckyNumbers.map((n,i)=><span key={i} className="text-xs font-black w-6 h-6 bg-white border border-amber-200 rounded flex items-center justify-center">{n||'?'}</span>)}</div></button>
+              <div className="flex items-center justify-center gap-3 p-3 bg-orange-50 rounded-2xl border border-orange-100 text-orange-700 shadow-sm transition-all hover:bg-orange-100">
+                <Icon name="Flame" size={20} className="fill-orange-500" />
+                <div className="text-left leading-none"><p className="text-[10px] font-black uppercase opacity-60">Racha Diaria</p><p className="text-sm font-black">{streak} días</p></div>
+              </div>
+              <button onClick={() => { const drawn = []; const pool = Array.from({length:69}, (_,i)=>i+1); for(let i=0;i<4;i++) drawn.push(pool.splice(Math.floor(Math.random()*pool.length),1)[0]); setLuckyNumbers(drawn.sort((a,b)=>a-b)); addPoints(5, "Lucky Numbers Draw"); }} className="flex items-center justify-center gap-3 p-3 bg-amber-50 rounded-2xl border border-amber-100 text-amber-700 shadow-sm active:scale-95 transition-all hover:bg-amber-100">
+                <Icon name="Dices" size={20} />
+                <div className="flex gap-1">{luckyNumbers.map((n,i)=><span key={i} className="text-xs font-black w-6 h-6 bg-white border border-amber-200 rounded flex items-center justify-center">{n||'?'}</span>)}</div>
+              </button>
             </div>
           </div>
         )}
       </header>
 
+      {/* MAIN CONTAINER */}
       <main className="max-w-5xl mx-auto p-4 md:p-8">
-        {activeTab === 'map' && <ProgressMap level={currentLevel} progress={points%200} examDate={examDate} setExamDate={setExamDate} levelDates={levelDates} addPoints={addPoints} />}
-        {activeTab === 'syllabus' && <Syllabus topics={topics} setTopics={setTopics} addPoints={addPoints} onOpenModal={setSelectedTopicModal} actionLogs={actionLogs} />}
-        {activeTab === 'planning' && <PlanningHub planning={planning} setPlanning={setPlanning} units={units} setUnits={setUnits} addPoints={addPoints} />}
-        {activeTab === 'practico' && <PracticoView skills={skills} setSkills={setSkills} addPoints={addPoints} sessions={practicoSessions} setSessions={setPracticoSessions} />}
-        {activeTab === 'flashcards' && !examDeck && !activeDeckId && <FlashcardsManager decks={decks} setDecks={setDecks} onSelect={setActiveDeckId} onExam={setExamDeck} />}
+        {activeTab === 'map' && <ProgressMap points={points} level={Math.floor(points/200)+1} examDate={examDate} setExamDate={setExamDate} addPoints={addPoints} levelDates={levelDates} />}
+        {activeTab === 'syllabus' && <SyllabusView topics={topics} setTopics={setTopics} addPoints={addPoints} onOpenModal={setSelectedTopicModal} actionLogs={actionLogs} onReset={handleResetTopics} />}
+        {activeTab === 'planning' && <PlanningHub planning={planning} setPlanning={setPlanning} units={units} setUnits={setUnits} addPoints={addPoints} submissionDate={submissionDate} setSubmissionDate={setSubmissionDate} actionLogs={actionLogs} onOpenModal={setSelectedTopicModal} onReset={handleResetPlanning} />}
+        {activeTab === 'practico' && <PracticoView skills={skills} setSkills={setSkills} addPoints={addPoints} sessions={practicoSessions} setSessions={setPracticoSessions} onReset={handleResetPractico} />}
+        {activeTab === 'flashcards' && !activeDeckId && !examDeck && <FlashcardsManager decks={decks} setDecks={setDecks} onSelect={setActiveDeckId} onExam={setExamDeck} />}
         {activeTab === 'flashcards' && (activeDeckId || examDeck) && <DeckStudyView deck={examDeck || decks.find(d=>d.id.toString()===activeDeckId)} onBack={()=>{setActiveDeckId(null); setExamDeck(null);}} addPoints={addPoints} />}
         {activeTab === 'todo' && <TodoView todos={todos} setTodos={setTodos} addPoints={addPoints} />}
         {activeTab === 'notes' && <NotesView notes={notes} setNotes={setNotes} />}
-        {activeTab === 'badges' && <BadgesView badges={BADGES} maxStreak={maxStreak} />}
-        {activeTab === 'stats' && <StatsView actionLogs={actionLogs} undoAction={undoAction} topics={topics} />}
+        {activeTab === 'badges' && <BadgesView points={points} streak={streak} maxStreak={maxStreak} topics={topics} planning={planning} units={units} skills={skills} />}
+        {activeTab === 'stats' && <StatsView actionLogs={actionLogs} undoAction={undoAction} topics={topics} planning={planning} units={units} />}
       </main>
 
+      {/* NAV FOOTER FIXED */}
       <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t-2 border-slate-100 p-4 pb-8 z-50 shadow-lg">
         <div className="max-w-md mx-auto flex justify-around">
           <NavBtn active={activeTab==='map'} icon="MapIcon" label="MAPA" color="emerald" onClick={()=>setActiveTab('map')} />
@@ -467,14 +648,15 @@ export default function App() {
 }
 
 // ==========================================
-// 4. VISTAS ESPECIALIZADAS
+// 5. COMPONENTES DE VISTA (MINI-REACT)
 // ==========================================
-function Syllabus({ topics, setTopics, addPoints, onOpenModal, actionLogs }) {
+
+function SyllabusView({ topics, setTopics, addPoints, onOpenModal, actionLogs, onReset }) {
   const [search, setSearch] = useState("");
   const updateField = (id, field, value, pts) => {
     setTopics(prev => prev.map(t => {
       if (t.id === id) {
-        if (pts && value) addPoints(pts, `${t.title.split('.')[0]}: ${field}`, { entity: 'topic', id, field, prevValue: t[field] });
+        if (pts && value !== undefined) addPoints(pts, `Topic ${id}: ${field}`, { entity: 'topic', id, field, prevValue: t[field] });
         let updated = { ...t, [field]: value };
         if (field === 'finished' && value === true) updated.discarded = false;
         if (field === 'discarded' && value === true) updated.finished = false;
@@ -484,34 +666,35 @@ function Syllabus({ topics, setTopics, addPoints, onOpenModal, actionLogs }) {
     }));
   };
 
-  const getPriorityColor = (topic) => {
-    if (topic.priority !== null && topic.priority !== undefined) {
-      if (topic.priority === 1) return 'bg-emerald-500';
-      if (topic.priority === 2) return 'bg-amber-500';
-      if (topic.priority === 3) return 'bg-red-500';
-      return 'bg-slate-200';
-    }
-    const logs = actionLogs.filter(l => l.actionData?.id === topic.id && l.amount > 0).sort((a,b) => b.timestamp - a.timestamp);
-    if (logs.length === 0) return 'bg-slate-200';
-    const diff = (Date.now() - logs[0].timestamp) / (1000 * 60 * 60 * 24);
-    if (diff < 7) return 'bg-emerald-500';
-    if (diff < 15) return 'bg-amber-500';
-    return 'bg-red-500';
-  };
-
   const cyclePriority = (id, current) => {
-    const next = current === null ? 1 : current === 3 ? 0 : current + 1;
+    const next = current === null ? 1 : current === 4 ? null : current + 1;
+    addPoints(0, `Topic ${id}: Priority`, { entity: 'topic', id, field: 'priority', prevValue: current });
     setTopics(prev => prev.map(t => t.id === id ? { ...t, priority: next } : t));
   };
 
-  const displayList = [...topics].filter(t => t.title.toLowerCase().includes(search.toLowerCase()) || t.id.toString().includes(search)).sort((a, b) => a.discarded !== b.discarded ? (a.discarded ? 1 : -1) : a.id - b.id);
+  const getPriorityColor = (topic) => {
+    if (topic.priority === 1) return 'bg-emerald-500';
+    if (topic.priority === 2) return 'bg-amber-500';
+    if (topic.priority === 3) return 'bg-red-500';
+    if (topic.priority === 4) return 'bg-slate-500'; 
+    const logs = actionLogs.filter(l => l.actionData && l.actionData.entity === 'topic' && String(l.actionData.id) === String(topic.id)).sort((a,b) => b.timestamp - a.timestamp);
+    if (logs.length === 0) return 'bg-slate-200/50';
+    const diff = (Date.now() - logs[0].timestamp) / 864e5;
+    return diff < 7 ? 'bg-emerald-500/40' : diff < 15 ? 'bg-amber-500/40' : 'bg-red-500/40';
+  };
+
+  const displayList = topics.filter(t => !t.discarded && (t.title.toLowerCase().includes(search.toLowerCase()) || t.id.toString().includes(search))).sort((a, b) => a.discarded !== b.discarded ? (a.discarded ? 1 : -1) : a.id - b.id);
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-        <h2 className="text-2xl font-black text-slate-900 bg-white/50 backdrop-blur inline-block px-4 py-2 rounded-2xl shadow-sm">Official Syllabus</h2>
-        <div className="relative w-full sm:w-64"><Icon name="Search" size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" /><input placeholder="Search topic..." value={search} onChange={e=>setSearch(e.target.value)} className="w-full bg-white border-2 border-slate-100 rounded-2xl pl-10 pr-4 py-2 text-sm font-black outline-none focus:border-emerald-200 shadow-sm" /></div>
+    <div className="space-y-6 animate-in fade-in">
+      <div className="flex flex-col sm:flex-row justify-between items-center gap-4 bg-white/50 backdrop-blur p-4 rounded-3xl border border-white/50 shadow-sm">
+        <div className="flex items-center gap-3"><Icon name="BookOpen" className="text-amber-600" /><h2 className="text-2xl font-black text-slate-950">Temas</h2></div>
+        <div className="flex items-center gap-3 w-full sm:w-auto">
+          <div className="relative flex-1 sm:w-64"><Icon name="Search" size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" /><input placeholder="Filter by title or number..." value={search} onChange={e=>setSearch(e.target.value)} className="w-full bg-white border-2 border-slate-100 rounded-2xl pl-10 pr-4 py-2 text-sm font-black outline-none focus:border-emerald-200 transition-all" /></div>
+          <button onClick={onReset} className="px-3 py-2 bg-red-50 text-red-600 font-black text-[10px] rounded-xl hover:bg-red-100 transition-all shrink-0 uppercase tracking-widest">Reset</button>
+        </div>
       </div>
+      
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {displayList.map(t => {
           const blk = getTopicBlock(t.id);
@@ -519,36 +702,133 @@ function Syllabus({ topics, setTopics, addPoints, onOpenModal, actionLogs }) {
           let cardStyle = t.discarded ? "!bg-slate-200 opacity-60 grayscale scale-95 shadow-inner" : t.finished ? `${blk.color} !border-transparent ring-4 ring-offset-2 ${blk.color.replace('!bg-','ring-')} shadow-2xl scale-[1.02]` : "bg-white border-slate-100 shadow-sm";
           let textStyle = t.finished ? "!text-white" : "text-slate-900";
           let badgeStyle = t.finished ? "!bg-white/20 !border-transparent !text-white shadow-sm" : blk.badge;
+          
           return (
             <div key={t.id} className={`bento-card p-5 border-2 transition-all duration-300 relative overflow-hidden ${cardStyle}`}>
-              <div onClick={() => cyclePriority(t.id, t.priority ?? null)} className={`absolute left-0 top-0 bottom-0 w-2 ${getPriorityColor(t)} cursor-pointer hover:w-3 transition-all z-10`} title="Priority" />
-              <div className="flex items-center justify-between mb-4">
+              <div onClick={() => cyclePriority(t.id, t.priority)} className={`absolute left-0 top-0 bottom-0 w-2.5 ${getPriorityColor(t)} cursor-pointer transition-all hover:w-4 z-10`} />
+              <div className="flex items-center justify-between mb-4 pl-4">
                 <div className="flex items-center gap-4">
-                  <div onClick={() => onOpenModal(t)} className={`w-12 h-12 rounded-xl flex items-center justify-center font-black text-xl border-2 cursor-pointer active:scale-90 transition-transform ${badgeStyle}`}>{t.id}</div>
+                  <div onClick={() => onOpenModal(t)} className={`w-12 h-12 rounded-xl flex items-center justify-center font-black text-lg border-2 cursor-pointer active:scale-90 transition-transform ${badgeStyle}`}>{t.id}</div>
                   <div className="text-left leading-tight flex-1">
-                    <p className={`text-[10px] font-black uppercase opacity-80 tracking-widest ${textStyle}`}>{blk.name}</p>
+                    <p className={`text-[10px] font-black uppercase opacity-60 tracking-widest mb-0.5`}>{getTopicBlock(t.id).name}</p>
                     <div className="flex"><EditableText value={shortTitle} onSave={(nv) => { const rest = t.title.includes('.') ? t.title.substring(t.title.indexOf('.')) : ''; setTopics(prev => prev.map(x => x.id === t.id ? { ...x, title: nv + rest } : x)); }} className={`text-sm font-black line-clamp-1 ${textStyle} flex-1`} /></div>
                   </div>
                 </div>
-                <div className="flex gap-2">
-                  <button onClick={()=>updateField(t.id,'finished',!t.finished)} className={`p-2 rounded-lg transition-all active:scale-90 ${t.finished ? '!text-slate-900 !bg-white shadow-md' : 'text-slate-300 bg-slate-50 hover:bg-slate-100'}`}><Icon name="Lock" size={18}/></button>
-                  <button onClick={()=>updateField(t.id,'discarded',!t.discarded)} className={`p-2 rounded-lg transition-all active:scale-90 ${t.discarded ? '!text-slate-600 !bg-slate-300 shadow-inner' : (t.finished ? '!text-white !bg-black/20' : 'text-slate-300 bg-slate-50 hover:bg-slate-100')}`}><Icon name="Archive" size={18}/></button>
+                <div className="flex gap-1.5">
+                  <button onClick={()=>updateField(t.id,'finished',!t.finished, 0)} className={`p-2 rounded-xl transition-all active:scale-90 ${t.finished ? '!text-slate-900 !bg-white shadow-md' : 'text-slate-300 bg-slate-50 hover:bg-slate-100'}`}><Icon name="Lock" size={16}/></button>
+                  <button onClick={()=>updateField(t.id,'discarded',!t.discarded, 0)} className={`p-2 rounded-xl transition-all active:scale-90 ${t.discarded ? '!text-slate-600 !bg-slate-300 shadow-inner' : (t.finished ? '!text-white !bg-black/20' : 'text-slate-300 bg-slate-50 hover:bg-slate-100')}`}><Icon name="Archive" size={16}/></button>
                 </div>
               </div>
-              <div className={`flex justify-center gap-2 mb-4 py-2 rounded-xl border transition-colors ${t.finished ? '!bg-black/20 !border-transparent' : 'bg-slate-50 border-slate-100 shadow-inner'}`}>
-                {[1, 2, 3, 4, 5].map(star => (
-                  <button key={star} onClick={() => updateField(t.id, 'stars', t.stars === star ? 0 : star)} className="active:scale-125 transition-transform"><Icon name="Star" size={20} className={`transition-all ${t.stars >= star ? 'fill-yellow-400 text-yellow-400 scale-110 shadow-sm' : (t.finished ? 'text-white/30' : 'text-slate-200')}`} /></button>
-                ))}
+              <div className="grid grid-cols-2 gap-2 mb-4 pl-4">
+                <button onClick={() => updateField(t.id, 'redactado', !t.redactado, t.redactado ? -15 : 15)} className={`py-2.5 rounded-2xl text-[10px] font-black border-2 transition-all active:scale-95 ${t.redactado ? (t.finished ? '!bg-white !text-slate-900 !border-transparent' : 'bg-emerald-500 text-white border-transparent shadow-md') : (t.finished ? '!bg-black/20 !text-white !border-transparent' : 'bg-white text-slate-400 border-slate-50')}`}>WRITTEN</button>
+                <button onClick={() => { const next = (t.estudiado + 1) % 4; updateField(t.id, 'estudiado', next, next === 0 ? -75 : 25); }} className={`py-2.5 rounded-2xl text-[10px] font-black border-2 transition-all relative overflow-hidden active:scale-95 ${t.estudiado > 0 ? (t.finished ? '!bg-white !text-slate-900 !border-transparent' : 'bg-orange-500 text-white border-transparent shadow-md') : (t.finished ? '!bg-black/20 !text-white !border-transparent' : 'bg-white text-slate-400 border-slate-50')}`}>
+                  {t.estudiado > 0 && t.estudiado < 3 && !t.finished && <div className="absolute left-0 top-0 bottom-0 bg-white/20 transition-all" style={{ width: `${(t.estudiado/3)*100}%` }} />}
+                  <span className="relative z-10 uppercase">Studied {t.estudiado > 0 ? `(${t.estudiado}/3)` : ''}</span>
+                </button>
               </div>
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-2">
-                  <button onClick={() => updateField(t.id, 'redactado', !t.redactado, t.redactado ? 0 : 15)} className={`py-2 rounded-xl text-[10px] font-black border-2 transition-all active:scale-95 ${t.redactado ? (t.finished ? '!bg-white !text-slate-900 !border-transparent' : 'bg-amber-500 text-white border-transparent shadow-md') : (t.finished ? '!bg-black/20 !text-white !border-transparent' : 'bg-white text-slate-400 border-slate-50 shadow-sm')}`}>WRITTEN</button>
-                  <button onClick={() => updateField(t.id, 'estudiado', !t.estudiado, t.estudiado ? 0 : 25)} className={`py-2 rounded-xl text-[10px] font-black border-2 transition-all active:scale-95 ${t.estudiado ? (t.finished ? '!bg-white !text-slate-900 !border-transparent' : 'bg-orange-600 text-white border-transparent shadow-md') : (t.finished ? '!bg-black/20 !text-white !border-transparent' : 'bg-white text-slate-400 border-slate-50 shadow-sm')}`}>LEARNED</button>
+              <div className="grid grid-cols-3 gap-2 pl-4">
+                <CounterPill label="REVIEWS" count={t.reviews} onAdd={()=>updateField(t.id,'reviews',Number(t.reviews||0)+1,10)} onSub={()=>updateField(t.id,'reviews',Math.max(0,Number(t.reviews||0)-1),-10)} />
+                <CounterPill label="MOCKS" count={t.mocks} onAdd={()=>updateField(t.id,'mocks',Number(t.mocks||0)+1,40)} onSub={()=>updateField(t.id,'mocks',Math.max(0,Number(t.mocks||0)-1),-40)} />
+                <CounterPill label="MINI" count={t.miniMocks} onAdd={()=>updateField(t.id,'miniMocks',Number(t.miniMocks||0)+1,20)} onSub={()=>updateField(t.id,'miniMocks',Math.max(0,Number(t.miniMocks||0)-1),-20)} />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function CounterPill({ label, count, onAdd, onSub }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className={`flex flex-col items-center p-2 rounded-2xl border-2 transition-all cursor-pointer relative h-12 justify-center bg-slate-50 hover:border-emerald-100 shadow-inner`} onClick={() => setOpen(!open)}>
+      <p className="text-[7px] font-black text-slate-400 uppercase mb-1 leading-none">{label}</p>
+      <div className="flex items-center justify-center w-full relative">
+        {open && (<button onClick={(e)=>{e.stopPropagation(); onSub();}} className={`absolute left-0 w-7 h-7 bg-white shadow-sm rounded-lg flex items-center justify-center text-[10px] active:scale-90`}><Icon name="Minus" size={12} /></button>)}
+        <span className="text-sm font-black text-slate-700 tabular-nums">{count || 0}</span>
+        {open && (<button onClick={(e)=>{e.stopPropagation(); onAdd();}} className={`absolute right-0 w-7 h-7 bg-white shadow-sm rounded-lg flex items-center justify-center text-[10px] active:scale-90`}><Icon name="Plus" size={12} /></button>)}
+      </div>
+    </div>
+  );
+}
+
+function PlanningHub({ planning, setPlanning, units, setUnits, addPoints, submissionDate, setSubmissionDate, actionLogs, onOpenModal, onReset }) {
+  const diff = new Date(submissionDate) - new Date();
+  const days = Math.ceil(diff / 864e5);
+  const [showSubDate, setShowSubDate] = useState(false);
+  const [newPlan, setNewPlan] = useState("");
+
+  const upd = (id, list, setter, field, nv, pts = 0) => setter(list.map(i => { 
+    if(i.id===id){ 
+      if (i[field] === nv) return i;
+      addPoints(pts, i.title, { entity: id.toString().startsWith('ud') ? 'unit' : 'planning', id: i.id, field, prevValue: i[field] }); 
+      return {...i, [field]: nv}; 
+    } 
+    return i; 
+  }));
+
+  const cyclePriority = (id, current, isUnit) => {
+    const next = current === null ? 1 : current === 4 ? null : current + 1;
+    const entity = isUnit ? 'unit' : 'planning';
+    addPoints(0, `Prioridad`, { entity, id, field: 'priority', prevValue: current });
+    (isUnit ? setUnits : setPlanning)(prev => prev.map(t => t.id === id ? { ...t, priority: next } : t));
+  };
+
+  const getPriorityColor = (item, isUnit) => {
+    if (item.priority === 1) return 'bg-emerald-500';
+    if (item.priority === 2) return 'bg-amber-500';
+    if (item.priority === 3) return 'bg-red-500';
+    if (item.priority === 4) return 'bg-slate-500'; 
+    const entity = isUnit ? 'unit' : 'planning';
+    const logs = actionLogs.filter(l => l.actionData && l.actionData.entity === entity && String(l.actionData.id) === String(item.id)).sort((a,b) => b.timestamp - a.timestamp);
+    if (logs.length === 0) return 'bg-slate-200/50';
+    const d = (Date.now() - logs[0].timestamp) / 864e5;
+    return d < 7 ? 'bg-emerald-500/40' : d < 15 ? 'bg-amber-500/40' : 'bg-red-500/40';
+  };
+
+  return (
+    <div className="space-y-8 text-left animate-in slide-in-from-right-4">
+      <div className="flex flex-col sm:flex-row justify-between items-center gap-4 bg-white/50 backdrop-blur p-4 rounded-3xl border border-white/50 shadow-sm">
+        <div className="flex items-center gap-3"><Icon name="FileText" className="text-teal-600" /><h2 className="text-2xl font-black text-slate-950">Programación</h2></div>
+        <div className="flex items-center gap-4 w-full sm:w-auto justify-between">
+          <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-2xl border-2 border-blue-50 shadow-sm cursor-pointer relative" onClick={() => setShowSubDate(!showSubDate)}>
+            <Icon name="Calendar" size={16} className="text-blue-500" />
+            <span className="text-xl font-black text-blue-600 tabular-nums leading-none">{days}</span>
+            <span className="text-[10px] font-black uppercase text-slate-400">Días</span>
+            {showSubDate && <input type="date" value={submissionDate} onChange={e=>{setSubmissionDate(e.target.value); setShowSubDate(false);}} onClick={e=>e.stopPropagation()} className="absolute top-full right-0 mt-2 bg-white text-blue-900 rounded-xl p-2 text-xs font-black outline-none shadow-xl z-50 border-2 border-blue-100" />}
+          </div>
+          <button onClick={onReset} className="px-3 py-2 bg-red-50 text-red-600 font-black text-[10px] rounded-xl hover:bg-red-100 transition-all shrink-0 uppercase tracking-widest">Reset</button>
+        </div>
+      </div>
+
+      <div className="bento-card p-6 border-blue-100 shadow-sm flex flex-col justify-center">
+         <form onSubmit={e => { e.preventDefault(); if(newPlan.trim()){ setPlanning([...planning, {id: 'p'+(planning.length+1), title: newPlan.trim(), status: 0, indexNotes: "", priority: null, leg: "LOMLOE"}]); setNewPlan(""); } }} className="flex gap-2">
+            <input placeholder="Añadir nueva sección a la programación..." value={newPlan} onChange={e=>setNewPlan(e.target.value)} className="flex-1 bg-slate-50 border border-slate-100 rounded-xl px-4 py-2 text-sm font-black outline-none focus:border-blue-200 shadow-sm" />
+            <button type="submit" className="bg-blue-600 text-white p-3 rounded-xl shadow-md active:scale-95 transition-transform"><Icon name="Plus" size={20}/></button>
+          </form>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {[...planning, ...units].map(item => {
+          const isU = item.id.toString().startsWith('ud');
+          return (
+            <div key={item.id} className={`bento-card bg-white p-5 border-2 ${isU ? 'border-teal-100 hover:border-teal-300' : 'border-blue-100 hover:border-blue-300'} transition-all`}>
+              <div onClick={() => cyclePriority(item.id, item.priority, isU)} className={`absolute left-0 top-0 bottom-0 w-2.5 ${getPriorityColor(item, isU)} cursor-pointer transition-all hover:w-4 z-10`} />
+              <div className="flex justify-between items-center mb-4 pl-3">
+                <div className="flex items-center gap-4 flex-1">
+                  <div onClick={() => onOpenModal(item)} className={`w-12 h-12 rounded-2xl flex items-center justify-center font-black text-sm border-2 cursor-pointer shadow-sm active:scale-90 transition-transform shrink-0 ${isU ? 'bg-teal-50 text-teal-600 border-teal-100' : 'bg-blue-50 text-blue-600 border-blue-100'}`}>{isU ? item.id.replace('ud','') : item.id.replace('p','')}</div>
+                  <EditableText value={item.title} onSave={nv => upd(item.id, isU?units:planning, isU?setUnits:setPlanning, 'title', nv)} className="text-sm font-black text-slate-900 flex-1 leading-tight" />
                 </div>
-                <div className="grid grid-cols-3 gap-2">
-                  <Counter label="REVIEWS" count={Number(t.reviews || 0)} onAdd={() => updateField(t.id, 'reviews', Number(t.reviews || 0) + 1, 10)} color={t.finished ? "!text-white" : "text-emerald-600"} finished={t.finished} />
-                  <Counter label="MOCKS" count={Number(t.mocks || 0)} onAdd={() => updateField(t.id, 'mocks', Number(t.mocks || 0) + 1, 40)} color={t.finished ? "!text-white" : "text-rose-600"} finished={t.finished} />
-                  <Counter label="MINI" count={Number(t.miniMocks || 0)} onAdd={() => updateField(t.id, 'miniMocks', Number(t.miniMocks || 0) + 1, 20)} color={t.finished ? "!text-white" : "text-sky-600"} finished={t.finished} />
+                <button onClick={(e)=>{e.stopPropagation(); if(window.confirm("¿Eliminar sección?")) (isU?setUnits:setPlanning)(p=>p.filter(x=>x.id!==item.id))}} className="text-slate-200 hover:text-red-500 p-2 transition-colors"><Icon name="Trash2" size={16}/></button>
+              </div>
+              <div className="pl-3">
+                <button onClick={()=>{const ns = (item.status===10) ? 0 : item.status+1; upd(item.id, isU?units:planning, isU?setUnits:setPlanning, 'status', ns, ns===0 ? -(item.status*15) : 15);}} className={`w-full py-2 px-3 rounded-xl text-[10px] font-black border-2 transition-all relative overflow-hidden text-center active:scale-95 ${item.status > 0 ? (item.status===10 ? (isU ? 'bg-emerald-500 text-white border-transparent shadow-md' : 'bg-emerald-500 text-white border-transparent shadow-md') : (item.status <= 3 ? 'bg-amber-50 text-amber-700 border-amber-200' : item.status <= 6 ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-purple-50 text-purple-700 border-purple-200')) : 'bg-white text-slate-400 border-slate-100 shadow-sm'}`}>
+                  {item.status > 0 && item.status < 10 && <div className={`absolute left-0 top-0 bottom-0 opacity-20 transition-all duration-500 ${item.status <= 3 ? 'bg-amber-500' : item.status <= 6 ? 'bg-blue-500' : 'bg-purple-500'}`} style={{ width: `${((item.status % 3 || 3)/3)*100}%` }} />}
+                  <span className="relative z-10">{getPlanningStatusLabel(item.status)}</span>
+                </button>
+                <div className="flex gap-1 h-1.5 mt-2 bg-slate-50 rounded-full p-0.5 border border-slate-100">
+                  {Array.from({length:10}).map((_,i)=><div key={i} className={`flex-1 rounded-full transition-all duration-500 ${i<item.status ? (item.status <= 3 ? 'bg-amber-400' : item.status <= 6 ? 'bg-blue-400' : item.status < 10 ? 'bg-purple-400' : 'bg-emerald-500') : 'bg-transparent'}`} />)}
                 </div>
               </div>
             </div>
@@ -559,59 +839,82 @@ function Syllabus({ topics, setTopics, addPoints, onOpenModal, actionLogs }) {
   );
 }
 
-function Counter({ label, count, onAdd, color, finished }) {
-  return (
-    <div className={`flex flex-col items-center p-2 rounded-xl border transition-colors ${finished ? '!bg-black/20 !border-transparent shadow-sm' : 'bg-slate-50 border-slate-100 shadow-sm'}`}>
-      <p className={`text-[7px] font-black uppercase opacity-80 mb-1 leading-none ${finished ? '!text-white/80' : 'text-slate-400'}`}>{label}</p>
-      <div className="flex items-center gap-2">
-        <span className={`text-xs font-black ${color}`}>{count}</span>
-        <button onClick={onAdd} className={`w-5 h-5 rounded flex items-center justify-center text-xs font-black shadow-sm active:scale-90 transition-transform ${finished ? 'bg-white/20 text-white border border-white/30 hover:bg-white/30' : 'bg-white border border-slate-200 hover:bg-slate-100 text-slate-600'}`}>+</button>
-      </div>
-    </div>
-  );
-}
-
-function PlanningHub({ planning, setPlanning, units, setUnits, addPoints }) {
-  const upd = (id, list, setter, field, nv, pts) => setter(list.map(i => { if(i.id===id){ if(pts) addPoints(pts, i.title, { entity: 'planning', id: i.id, field, prevValue: i[field] }); return {...i, [field]: nv}; } return i; }));
-  return (
-    <div className="space-y-6 text-left">
-      <h2 className="text-2xl font-black text-slate-950 bg-white/50 backdrop-blur inline-block px-4 py-2 rounded-2xl shadow-sm border border-white/50">Program & UDs</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {[...planning, ...units].map(item => (
-          <div key={item.id} className="bento-card bg-white p-5 border-teal-50 shadow-sm transition-all hover:border-teal-100">
-            <div className="flex justify-between items-center mb-3 text-left">
-              <EditableText value={item.title} onSave={(nv)=>upd(item.id, item.id.startsWith('p')?planning:units, item.id.startsWith('p')?setPlanning:setUnits, 'title', nv)} className="text-sm font-black pr-4 leading-tight text-slate-900" />
-              <button onClick={()=>{const ns = (item.status+1)%6; upd(item.id, item.id.startsWith('p')?planning:units, item.id.startsWith('p')?setPlanning:setUnits, 'status', ns, ns>item.status?15:0);}} className={`px-3 py-1.5 rounded-xl text-[9px] font-black border-2 transition-all shrink-0 ${item.status===5 ? 'bg-teal-600 text-white border-transparent shadow-md' : 'bg-white border-teal-50 text-teal-600 hover:bg-teal-50 shadow-sm'}`}>{PLANNING_STATUS[item.status]}</button>
-            </div>
-            <div className="flex gap-1 h-2">{Array.from({length:6}).map((_,i)=><div key={i} className={`flex-1 rounded-full transition-colors ${i<=item.status?'bg-teal-500 shadow-sm':'bg-slate-100'}`} />)}</div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function PracticoView({ skills, setSkills, addPoints, sessions, setSessions }) {
+function PracticoView({ skills, setSkills, addPoints, sessions, setSessions, onReset }) {
   const [newSkill, setNewSkill] = useState("");
   return (
-    <div className="space-y-6 text-left">
-      <h2 className="text-2xl font-black text-slate-950 bg-white/50 backdrop-blur inline-block px-4 py-2 rounded-2xl shadow-sm border border-white/50">Practical Exam</h2>
+    <div className="space-y-6 animate-in slide-in-from-left-4 text-left">
+      <div className="flex flex-col sm:flex-row justify-between items-center gap-4 bg-white/50 backdrop-blur p-4 rounded-3xl border border-white/50 shadow-sm">
+        <div className="flex items-center gap-3"><Icon name="Target" className="text-indigo-600" /><h2 className="text-2xl font-black text-slate-950">Práctico</h2></div>
+        <button onClick={onReset} className="px-3 py-2 bg-red-50 text-red-600 font-black text-[10px] rounded-xl hover:bg-red-100 transition-all shrink-0 uppercase tracking-widest">Reset</button>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="bento-card bg-white p-6 space-y-6 border-indigo-50 shadow-md">
           <form onSubmit={e => { e.preventDefault(); if(newSkill.trim()){setSkills([...skills,{id:Date.now().toString(),label:newSkill.trim(),level:0}]); setNewSkill("");} }} className="flex gap-2 mb-4"><input placeholder="New skill..." value={newSkill} onChange={e=>setNewSkill(e.target.value)} className="flex-1 bg-slate-50 rounded-xl px-3 py-2 text-xs font-black outline-none border-2 border-transparent focus:border-indigo-200" /><button type="submit" className="bg-indigo-600 text-white p-2 rounded-xl shadow-md active:scale-95 transition-transform"><Icon name="Plus" size={18}/></button></form>
-          {skills.length === 0 && <p className="text-xs text-slate-400 font-bold italic text-center py-4">No skills. Add one!</p>}
+          {skills.length === 0 && <p className="text-xs text-slate-400 font-bold italic text-center py-4">No skills registered yet.</p>}
           {skills.map(s => (
-            <div key={s.id} className="space-y-2 text-left">
-              <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-slate-500"><EditableText value={s.label} onSave={(nv)=>setSkills(skills.map(x=>x.id===s.id?{...x,label:nv}:x))} className="flex-1 mr-2 leading-tight" /><div className="flex gap-1 shrink-0"><button onClick={()=>{if(s.level>0){setSkills(skills.map(ps=>ps.id===s.id?{...ps,level:ps.level-1}:ps)); addPoints(-25,"Adjustment",{entity:'skill',id:s.id,prevValue:s.level});}}} className="w-6 h-6 bg-slate-50 text-slate-400 rounded-lg shadow-sm hover:bg-slate-100 transition-colors font-black flex items-center justify-center active:scale-90">-</button><button onClick={()=>{if(s.level<10){setSkills(skills.map(ps=>ps.id===s.id?{...ps,level:ps.level+1}:ps)); addPoints(25,s.label,{entity:'skill',id:s.id,prevValue:s.level});}}} className="w-6 h-6 bg-indigo-50 text-indigo-600 rounded-lg shadow-sm hover:bg-indigo-100 transition-colors font-black flex items-center justify-center active:scale-90">+</button></div></div>
+            <div key={s.id} className="space-y-2 text-left mb-4">
+              <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-slate-500"><EditableText value={s.label} onSave={(nv)=>setSkills(skills.map(x=>x.id===s.id?{...x,label:nv}:x))} className="flex-1 mr-2 leading-tight" /><div className="flex gap-1 shrink-0"><button onClick={()=>{if(s.level>0){setSkills(skills.map(ps=>ps.id===s.id?{...ps,level:ps.level-1}:ps)); addPoints(-25,"Skill Adjustment",{entity:'skill',id:s.id,prevValue:s.level});}}} className="w-6 h-6 bg-slate-50 text-slate-400 rounded-lg shadow-sm hover:bg-slate-100 transition-colors font-black flex items-center justify-center active:scale-90">-</button><button onClick={()=>{if(s.level<10){setSkills(skills.map(ps=>ps.id===s.id?{...ps,level:ps.level+1}:ps)); addPoints(25,s.label,{entity:'skill',id:s.id,prevValue:s.level});}}} className="w-6 h-6 bg-indigo-50 text-indigo-600 rounded-lg shadow-sm hover:bg-indigo-100 transition-colors font-black flex items-center justify-center active:scale-90">+</button></div></div>
               <div className="h-3 bg-slate-100 rounded-full overflow-hidden border border-slate-200"><div className="h-full bg-indigo-500 transition-all duration-700 shadow-sm" style={{width:`${s.level*10}%`}} /></div>
             </div>
           ))}
         </div>
-        <div className="bento-card bg-white p-8 text-center flex flex-col justify-center items-center gap-4 border-indigo-100 shadow-lg">
-          <p className="text-6xl font-black text-indigo-600 tabular-nums leading-none tracking-tighter">{sessions}</p>
+        <div className="bento-card bg-white p-8 text-center flex flex-col justify-center items-center gap-4 border-indigo-100 shadow-md">
+          <p className="text-6xl font-black text-indigo-600 tabular-nums leading-none tracking-tighter">{sessions || 0}</p>
           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] leading-none">Cases Completed</p>
-          <div className="flex gap-2 w-full mt-2"><button onClick={()=>{if(sessions>0){setSessions(s=>s-1); addPoints(-25,"Case adjustment",{entity:'practico_sessions',prevValue:sessions});}}} className="w-16 py-4 bg-slate-100 text-slate-400 rounded-2xl font-black shadow-inner active:scale-95 transition-all hover:bg-slate-200">-</button><button onClick={()=>{setSessions(s=>s+1); addPoints(25,"Case Completed",{entity:'practico_sessions',prevValue:sessions});}} className="flex-1 py-4 bg-indigo-600 text-white rounded-2xl font-black shadow-lg shadow-indigo-100 active:scale-95 transition-all hover:bg-indigo-700">RECORD (+25 PTS)</button></div>
+          <div className="flex gap-2 w-full mt-2">
+            <button onClick={()=>{if(sessions>0){setSessions(s=>s-1); addPoints(-25,"Case adjustment",{entity:'practico_sessions',prevValue:sessions});}}} className="w-16 py-4 bg-slate-100 text-slate-400 rounded-2xl font-black active:scale-95 transition-all hover:bg-slate-200">-</button>
+            <button onClick={()=>{setSessions(s=>(s||0)+1); addPoints(25,"Case Completed",{entity:'practico_sessions',prevValue:sessions});}} className="flex-1 py-4 bg-indigo-600 text-white rounded-2xl font-black shadow-lg shadow-indigo-100 active:scale-95 transition-all hover:bg-indigo-700">RECORD (+25 PTS)</button>
+          </div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+function ProgressMap({ points, level, xp, examDate, setExamDate, addPoints, levelDates }) {
+  const diff = new Date(examDate) - new Date();
+  const days = Math.ceil(diff / 864e5);
+  const [showDate, setShowDate] = useState(false);
+  const [showPts, setShowPts] = useState(false);
+  return (
+    <div className="space-y-12 max-w-xl mx-auto py-8 text-center animate-in fade-in">
+      <div className="grid grid-cols-2 gap-4">
+        <div className="bento-card p-6 border-emerald-100 shadow-md relative overflow-hidden">
+          <Icon name="Calendar" className="absolute -right-4 -bottom-4 text-emerald-50 opacity-50" size={100} />
+          <p className="text-4xl font-black text-emerald-950 tabular-nums cursor-pointer relative z-10" onClick={() => setShowDate(!showDate)}>{days}</p>
+          <p className="text-[8px] font-black uppercase text-slate-400 mt-1 relative z-10">Days to D-Day</p>
+          {showDate && <input type="date" value={examDate} onChange={e=>{setExamDate(e.target.value); setShowDate(false);}} className="absolute top-2 left-2 bg-white text-[8px] font-black text-emerald-600 outline-none rounded p-1 shadow z-50" />}
+        </div>
+        <div className="relative" onClick={() => setShowPts(!showPts)}>
+          <div className="bento-card p-6 border-emerald-100 shadow-md cursor-pointer h-full flex flex-col items-center justify-center hover:border-emerald-300">
+            <div className="flex justify-between items-end w-full mb-1">
+              <span className="text-sm font-black text-emerald-600 uppercase">Lvl {level}</span>
+              <span className="text-[10px] font-black text-emerald-500 tabular-nums">{xp || 0}/200</span>
+            </div>
+            <div className="w-full h-3 bg-slate-50 rounded-full overflow-hidden border shadow-inner">
+              <div className="h-full bg-emerald-500 transition-all duration-1000 shadow-lg" style={{width:`${((xp||0)/200)*100}%`}}/>
+            </div>
+          </div>
+          {showPts && (
+            <div className="absolute top-full left-0 right-0 mt-2 bg-white border-2 border-emerald-100 rounded-2xl p-3 shadow-2xl z-50 flex gap-2 animate-in zoom-in-95">
+              <button onClick={(e) => { e.stopPropagation(); addPoints(-5, 'Ajuste'); setShowPts(false); }} className="flex-1 flex flex-col items-center p-2 bg-red-50 text-red-600 rounded-xl hover:bg-red-100 active:scale-95 transition-all"><Icon name="Minus" size={16} /><span className="text-[8px] font-black mt-1">-5</span></button>
+              <button onClick={(e) => { e.stopPropagation(); addPoints(10, '30 min session'); setShowPts(false); }} className="flex-1 flex flex-col items-center p-2 bg-emerald-50 text-emerald-700 rounded-xl hover:bg-emerald-100 active:scale-95 transition-all"><Icon name="Clock" size={16} /><span className="text-[8px] font-black mt-1">+10</span></button>
+              <button onClick={(e) => { e.stopPropagation(); addPoints(25, '1 hour study'); setShowPts(false); }} className="flex-1 flex flex-col items-center p-2 bg-emerald-600 text-white rounded-xl shadow-md hover:bg-emerald-700 active:scale-95 transition-all"><Icon name="Target" size={16} /><span className="text-[8px] font-black mt-1">+25</span></button>
+              <button onClick={(e) => { e.stopPropagation(); addPoints(5, 'Bonus'); setShowPts(false); }} className="flex-1 flex flex-col items-center p-2 bg-amber-50 text-amber-600 rounded-xl hover:bg-amber-100 active:scale-95 transition-all"><Icon name="Star" size={16} /><span className="text-[8px] font-black mt-1">+5</span></button>
+            </div>
+          )}
+        </div>
+      </div>
+      <div className="flex flex-col items-center gap-16 relative mt-10">
+        <div className="absolute top-0 bottom-0 w-2 bg-emerald-50 rounded-full -z-10" />
+        {[level+1, level, level-1, level-2].filter(l=>l>0).map(l => (
+          <div key={l} className={`w-20 h-20 rounded-full border-4 flex flex-col items-center justify-center transition-all relative ${l === level ? 'bg-white border-emerald-500 scale-125 shadow-xl ring-8 ring-emerald-50' : 'bg-slate-50 border-slate-200 text-slate-300 opacity-60'}`}>
+            <span className="text-2xl font-black tabular-nums">{l}</span>
+            {levelDates && levelDates[l] && <span className={`absolute -bottom-5 text-[7px] font-black uppercase tracking-widest whitespace-nowrap ${l === level ? 'text-emerald-500' : 'text-slate-400'}`}>{levelDates[l]}</span>}
+            {l === level && <Icon name="Turtle" size={24} className="absolute -top-8 text-emerald-600 animate-bounce" />}
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -622,17 +925,15 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam }) {
   const [txt, setTxt] = useState("");
   const [name, setName] = useState("");
   const [editingId, setEditingId] = useState(null);
-  const [shuffledId, setShuffledId] = useState(null);
   const startExamMode = () => { const allCards = decks.flatMap(d => d.cards.map(c => ({...c, deckName: d.name}))); if (allCards.length === 0) return alert("Empty library!"); onExam({ id: 'exam-mode', name: 'TOTAL EXAM', cards: allCards.sort(() => Math.random() - 0.5) }); };
   const saveDeck = () => { if(txt.includes(':') && name){ const cards = txt.split('\n').filter(l=>l.includes(':')).map(l=>{const [q,a]=l.split(':'); return {q:q.trim(),a:a.trim(),id:Math.random().toString(36)};}); if(editingId) setDecks(decks.map(d=>d.id===editingId?{...d,name,cards}:d)); else setDecks([{id:Date.now().toString(),name,cards}, ...decks]); setOpen(false); setName(""); setTxt(""); setEditingId(null); } };
   const loadForEdit = (deck) => { setName(deck.name); setTxt(deck.cards.map(c => `${c.q} : ${c.a}`).join('\n')); setEditingId(deck.id); setOpen(true); };
-  const shuffleDeck = (id) => { setDecks(decks.map(d=>d.id===id?{...d,cards:[...d.cards].sort(()=>Math.random()-0.5)}:d)); setShuffledId(id); setTimeout(()=>setShuffledId(null),1000); };
   return (
     <div className="space-y-6 text-left">
       <div className="flex justify-between items-center bg-white/50 backdrop-blur px-4 py-2 rounded-2xl shadow-sm border border-white/50"><h2 className="text-2xl font-black text-rose-950">Library</h2><button onClick={startExamMode} className="p-3 bg-rose-100 text-rose-700 rounded-xl font-black text-[10px] flex items-center gap-2 border border-rose-200 active:scale-95 transition-all shadow-sm"><Icon name="Zap" size={14} className="fill-rose-700"/> EXAM MODE</button></div>
       <button onClick={()=>{setOpen(!open); setEditingId(null); setName(""); setTxt("");}} className="w-full p-4 bg-rose-600 text-white rounded-2xl font-black shadow-lg shadow-rose-100 active:scale-95 transition-all">{editingId ? 'EDITING DECK' : 'NEW DECK'}</button>
       {open && (<div className="bento-card p-6 border-rose-100 space-y-4 shadow-xl animate-in zoom-in-95 bg-white"><input placeholder="Deck name..." value={name} onChange={e=>setName(e.target.value)} className="w-full bg-slate-50 p-3 rounded-xl font-black outline-none border-2 border-transparent focus:border-rose-200 shadow-inner" /><textarea placeholder="Question : Answer (One per line)" value={txt} onChange={e=>setTxt(e.target.value)} className="w-full h-32 bg-slate-50 p-3 rounded-xl font-black outline-none resize-none border-2 border-transparent focus:border-rose-200 shadow-inner" /><button onClick={saveDeck} className="w-full p-3 bg-rose-600 text-white rounded-xl font-black shadow-md uppercase">{editingId ? 'Save Changes' : 'Create Deck'}</button></div>)}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">{decks.map(d=>(<div key={d.id} onClick={()=>onSelect(d.id.toString())} className="bento-card bg-white p-5 flex justify-between items-center cursor-pointer hover:border-rose-300 transition-all shadow-sm group"><div><p className="font-black text-left text-slate-800 leading-tight">{d.name}</p><p className="text-[9px] text-rose-400 font-black uppercase tracking-widest mt-1 flex items-center gap-2">{d.cards.length} cards {shuffledId === d.id && <Icon name="Shuffle" size={10} className="animate-bounce" />}</p></div><div className="flex gap-2"><button onClick={(e)=>{e.stopPropagation(); shuffleDeck(d.id)}} className="text-slate-300 hover:text-rose-500 p-1"><Icon name="Shuffle" size={18}/></button><button onClick={(e)=>{e.stopPropagation(); loadForEdit(d)}} className="text-slate-300 hover:text-emerald-500 p-1"><Icon name="Edit" size={18}/></button><button onClick={(e)=>{e.stopPropagation(); setDecks(decks.filter(x=>x.id.toString()!==d.id.toString()))}} className="text-slate-300 hover:text-red-500 p-1"><Icon name="Trash2" size={18}/></button></div></div>))}</div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">{decks.map(d=>(<div key={d.id} onClick={()=>onSelect(d.id.toString())} className="bento-card bg-white p-5 flex justify-between items-center cursor-pointer hover:border-rose-300 transition-all shadow-sm group"><div><p className="font-black text-left text-slate-800 leading-tight">{d.name}</p><p className="text-[9px] text-rose-400 font-black uppercase tracking-widest mt-1 flex items-center gap-2">{d.cards.length} cards</p></div><div className="flex gap-2"><button onClick={(e)=>{e.stopPropagation(); loadForEdit(d)}} className="text-slate-300 hover:text-emerald-500 p-1"><Icon name="Edit" size={18}/></button><button onClick={(e)=>{e.stopPropagation(); setDecks(decks.filter(x=>x.id.toString()!==d.id.toString()))}} className="text-slate-300 hover:text-red-500 p-1"><Icon name="Trash2" size={18}/></button></div></div>))}</div>
     </div>
   );
 }
@@ -643,59 +944,129 @@ function DeckStudyView({ deck, onBack, addPoints }) {
   const card = deck?.cards[idx];
   if(!card) return null;
   return (
-    <div className="max-w-xl mx-auto py-10 space-y-8 text-left"><button onClick={onBack} className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-rose-600 transition-all"><Icon name="ChevronRight" className="rotate-180" size={16}/> Back to Library</button><div className="h-80 w-full relative" style={{ perspective: '1000px' }} onClick={()=>{if(!flipped) addPoints(2,"Flashcard"); setFlipped(!flipped);}}><div className={`relative w-full h-full transition-transform duration-500 rounded-[40px] shadow-2xl cursor-pointer ${flipped ? '[transform:rotateY(180deg)]' : ''}`} style={{ transformStyle: 'preserve-3d' }}><div className="absolute inset-0 bg-white border-8 border-rose-50 rounded-[40px] flex flex-col items-center justify-center p-10 text-center [backface-visibility:hidden] shadow-inner">{card?.deckName && <span className="absolute top-6 px-3 py-1 bg-rose-50 text-rose-500 text-[8px] font-black rounded-full uppercase border border-rose-100">{card.deckName}</span>}<p className="text-2xl font-black text-slate-800">{card?.q}</p></div><div className="absolute inset-0 bg-rose-600 text-white rounded-[40px] flex items-center justify-center p-10 text-center [transform:rotateY(180deg)] [backface-visibility:hidden] shadow-xl shadow-rose-200"><p className="text-xl font-medium italic">{card?.a}</p></div></div></div><div className="flex gap-4"><button onClick={()=>{setIdx(p=>Math.max(0,p-1)); setFlipped(false);}} className="flex-1 py-4 bg-white border-2 border-rose-100 rounded-2xl font-black text-rose-600 shadow-sm active:scale-95 transition-all" disabled={idx===0}>PREVIOUS</button><button onClick={()=>{setIdx(p=>Math.min(deck.cards.length-1,p+1)); setFlipped(false);}} className="flex-1 py-4 bg-rose-600 text-white rounded-2xl font-black shadow-xl shadow-rose-100 active:scale-95 transition-all" disabled={idx===deck.cards.length-1}>NEXT</button></div></div>
+    <div className="max-w-xl mx-auto py-10 space-y-8 text-left"><button onClick={onBack} className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-rose-600 transition-all"><Icon name="ChevronRight" className="rotate-180" size={16}/> Back to Library</button><div className="h-80 w-full relative" style={{ perspective: '1000px' }} onClick={()=>{if(!flipped) addPoints(2,"Flashcard Mastery"); setFlipped(!flipped);}}><div className={`relative w-full h-full transition-transform duration-500 rounded-[40px] shadow-2xl cursor-pointer ${flipped ? '[transform:rotateY(180deg)]' : ''}`} style={{ transformStyle: 'preserve-3d' }}><div className="absolute inset-0 bg-white border-8 border-rose-50 rounded-[40px] flex flex-col items-center justify-center p-10 text-center [backface-visibility:hidden] shadow-inner">{card?.deckName && <span className="absolute top-6 px-3 py-1 bg-rose-50 text-rose-500 text-[8px] font-black rounded-full uppercase border border-rose-100">{card.deckName}</span>}<p className="text-2xl font-black text-slate-800">{card?.q}</p></div><div className="absolute inset-0 bg-rose-600 text-white rounded-[40px] flex items-center justify-center p-10 text-center [transform:rotateY(180deg)] [backface-visibility:hidden] shadow-xl shadow-rose-200"><p className="text-xl font-medium italic">{card?.a}</p></div></div></div><div className="flex gap-4"><button onClick={()=>{setIdx(p=>Math.max(0,p-1)); setFlipped(false);}} className="flex-1 py-4 bg-white border-2 border-rose-100 rounded-2xl font-black text-rose-600 shadow-sm active:scale-95 transition-all" disabled={idx===0}>PREVIOUS</button><button onClick={()=>{setIdx(p=>Math.min(deck.cards.length-1,p+1)); setFlipped(false);}} className="flex-1 py-4 bg-rose-600 text-white rounded-2xl font-black shadow-xl shadow-rose-100 active:scale-95 transition-all" disabled={idx===deck.cards.length-1}>NEXT</button></div></div>
   );
 }
 
-function ProgressMap({ level, progress, examDate, setExamDate, levelDates, addPoints }) {
-  const diff = new Date(examDate) - new Date();
-  const days = Math.ceil(diff / (1000*60*60*24));
-  const levelsToShow = [level + 2, level + 1, level, level - 1, level - 2].filter(l => l > 0);
-  const [showDate, setShowDate] = useState(false);
-  const [showPts, setShowPts] = useState(false);
+function BadgesView({ points, streak, maxStreak, topics, planning, units, skills }) {
+  const doneTopics = topics.filter(t=>t.finished).length;
+  const studiedTopics = topics.filter(t=>t.estudiado > 0).length;
+  const writtenTopics = topics.filter(t=>t.redactado).length;
+  const planningDone = planning.filter(p=>p.status===10).length;
+  const unitsDone = units.filter(u=>u.status===10).length;
+  const allSkills = skills.reduce((a, s) => a + s.level, 0);
+
+  const BADGES = [
+    { icon: '🥚', title: 'Hatching', desc: '500 pts', cond: points >= 500 },
+    { icon: '🐢', title: 'Explorer', desc: '1,000 pts', cond: points >= 1000 },
+    { icon: '🐾', title: 'Walker', desc: '2,500 pts', cond: points >= 2500 },
+    { icon: '🥷', title: 'Ninja', desc: '5,000 pts', cond: points >= 5000 },
+    { icon: '🥋', title: 'Black Belt', desc: '10k pts', cond: points >= 10000 },
+    { icon: '🐉', title: 'Dragon', desc: '25k pts', cond: points >= 25000 },
+    { icon: '🌌', title: 'Cosmic', desc: '50k pts', cond: points >= 50000 },
+    { icon: '⚡', title: 'God Mode', desc: '100k pts', cond: points >= 100000 },
+
+    { icon: '🔥', title: 'Spark', desc: '3 Day Streak', cond: maxStreak >= 3 },
+    { icon: '🏕️', title: 'Camper', desc: '7 Day Streak', cond: maxStreak >= 7 },
+    { icon: '⚒️', title: 'Forged', desc: '15 Day Streak', cond: maxStreak >= 15 },
+    { icon: '🧘', title: 'Monk', desc: '30 Day Streak', cond: maxStreak >= 30 },
+    { icon: '🏔️', title: 'Mountain', desc: '60 Day Streak', cond: maxStreak >= 60 },
+    { icon: '👑', title: 'Unstoppable', desc: '100 Day Streak', cond: maxStreak >= 100 },
+
+    { icon: '✍️', title: 'Writer', desc: '1 Topic Written', cond: writtenTopics >= 1 },
+    { icon: '📝', title: 'Author', desc: '10 Topics Written', cond: writtenTopics >= 10 },
+    { icon: '📚', title: 'Novelist', desc: '30 Topics Written', cond: writtenTopics >= 30 },
+
+    { icon: '👁️', title: 'Reader', desc: '1 Topic Studied', cond: studiedTopics >= 1 },
+    { icon: '🧠', title: 'Scholar', desc: '10 Topics Studied', cond: studiedTopics >= 10 },
+    { icon: '🎓', title: 'Professor', desc: '30 Topics Studied', cond: studiedTopics >= 30 },
+
+    { icon: '🔒', title: 'Secured', desc: '1 Mastered', cond: doneTopics >= 1 },
+    { icon: '🛡️', title: 'Fortress', desc: '10 Mastered', cond: doneTopics >= 10 },
+    { icon: '🏰', title: 'Citadel', desc: '30 Mastered', cond: doneTopics >= 30 },
+    { icon: '🏆', title: 'Legend', desc: '69 Mastered', cond: doneTopics === 69 },
+
+    { icon: '🏗️', title: 'Foundation', desc: '1 Prog Part', cond: planningDone >= 1 },
+    { icon: '🏛️', title: 'Architect', desc: 'All Prog Final', cond: planningDone === planning.length && planning.length > 0 },
+    { icon: '🎨', title: 'Designer', desc: '1 Unit Final', cond: unitsDone >= 1 },
+    { icon: '🧩', title: 'Mastermind', desc: 'All Units Final', cond: unitsDone === units.length && units.length > 0 },
+
+    { icon: '🎯', title: 'Sharp', desc: '1 Skill Maxed', cond: skills.some(s=>s.level===10) },
+    { icon: '👁️‍🗨️', title: 'Flawless', desc: 'All Skills Maxed', cond: allSkills === (skills.length * 10) && skills.length > 0 },
+  ];
+
   return (
-    <div className="space-y-12 max-w-xl mx-auto py-8">
-      <div className="grid grid-cols-2 gap-4">
-        <div className="bento-card bg-white p-6 text-center border-emerald-100 shadow-sm flex flex-col justify-center items-center"><p onClick={() => setShowDate(!showDate)} className="text-4xl font-black text-emerald-950 tabular-nums cursor-pointer hover:scale-105 transition-transform">{days}</p>{showDate && <input type="date" value={examDate} onChange={e=>{setExamDate(e.target.value); setShowDate(false);}} className="mt-2 text-[10px] font-black bg-emerald-50 p-2 rounded-xl outline-none shadow-inner w-full text-center" />}</div>
-        <div className="relative">
-          <div onClick={() => setShowPts(!showPts)} className="bento-card bg-white p-6 flex flex-col justify-center items-center border-emerald-100 shadow-sm cursor-pointer hover:border-emerald-300 h-full"><div className="flex justify-between items-end w-full mb-1"><span className="text-sm font-black text-emerald-600 uppercase tracking-tighter">Level Progress</span><span className="text-[10px] font-black text-emerald-500 uppercase tabular-nums">{progress} / 200 PTS</span></div><div className="w-full h-3 bg-emerald-50 rounded-full mt-1 overflow-hidden shadow-inner"><div className="h-full bg-emerald-500 transition-all duration-1000 shadow-sm" style={{width:`${(progress/200)*100}%`}}/></div></div>
-          {showPts && (<div className="absolute top-full left-0 right-0 mt-2 bg-white border-2 border-emerald-100 rounded-2xl p-3 shadow-2xl z-50 flex flex-col gap-2 animate-in zoom-in-95"><button onClick={(e) => { e.stopPropagation(); addPoints(10, '30 min session'); setShowPts(false); }} className="w-full bg-emerald-50 text-emerald-700 py-3 rounded-xl text-xs font-black uppercase shadow-sm active:scale-95 transition-transform">+30 MIN (10 PTS)</button><button onClick={(e) => { e.stopPropagation(); addPoints(25, '1 hour session'); setShowPts(false); }} className="w-full bg-emerald-600 text-white py-3 rounded-xl text-xs font-black uppercase shadow-md active:scale-95 transition-transform">+1 HOUR (25 PTS)</button><button onClick={(e) => { e.stopPropagation(); addPoints(5, 'Bonus points'); setShowPts(false); }} className="w-full bg-slate-50 text-slate-500 py-2 rounded-xl text-[10px] font-black uppercase active:scale-95 transition-transform">+5 BONUS</button></div>)}
-        </div>
+    <div className="space-y-8 text-left animate-in fade-in slide-in-from-bottom-6">
+      <div className="bento-card bg-white p-8 border-4 border-amber-50 text-center space-y-2 shadow-inner"><Icon name="Flame" size={48} className="fill-orange-500 text-orange-500 mx-auto" /><p className="text-5xl font-black text-slate-900 tabular-nums">{maxStreak}</p><p className="text-[10px] font-bold text-orange-500 uppercase tracking-widest leading-none">Max Consecutive Days</p></div>
+      <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-4">
+        {BADGES.map((b, i) => (
+          <div key={i} className={`bento-card bg-white p-4 flex flex-col items-center text-center transition-all ${b.cond ? 'bg-amber-50 border-amber-200 shadow-md scale-105' : 'opacity-20 grayscale scale-95 shadow-none border-dashed'}`}>
+            <span className="text-3xl mb-2">{b.icon}</span>
+            <p className="text-[9px] font-black text-slate-800 leading-tight mb-1 uppercase">{b.title}</p>
+            <p className="text-[7px] font-bold text-slate-400 uppercase tracking-tighter leading-none">{b.desc}</p>
+          </div>
+        ))}
       </div>
-      <div className="flex flex-col items-center gap-16 relative"><div className="absolute top-0 bottom-0 w-2 bg-emerald-100/30 rounded-full -z-10" />{levelsToShow.map(l => (<div key={l} className={`map-bubble transition-all duration-500 ${l === level ? 'bg-white border-emerald-500 scale-125 z-10 shadow-emerald-200' : l < level ? 'bg-emerald-500 border-emerald-200 text-white shadow-sm' : 'bg-slate-50 border-slate-100 text-slate-300'}`}>{l === level && <Icon name="Turtle" size={20} className="absolute -top-10 text-emerald-600 animate-bounce" />}<span className="text-2xl font-black tabular-nums">{l}</span>{levelDates[l] && <span className={`text-[8px] font-black uppercase mt-1 ${l < level ? 'text-emerald-100' : 'text-emerald-500'}`}>{levelDates[l]}</span>}</div>))}</div>
     </div>
   );
 }
 
-function BadgesView({ badges, maxStreak }) {
-  return (<div className="space-y-8 text-left"><div className="bento-card bg-white p-8 border-4 border-amber-50 text-center space-y-2 shadow-inner shadow-amber-50"><Icon name="Flame" size={48} className="fill-orange-500 text-orange-500 mx-auto" /><p className="text-5xl font-black text-slate-900 tabular-nums">{maxStreak}</p><p className="text-[10px] font-bold text-orange-500 uppercase tracking-widest leading-none">Max Daily Streak</p></div><div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">{badges.map(b => (<div key={b.id} className={`bento-card bg-white p-6 flex flex-col items-center text-center transition-all ${b.cond ? 'bg-amber-50 border-amber-200 shadow-lg scale-105' : 'opacity-20 grayscale scale-95'}`}><span className="text-4xl mb-2">{b.icon}</span><p className="text-sm font-black text-slate-800 leading-tight mb-1">{b.title}</p><p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter leading-none">{b.desc}</p></div>))}</div></div>);
-}
-
 function NotesView({ notes, setNotes }) {
   const [txt, setTxt] = useState("");
-  const [selColor, setSelColor] = useState(NOTE_COLORS[0]);
-  return (<div className="space-y-6 text-left"><div className="bento-card bg-white p-6 border-yellow-100 shadow-xl shadow-yellow-50"><textarea placeholder="Draft an idea..." value={txt} onChange={e=>setTxt(e.target.value)} className="w-full h-24 bg-transparent border-none font-bold outline-none resize-none text-slate-800" /><div className="flex justify-between items-center pt-4 border-t border-slate-50"><div className="flex gap-2">{NOTE_COLORS.map(c=>(<button key={c.id} onClick={()=>setSelColor(c)} className={`w-6 h-6 rounded-full border-2 transition-all ${c.bg} ${selColor.id===c.id ? 'border-slate-800 scale-125 shadow-md':'border-white hover:border-slate-200'}`} />))}</div><button onClick={()=>{if(txt.trim()){setNotes([{id:Date.now().toString(),text:txt,color:selColor,rot:Math.floor(Math.random()*6)-3}, ...notes]); setTxt("");}}} className="px-6 py-2 bg-yellow-500 text-white rounded-xl font-black text-xs shadow-md active:scale-95 transition-transform">PIN NOTE</button></div></div><div className="grid grid-cols-2 sm:grid-cols-3 gap-6">{notes.map(n=>(<div key={n.id} style={{transform:`rotate(${n.rot}deg)`}} className={`relative p-5 aspect-square rounded shadow-lg border-t-[8px] ${n.color.bg} ${n.color.border} group transition-all hover:scale-105 shadow-yellow-100`}><Icon name="Pin" size={16} className={`absolute top-2 left-1/2 -translate-x-1/2 opacity-20 ${n.color.pin}`} /><p className={`text-[11px] font-black h-full ${n.color.text} text-left overflow-y-auto custom-scrollbar`}>{n.text}</p><button onClick={()=>setNotes(notes.filter(x=>x.id!==n.id))} className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-500 transition-all"><Icon name="Trash2" size={14}/></button></div>))}</div></div>);
+  const [selColor, setSelColor] = useState({ id: 'yellow', bg: 'bg-yellow-200', border: 'border-yellow-300', text: 'text-yellow-900', pin: 'text-yellow-600' });
+  const NOTE_COLORS = [
+    { id: 'yellow', bg: 'bg-yellow-200', border: 'border-yellow-300', text: 'text-yellow-900', pin: 'text-yellow-600' },
+    { id: 'blue', bg: 'bg-blue-200', border: 'border-blue-300', text: 'text-blue-900', pin: 'text-blue-600' },
+    { id: 'green', bg: 'bg-green-200', border: 'border-green-300', text: 'text-green-900', pin: 'text-green-600' },
+    { id: 'pink', bg: 'bg-pink-200', border: 'border-pink-300', text: 'text-pink-900', pin: 'text-pink-600' },
+    { id: 'purple', bg: 'bg-purple-200', border: 'border-purple-300', text: 'text-purple-900', pin: 'text-purple-600' },
+  ];
+  return (<div className="space-y-6 text-left"><div className="bento-card bg-white p-6 border-yellow-100 shadow-xl shadow-yellow-50"><textarea placeholder="Sticky idea..." value={txt} onChange={e=>setTxt(e.target.value)} className="w-full h-24 bg-transparent border-none font-bold outline-none resize-none text-slate-800" /><div className="flex justify-between items-center pt-4 border-t border-slate-50"><div className="flex gap-2">{NOTE_COLORS.map(c=>(<button key={c.id} onClick={()=>setSelColor(c)} className={`w-6 h-6 rounded-full border-2 transition-all ${c.bg} ${selColor.id===c.id ? 'border-slate-800 scale-125 shadow-md':'border-white hover:border-slate-200'}`} />))}</div><button onClick={()=>{if(txt.trim()){setNotes([{id:Date.now().toString(),text:txt,color:selColor,rot:Math.floor(Math.random()*6)-3}, ...notes]); setTxt("");}}} className="px-6 py-2 bg-yellow-500 text-white rounded-xl font-black text-xs shadow-md active:scale-95 transition-transform">PIN IT</button></div></div><div className="grid grid-cols-2 sm:grid-cols-3 gap-6">{notes.map(n=>(<div key={n.id} style={{transform:`rotate(${n.rot}deg)`}} className={`relative p-5 aspect-square rounded shadow-lg border-t-[8px] ${n.color.bg} ${n.color.border} group transition-all hover:scale-105 shadow-yellow-100`}><Icon name="Pin" size={16} className={`absolute top-2 left-1/2 -translate-x-1/2 opacity-20 ${n.color.pin}`} /><p className={`text-[11px] font-black h-full ${n.color.text} text-left overflow-y-auto custom-scrollbar`}>{n.text}</p><button onClick={()=>setNotes(notes.filter(x=>x.id!==n.id))} className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-500 transition-all"><Icon name="Trash2" size={14}/></button></div>))}</div></div>);
 }
 
-function StatsView({ actionLogs, undoAction, topics }) {
+function StatsView({ actionLogs, undoAction, topics, planning, units }) {
   const [tab, setTab] = useState('hist');
-  const stats = useMemo(() => { const useful = topics.filter(t => !t.discarded); const total = useful.length; const done = useful.filter(t => t.finished).length; const started = useful.filter(t => (t.redactado || t.estudiado) && !t.finished).length; const pending = total - done - started; return { total, done, started, pending, donePct: Math.round((done/total)*100) || 0, startedPct: Math.round((started/total)*100) || 0, pendingPct: Math.round((pending/total)*100) || 0 }; }, [topics]);
+  const [statsView, setStatsView] = useState('syllabus');
+
+  const syllabusStats = useMemo(() => {
+    const useful = topics.filter(t => !t.discarded);
+    const total = useful.length;
+    const done = useful.filter(t => t.finished).length;
+    const started = useful.filter(t => (t.redactado || t.estudiado > 0) && !t.finished).length;
+    const pending = total - done - started;
+    return { done, started, pending, total, donePct: Math.round((done/total)*100) || 0, startedPct: Math.round((started/total)*100) || 0 };
+  }, [topics]);
+
+  const planningStats = useMemo(() => {
+    const combined = [...planning, ...units];
+    const total = combined.length;
+    const done = combined.filter(i => i.status === 10).length;
+    const started = combined.filter(i => i.status > 0 && i.status < 10).length;
+    const pending = total - done - started;
+    return { done, started, pending, total, donePct: Math.round((done/total)*100) || 0, startedPct: Math.round((started/total)*100) || 0 };
+  }, [planning, units]);
+
+  const currentStats = statsView === 'syllabus' ? syllabusStats : planningStats;
   const groupLogs = (mode) => { const groups = {}; actionLogs.forEach(l => { const d = new Date(l.timestamp); const key = mode === 'week' ? `Week ${Math.ceil(d.getDate()/7)} - ${d.toLocaleString('en-US',{month:'short'})}` : d.toLocaleString('en-US',{month:'long',year:'numeric'}); if(!groups[key]) groups[key] = { pts: 0, count: 0 }; groups[key].pts += l.amount; groups[key].count += 1; }); return Object.entries(groups).reverse(); };
+  
   return (
-    <div className="space-y-6 text-left">
+    <div className="space-y-6 text-left animate-in zoom-in-95">
       <div className="bento-card bg-white p-8 border-violet-100 shadow-xl">
-        <h3 className="text-center font-black text-slate-900 mb-6 uppercase tracking-widest text-sm">Active Syllabus Progress</h3>
+        <div className="flex justify-center mb-8 bg-slate-100 p-1 rounded-2xl w-fit mx-auto">
+          <button onClick={()=>setStatsView('syllabus')} className={`px-4 py-2 rounded-xl text-[10px] font-black transition-all ${statsView==='syllabus'?'bg-white text-violet-600 shadow-md':'text-slate-400'}`}>SYLLABUS</button>
+          <button onClick={()=>setStatsView('planning')} className={`px-4 py-2 rounded-xl text-[10px] font-black transition-all ${statsView==='planning'?'bg-white text-violet-600 shadow-md':'text-slate-400'}`}>PLANNING</button>
+        </div>
         <div className="flex flex-col md:flex-row items-center justify-center gap-12">
-          <div className="relative w-48 h-48 rounded-full shadow-inner border-8 border-slate-50 flex items-center justify-center" style={{ background: `conic-gradient(#10b981 ${stats.donePct}%, #8b5cf6 ${stats.donePct}% ${stats.donePct + stats.startedPct}%, #f1f5f9 ${stats.donePct + stats.startedPct}% 100%)` }}><div className="w-32 h-32 bg-white rounded-full shadow-2xl flex flex-col items-center justify-center"><span className="text-3xl font-black text-slate-900">{stats.donePct}%</span><span className="text-[8px] font-bold text-slate-400 uppercase">Mastered</span></div></div>
+          <div className="relative w-48 h-48 rounded-full shadow-inner border-8 border-slate-50 flex items-center justify-center" style={{ background: `conic-gradient(#10b981 ${currentStats.donePct}%, #8b5cf6 ${currentStats.donePct}% ${currentStats.donePct + currentStats.startedPct}%, #f1f5f9 ${currentStats.donePct + currentStats.startedPct}% 100%)` }}><div className="w-32 h-32 bg-white rounded-full shadow-2xl flex flex-col items-center justify-center"><span className="text-3xl font-black text-slate-900">{currentStats.donePct}%</span><span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mt-1">Mastered</span></div></div>
           <div className="grid grid-cols-1 gap-4">
-            <div className="flex items-center gap-3"><div className="w-4 h-4 rounded-full bg-emerald-500 shadow-sm" /><div className="text-left leading-none"><p className="text-xs font-black text-slate-800">{stats.done} Mastered</p><p className="text-[10px] font-bold text-slate-400">Completely ready</p></div></div>
-            <div className="flex items-center gap-3"><div className="w-4 h-4 rounded-full bg-violet-500 shadow-sm" /><div className="text-left leading-none"><p className="text-xs font-black text-slate-800">{stats.started} In Progress</p><p className="text-[10px] font-bold text-slate-400">Drafting/Studying</p></div></div>
-            <div className="flex items-center gap-3"><div className="w-4 h-4 rounded-full bg-slate-200 shadow-sm" /><div className="text-left leading-none"><p className="text-xs font-black text-slate-800">{stats.pending} Pending</p><p className="text-[10px] font-bold text-slate-400">Untouched</p></div></div>
+            <div className="flex items-center gap-3"><div className="w-4 h-4 rounded-full bg-emerald-500 shadow-sm" /><div className="text-left leading-none"><p className="text-xs font-black text-slate-800">{currentStats.done} Finished</p></div></div>
+            <div className="flex items-center gap-3"><div className="w-4 h-4 rounded-full bg-violet-500 shadow-sm" /><div className="text-left leading-none"><p className="text-xs font-black text-slate-800">{currentStats.started} In Progress</p></div></div>
+            <div className="flex items-center gap-3"><div className="w-4 h-4 rounded-full bg-slate-200 shadow-sm" /><div className="text-left leading-none"><p className="text-xs font-black text-slate-800">{currentStats.pending} Pending</p></div></div>
           </div>
         </div>
       </div>
       <div id="activity-log" className="flex justify-between items-center bg-white/50 backdrop-blur px-4 py-2 rounded-2xl overflow-x-auto shadow-sm border border-white/50"><h2 className="text-xl font-black text-violet-950">Activity Log</h2><div className="flex bg-slate-200 p-1 rounded-xl shrink-0">{['hist','week','month'].map(t=>(<button key={t} onClick={()=>setTab(t)} className={`px-3 py-1 text-[10px] font-black rounded-lg uppercase transition-all ${tab===t?'bg-white shadow-md text-violet-600':'text-slate-500'}`}>{t==='hist'?'History':t==='week'?'Weeks':'Months'}</button>))}</div></div>
-      <div className="min-h-[400px]">{tab === 'hist' ? (<div className="space-y-3 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">{actionLogs.length === 0 ? <p className="italic text-slate-300 font-bold">No records found.</p> : actionLogs.slice(0,50).map(l=>(<div key={l.id} className="bento-card bg-white p-4 flex justify-between items-center border-violet-50 transition-all hover:border-violet-200 shadow-sm"><div className="text-left leading-tight"><p className="text-sm font-black text-slate-800">{l.description}</p><p className="text-[9px] font-bold text-slate-400 uppercase">{new Date(l.timestamp).toLocaleString()}</p></div><div className="flex items-center gap-3"><span className="text-xs font-black text-violet-700 bg-violet-50 px-2 py-1 rounded-lg shadow-inner">+{l.amount}</span><button onClick={()=>undoAction(l.id)} className="text-slate-300 hover:text-violet-600 transition-colors" title="Undo"><Icon name="Undo2" size={18}/></button></div></div>))}</div>) : (<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">{groupLogs(tab).map(([key, data]) => (<div key={key} className="bento-card bg-white p-6 border-violet-100 flex justify-between items-center shadow-md"><div className="text-left leading-tight"><p className="text-xs font-black text-violet-900 uppercase tracking-tighter">{key}</p><p className="text-[10px] font-bold text-slate-400">{data.count} actions</p></div><div className="text-right"><p className="text-2xl font-black text-violet-600">+{data.pts}</p><p className="text-[8px] font-black opacity-40 uppercase tracking-widest">Points</p></div></div>))}</div>)}</div>
+      <div className="min-h-[400px]">{tab === 'hist' ? (<div className="space-y-3 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">{actionLogs.length === 0 ? <p className="italic text-slate-300 font-bold">No records found.</p> : actionLogs.slice(0,50).map(l=>(<div key={l.id} className="bento-card bg-white p-4 flex justify-between items-center border-violet-50 hover:border-violet-200 transition-all"><div className="text-left leading-tight"><p className="text-sm font-black text-slate-800 line-clamp-1">{l.description}</p><p className="text-[9px] font-bold text-slate-400 uppercase mt-1">{new Date(l.timestamp).toLocaleString()}</p></div><div className="flex items-center gap-3"><span className="text-xs font-black text-violet-700 bg-violet-50 px-2 py-1 rounded-lg shadow-inner">{l.amount > 0 ? '+'+l.amount : l.amount}</span><button onClick={()=>undoAction(l.id)} className="text-slate-300 hover:text-red-500 transition-colors" title="Undo"><Icon name="Undo2" size={16}/></button></div></div>))}</div>) : (<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">{groupLogs(tab).map(([key, data]) => (<div key={key} className="bento-card bg-white p-6 border-violet-100 flex justify-between items-center shadow-md"><div className="text-left leading-tight"><p className="text-xs font-black text-violet-900 uppercase tracking-tighter">{key}</p><p className="text-[10px] font-bold text-slate-400">{data.count} actions</p></div><div className="text-right"><p className="text-2xl font-black text-violet-600">+{data.pts}</p><p className="text-[8px] font-black opacity-40 uppercase tracking-widest">Points</p></div></div>))}</div>)}</div>
     </div>
   );
 }
@@ -703,19 +1074,19 @@ function StatsView({ actionLogs, undoAction, topics }) {
 function TodoView({ todos, setTodos, addPoints }) {
   const [type, setType] = useState('goal');
   const [inp, setInp] = useState("");
-  return (<div className="space-y-6 text-left"><div className="flex p-1 bg-slate-100 rounded-2xl shadow-inner"><button onClick={()=>setType('goal')} className={`flex-1 py-3 rounded-xl text-xs font-black transition-all ${type==='goal'?'bg-white text-orange-600 shadow-md':'text-slate-400'}`}>GOALS</button><button onClick={()=>setType('review')} className={`flex-1 py-3 rounded-xl text-xs font-black transition-all ${type==='review'?'bg-white text-orange-600 shadow-md':'text-slate-400'}`}>REVIEWS</button></div><form onSubmit={e=>{e.preventDefault(); if(inp.trim()){setTodos([{id:Date.now().toString(),text:inp,completed:false,type}, ...todos]); setInp("");}}} className="flex gap-2"><input placeholder="Add task..." value={inp} onChange={e=>setInp(e.target.value)} className="flex-1 bento-card bg-white px-4 py-3 text-sm font-black outline-none border-orange-50 focus:border-orange-200 shadow-sm" /><button type="submit" className="p-3 bg-orange-600 text-white rounded-xl shadow-lg shadow-orange-100 active:scale-95 transition-all"><Icon name="Plus" size={24}/></button></form><div className="space-y-3">{todos.filter(t=>t.type===type).map(t=>(<div key={t.id} className="bento-card bg-white p-4 flex items-center justify-between shadow-sm hover:shadow-md transition-all"><div className="flex items-center gap-3"><button onClick={()=>{setTodos(todos.map(pt=>pt.id===t.id?{...pt,completed:!pt.completed}:pt)); if(!t.completed) addPoints(5,t.text, { entity: 'todo', id: t.id, prevValue: t.completed });}} className={`w-8 h-8 rounded-lg border-2 flex items-center justify-center transition-all ${t.completed?'bg-emerald-500 border-emerald-500 text-white shadow-sm':'border-orange-100 hover:border-orange-300'}`}>{t.completed && <Icon name="Check" size={16}/>}</button><span className={`text-sm font-black text-left transition-all ${t.completed?'line-through text-slate-300':'text-slate-700'}`}>{t.text}</span></div><button onClick={()=>setTodos(todos.filter(x=>x.id!==t.id))} className="text-slate-200 hover:text-red-500 transition-colors active:scale-90"><Icon name="Trash2" size={18}/></button></div>))}</div></div>);
+  return (<div className="space-y-6 text-left"><div className="flex p-1 bg-slate-100 rounded-2xl shadow-inner"><button onClick={()=>setType('goal')} className={`flex-1 py-3 rounded-xl text-xs font-black transition-all ${type==='goal'?'bg-white text-orange-600 shadow-md':'text-slate-400'}`}>GOALS</button><button onClick={()=>setType('review')} className={`flex-1 py-3 rounded-xl text-xs font-black transition-all ${type==='review'?'bg-white text-orange-600 shadow-md':'text-slate-400'}`}>REVIEWS</button></div><form onSubmit={e=>{e.preventDefault(); if(inp.trim()){setTodos([{id:Date.now().toString(),text:inp,completed:false,type}, ...todos]); setInp("");}}} className="flex gap-2"><input placeholder="Add task..." value={inp} onChange={e=>setInp(e.target.value)} className="flex-1 bento-card bg-white px-4 py-3 text-sm font-black outline-none border-orange-50 focus:border-orange-200 shadow-sm" /><button type="submit" className="p-3 bg-orange-600 text-white rounded-xl shadow-lg shadow-orange-100 active:scale-95 transition-all"><Icon name="Plus" size={24}/></button></form><div className="space-y-3">{todos.filter(t=>t.type===type).map(t=>(<div key={t.id} className="bento-card bg-white p-4 flex items-center justify-between shadow-sm hover:shadow-md transition-all"><div className="flex items-center gap-3"><button onClick={()=>{const isDone = !t.completed; setTodos(todos.map(pt=>pt.id===t.id?{...pt,completed:isDone}:pt)); addPoints(isDone ? 5 : -5, t.text, { entity: 'todo', id: t.id, prevValue: t.completed });}} className={`w-8 h-8 rounded-lg border-2 flex items-center justify-center transition-all ${t.completed?'bg-emerald-500 border-emerald-500 text-white shadow-sm':'border-orange-100 hover:border-orange-300'}`}>{t.completed && <Icon name="Check" size={16}/>}</button><span className={`text-sm font-black text-left transition-all ${t.completed?'line-through text-slate-300':'text-slate-700'}`}>{t.text}</span></div><button onClick={()=>setTodos(todos.filter(x=>x.id!==t.id))} className="text-slate-200 hover:text-red-500 transition-colors active:scale-90"><Icon name="Trash2" size={18}/></button></div>))}</div></div>);
 }
 
 function HeaderToolBtn({ active, icon, label, color, onClick }) {
-  const c = active ? `bg-${color}-600 text-white shadow-lg` : `bg-${color}-50 text-${color}-600 border border-${color}-100 shadow-sm`;
-  return <button onClick={onClick} className={`flex flex-col items-center gap-1 p-3 rounded-2xl transition-all active:scale-95 ${c}`}><Icon name={icon} size={20} /><span className="text-[8px] font-black uppercase tracking-widest leading-none mt-1">{label}</span></button>;
+  const c = active ? `bg-${color}-50 text-${color}-600 shadow-md` : `bg-white text-slate-600 border border-slate-100 hover:bg-slate-50`;
+  return <button onClick={onClick} className={`flex flex-col items-center gap-1.5 p-2 rounded-xl transition-all active:scale-95 ${c}`}><Icon name={icon} size={16} /><span className="text-[7px] font-black uppercase tracking-widest leading-none mt-0.5">{label}</span></button>;
 }
 function NavBtn({ active, icon, label, color, onClick }) {
-  const c = active ? `text-${color}-600 bg-${color}-50 shadow-inner` : 'text-slate-400';
-  return <button onClick={onClick} className={`flex flex-col items-center gap-1 p-2 transition-all ${active?'scale-110':''}`}><div className={`p-2 rounded-xl ${c} transition-all shadow-sm`}><Icon name={icon} size={24} strokeWidth={active?3:2}/></div><span className={`text-[9px] font-black tracking-widest mt-1 ${active?`text-${color}-600`:'text-slate-400'}`}>{label}</span></button>;
+  const c = active ? `text-${color}-600 bg-${color}-50 shadow-inner` : 'text-slate-400 opacity-60 hover:opacity-100';
+  return <button onClick={onClick} className={`flex flex-col items-center gap-1 p-2 transition-all ${active?'scale-110':''}`}><div className={`p-2.5 rounded-xl ${c} transition-all shadow-sm`}><Icon name={icon} size={24} strokeWidth={active?3:2}/></div><span className={`text-[9px] font-black tracking-widest mt-1 ${active?`text-${color}-600`:'text-slate-400'}`}>{label}</span></button>;
 }
 function LoginScreen({ onLogin }) {
   const [c, setC] = useState("");
-  return <div className="min-h-screen flex items-center justify-center bg-emerald-50 p-6 text-center"><div className="bg-white p-10 rounded-[40px] shadow-2xl w-full max-w-sm border-4 border-emerald-100"><Icon name="Turtle" size={80} className="text-emerald-500 mx-auto mb-6" /><h1 className="text-3xl font-black mb-2 tracking-tighter text-emerald-950">TurtleStudy</h1><input placeholder="Sync code..." value={c} onChange={e=>setC(e.target.value)} className="w-full p-4 bg-slate-50 rounded-2xl mb-4 text-center font-black outline-none border-2 border-transparent focus:border-emerald-200 transition-all shadow-inner" /><button onClick={()=>onLogin(c)} className="w-full py-5 bg-emerald-600 text-white rounded-[24px] font-black shadow-lg hover:bg-emerald-700 active:scale-95 transition-all shadow-emerald-100 uppercase tracking-tighter">Enter Map</button></div></div>;
+  return <div className="min-h-screen flex items-center justify-center bg-emerald-50 p-6 text-center animate-in fade-in"><div className="bg-white p-10 rounded-[40px] shadow-2xl w-full max-w-sm border-4 border-emerald-100"><Icon name="Turtle" size={80} className="text-emerald-500 mx-auto mb-6" /><h1 className="text-3xl font-black mb-2 tracking-tighter text-emerald-950 leading-none">TurtleStudy</h1><p className="text-slate-400 text-xs font-bold uppercase mb-6 tracking-widest">Master Syllabus Manager</p><input placeholder="Sync Code" value={c} onChange={e=>setC(e.target.value)} className="w-full p-4 bg-slate-50 rounded-2xl mb-4 text-center font-black outline-none border-2 border-transparent focus:border-emerald-300 transition-all shadow-inner" /><button onClick={()=>onLogin(c)} className="w-full py-5 bg-emerald-600 text-white rounded-[24px] font-black shadow-lg hover:bg-emerald-700 active:scale-95 transition-all shadow-emerald-100 uppercase tracking-tighter">Enter App</button></div></div>;
 }
-function LoadingScreen() { return <div className="min-h-screen flex items-center justify-center bg-white"><Icon name="Turtle" className="text-emerald-500 animate-bounce" size={60} /></div>; }
+function LoadingScreen() { return <div className="min-h-screen flex items-center justify-center bg-white"><div className="text-center space-y-6"><Icon name="Turtle" className="text-emerald-500 animate-bounce mx-auto" size={80} /><p className="font-black text-emerald-900 animate-pulse uppercase tracking-[0.4em] text-xs">Synchronizing Vault...</p></div></div>; }
