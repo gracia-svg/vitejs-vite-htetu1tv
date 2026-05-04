@@ -358,7 +358,6 @@ export default function App() {
   const addPoints = (amount, desc, actionData = null) => {
     let finalLogs = [...actionLogs];
 
-    // Payload Cleanup: Borrar 'actionData' en logs mayores de 24 horas (86400000 ms)
     const twentyFourHoursAgo = Date.now() - 86400000;
     finalLogs = finalLogs.map(log => {
       if (log.actionData && log.timestamp < twentyFourHoursAgo) {
@@ -393,7 +392,6 @@ export default function App() {
   const undoAction = (id) => {
     const log = actionLogs.find(l => l.id === id);
     if (log) { 
-      // Si el log no tiene actionData, no podemos revertir de forma segura.
       if (!log.actionData && log.amount !== 0) {
          alert("Esta acción es demasiado antigua para deshacer sus cambios específicos de forma segura. Sin embargo, se restaurarán tus puntos a nivel general.");
       }
@@ -567,12 +565,12 @@ export default function App() {
         <div className="max-w-5xl mx-auto flex justify-between items-center">
           <div className="flex items-center gap-2 cursor-pointer transition-transform active:scale-95" onClick={() => setActiveTab('map')}>
             <div className="p-2 bg-emerald-600 rounded-xl text-white shadow-lg"><Icon name="Turtle" size={24} /></div>
-            <span className="font-black text-emerald-950 text-xl tracking-tighter">TurtleStudy</span>
+            <span className="font-black text-emerald-950 text-xl tracking-tighter hidden sm:block">TurtleStudy</span>
           </div>
 
           <div className="flex items-center gap-2">
             <button onClick={() => { setActiveTab('stats'); setIsToolsExpanded(true); }} className="px-3 py-2 bg-emerald-50 text-emerald-700 rounded-2xl border border-emerald-100 font-black flex items-center gap-2 text-sm shadow-sm hover:bg-emerald-100 transition-colors">
-              <Icon name="Trophy" size={16} /><span>{points} pts</span>
+              <Icon name="Trophy" size={16} /><span>{points}</span>
             </button>
             
             <div className="relative">
