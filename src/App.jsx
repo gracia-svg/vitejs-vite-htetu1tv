@@ -1014,17 +1014,19 @@ function ProgressMap({ points, level, xp, addPoints, streak, perfectWeeks, onVau
         </div>
       </div>
 
-      {/* WIDGET: FROM THE VAULT */}
-      <button 
-        onClick={onVaultOpen}
-        className="w-full vault-pill py-3 px-6 rounded-2xl flex items-center justify-center gap-3 shadow-lg active:scale-95 transition-all"
-      >
-        <span className="text-lg">🗝️</span>
-        <span className="text-xs font-black uppercase tracking-[0.2em]">From The Vault</span>
-      </button>
+      {/* WIDGET: FROM THE VAULT (REDUCIDO) */}
+      <div className="flex justify-center">
+        <button 
+          onClick={onVaultOpen}
+          className="vault-pill py-2 px-5 rounded-full flex items-center gap-2 shadow-lg active:scale-95 transition-all border border-slate-700/50"
+        >
+          <span className="text-sm">🗝️</span>
+          <span className="text-[9px] font-black uppercase tracking-[0.2em] opacity-80">Vault</span>
+        </button>
+      </div>
 
       {/* MAPA DE NIVELES */}
-      <div className="flex flex-col items-center gap-16 relative mt-16">
+      <div className="flex flex-col items-center gap-16 relative mt-12">
         <div className="absolute top-0 bottom-0 w-2 bg-emerald-50 rounded-full -z-10" />
         {[level+1, level, level-1, level-2].filter(l=>l>0).map(l => (
           <div key={l} className={`w-20 h-20 rounded-full border-4 flex flex-col items-center justify-center transition-all relative ${l === level ? 'bg-white border-emerald-500 scale-125 shadow-xl ring-8 ring-emerald-50' : 'bg-slate-50 border-slate-200 text-slate-300 opacity-60'}`}>
@@ -1138,7 +1140,7 @@ function SyllabusView({ topics, setTopics, addPoints, onOpenModal, actionLogs, o
 
               <div className="grid grid-cols-3 gap-2 pl-4">
                 <CounterPill label="REVIEWS" count={t.reviews} onAdd={()=>updateField(t.id,'reviews',Number(t.reviews||0)+1,10)} onSub={()=>updateField(t.id,'reviews',Math.max(0,Number(t.reviews||0)-1),-10)} />
-                <CounterPill label="MOCKS" count={t.mocks} onAdd={()=>updateField(t.id,'mocks',Number(t.mocks||0)+1,40)} onSub={()=>updateField(t.id,'mocks',Math.max(0,Number(t.mocks||0)-1),-40)} />
+                <CounterPill label="MOCKS" count={t.mocks} onAdd={()=>updateField(t.id,'mocks',Number(t.mocks||0)+1,40)} onSub={()=>updateField(t.id,'mocks',Math.max(0,Number(t.reviews||0)-1),-40)} />
                 <CounterPill label="MINI" count={t.miniMocks} onAdd={()=>updateField(t.id,'miniMocks',Number(t.miniMocks||0)+1,20)} onSub={()=>updateField(t.id,'miniMocks',Math.max(0,Number(t.miniMocks||0)-1),-20)} />
               </div>
             </div>
