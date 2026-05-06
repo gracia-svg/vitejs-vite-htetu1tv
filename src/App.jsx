@@ -303,6 +303,7 @@ export default function App() {
   const [isTimerActive, setIsTimerActive] = useState(false);
   const [endTime, setEndTime] = useState(null);
   const [showTimerMenu, setShowTimerMenu] = useState(false);
+  const [customMinutes, setCustomMinutes] = useState("");
 
   const [luckyNumbers, setLuckyNumbers] = useState([0,0,0,0]);
   const [activeDeckId, setActiveDeckId] = useState(null);
@@ -516,7 +517,6 @@ export default function App() {
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
       `}</style>
 
-      {/* MODAL GLOBAL */}
       {selectedTopicModal && (
         <div className="modal-overlay animate-in fade-in duration-300" onClick={() => { setSelectedTopicModal(null); setIsModalFullscreen(false); }}>
           <div className={`modal-content p-8 custom-scrollbar animate-in zoom-in-95 duration-300 ${isModalFullscreen ? 'modal-fullscreen' : ''}`} onClick={e => e.stopPropagation()}>
@@ -547,7 +547,6 @@ export default function App() {
                 />
               </div>
 
-              {/* CURRICULAR ALIGNMENT */}
               {selectedTopicModal.id.toString().startsWith('ud') ? (
                 <div className="flex flex-wrap justify-center gap-2 px-4 border-b border-slate-50 pb-6">
                   {['ce', 'sb', 'do', 'cr', 'leg'].map(key => (
@@ -602,11 +601,12 @@ export default function App() {
                 </div>
               )}
 
-              {/* LEY ALERT */}
-              {!selectedTopicModal.id.toString().startsWith('p') && !selectedTopicModal.id.toString().startsWith('ud') && [1, 2, 55, 65, 66].includes(selectedTopicModal.id) && (
+              {!selectedTopicModal.id.toString().startsWith('p') && !selectedTopicModal.id.toString().startsWith('ud') && [1, 2, 39, 40, 62, 65, 66].includes(selectedTopicModal.id) && (
                 <div className="mx-4 p-3 bg-amber-50 border-2 border-amber-200 rounded-2xl flex items-center gap-3 text-amber-700 animate-pulse">
                   <Icon name="AlertTriangle" size={24} />
-                  <p className="text-[10px] font-black text-left uppercase leading-tight">Must comply with Ley 1/2024 (Libertad Educativa CV)</p>
+                  <p className="text-[10px] font-black text-left uppercase leading-tight">
+                    { [62, 65, 66].includes(selectedTopicModal.id) ? "Must comply with Ley 1/2024 (Libertad Educativa CV)" : "Must comply with Decree 104/2018 (Inclusión CV)" }
+                  </p>
                 </div>
               )}
 
@@ -629,12 +629,12 @@ export default function App() {
                 {selectedTopicModal.isEditing ? (
                   <textarea 
                     autoFocus 
-                    className="w-full h-96 p-4 bg-slate-50 rounded-2xl border-2 border-emerald-200 outline-none font-medium text-slate-700 leading-relaxed resize-none" 
+                    className="w-full h-96 p-4 bg-slate-50 rounded-2xl border-2 border-emerald-200 outline-none font-medium text-slate-700 leading-relaxed resize-none custom-scrollbar" 
                     value={selectedTopicModal.tempNotes} 
                     onChange={e => setSelectedTopicModal({ ...selectedTopicModal, tempNotes: e.target.value })} 
                   />
                 ) : (
-                  <pre className="whitespace-pre-wrap font-sans text-slate-600 leading-relaxed bg-slate-50 p-6 rounded-2xl border-2 border-slate-100 min-h-[200px]">
+                  <pre className="whitespace-pre-wrap font-sans text-slate-600 leading-relaxed bg-slate-50 p-6 rounded-2xl border-2 border-slate-100 min-h-[200px] overflow-x-auto">
                     {selectedTopicModal.indexNotes || "Notes..."}
                   </pre>
                 )}
@@ -644,7 +644,6 @@ export default function App() {
         </div>
       )}
 
-      {/* HEADER PREMIUM */}
       <header className="sticky top-0 z-[100] bg-white/95 backdrop-blur-md border-b-2 border-slate-100 p-4 shadow-sm">
         <div className="max-w-5xl mx-auto flex justify-between items-center">
           <div className="flex items-center gap-2 cursor-pointer transition-transform active:scale-95" onClick={() => setActiveTab('map')}>
@@ -665,10 +664,16 @@ export default function App() {
               {showTimerMenu && (
                 <div className="absolute top-full right-0 mt-2 bg-white border-2 border-slate-100 rounded-2xl p-4 shadow-2xl z-[200] w-64 animate-in zoom-in-95">
                   <div className="grid grid-cols-2 gap-2 mb-3">
-                    <button onClick={()=>{setTimeLeft(7200); setEndTime(Date.now() + 7200000); setIsTimerActive(true); setShowTimerMenu(false)}} className="p-2 bg-slate-50 hover:bg-emerald-50 rounded-xl text-[10px] font-black uppercase">2H Focus</button>
-                    <button onClick={()=>{setTimeLeft(3600); setEndTime(Date.now() + 3600000); setIsTimerActive(true); setShowTimerMenu(false)}} className="p-2 bg-slate-50 hover:bg-emerald-50 rounded-xl text-[10px] font-black uppercase">1H Plan</button>
+                    <button onClick={()=>{const ms=7200000; setEndTime(Date.now()+ms); setTimeLeft(7200); setIsTimerActive(true); setShowTimerMenu(false)}} className="p-2 bg-slate-50 hover:bg-emerald-50 rounded-xl text-[10px] font-black uppercase">2H Focus</button>
+                    <button onClick={()=>{const ms=3600000; setEndTime(Date.now()+ms); setTimeLeft(3600); setIsTimerActive(true); setShowTimerMenu(false)}} className="p-2 bg-slate-50 hover:bg-emerald-50 rounded-xl text-[10px] font-black uppercase">1H Plan</button>
                   </div>
-                  <button onClick={()=>{setTimeLeft(0); setEndTime(null); setIsTimerActive(false); setShowTimerMenu(false)}} className="w-full p-2 bg-red-50 text-red-600 rounded-xl text-[10px] font-black uppercase tracking-widest">Reset Timer</button>
+                  
+                  <div className="pt-2 border-t border-slate-100 flex gap-2 items-center">
+                    <input type="number" placeholder="Min..." className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-xs font-black outline-none focus:border-emerald-300" value={customMinutes} onChange={e => setCustomMinutes(e.target.value)} />
+                    <button onClick={() => { const mins=parseInt(customMinutes); if(mins>0){ setEndTime(Date.now()+mins*60000); setTimeLeft(mins*60); setIsTimerActive(true); setShowTimerMenu(false); setCustomMinutes(""); } }} className="bg-emerald-600 text-white px-3 py-1 rounded-lg text-[10px] font-black">SET</button>
+                  </div>
+
+                  <button onClick={()=>{setEndTime(null); setTimeLeft(0); setIsTimerActive(false); setShowTimerMenu(false)}} className="w-full p-2 bg-red-50 text-red-600 rounded-xl text-[10px] font-black uppercase tracking-widest mt-2">Reset Timer</button>
                 </div>
               )}
             </div>
@@ -715,7 +720,6 @@ export default function App() {
         )}
       </header>
 
-      {/* MAIN CONTAINER */}
       <main className="max-w-5xl mx-auto p-4 md:p-8">
         {activeTab === 'map' && <ProgressMap points={points} level={Math.floor(points/200)+1} xp={points%200} examDate={examDate} setExamDate={setExamDate} addPoints={addPoints} levelDates={levelDates} />}
         {activeTab === 'syllabus' && <SyllabusView topics={topics} setTopics={setTopics} addPoints={addPoints} onOpenModal={setSelectedTopicModal} actionLogs={actionLogs} onReset={handleResetTopics} />}
@@ -729,7 +733,6 @@ export default function App() {
         {activeTab === 'stats' && <StatsView actionLogs={actionLogs} undoAction={undoAction} topics={topics} planning={planning} units={units} />}
       </main>
 
-      {/* NAV FOOTER FIXED */}
       <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t-2 border-slate-100 p-4 pb-8 z-50 shadow-lg">
         <div className="max-w-md mx-auto flex justify-around">
           <NavBtn active={activeTab==='map'} icon="MapIcon" label="MAPA" color="emerald" onClick={()=>setActiveTab('map')} />
@@ -743,7 +746,7 @@ export default function App() {
 }
 
 // ==========================================
-// 5. COMPONENTES DE VISTA (MINI-REACT)
+// 5. COMPONENTES DE VISTA
 // ==========================================
 
 function ProgressMap({ points, level, xp, examDate, setExamDate, addPoints, levelDates }) {
@@ -755,7 +758,6 @@ function ProgressMap({ points, level, xp, examDate, setExamDate, addPoints, leve
   return (
     <div className="space-y-12 max-w-xl mx-auto py-8 text-center animate-in fade-in">
       <div className="grid grid-cols-2 gap-4">
-        
         <div className="bento-card p-6 border-emerald-100 shadow-md relative overflow-hidden">
           <Icon name="Calendar" className="absolute -right-4 -bottom-4 text-emerald-50 opacity-50" size={100} />
           <p className="text-4xl font-black text-emerald-950 tabular-nums cursor-pointer relative z-10" onClick={() => setShowDate(!showDate)}>{days}</p>
@@ -778,30 +780,29 @@ function ProgressMap({ points, level, xp, examDate, setExamDate, addPoints, leve
             <div className="absolute top-full left-0 right-0 mt-2 bg-white border-2 border-emerald-100 rounded-2xl p-3 shadow-2xl z-50 flex flex-col gap-2 animate-in zoom-in-95">
               {ptsMenu === 'main' && (
                 <div className="flex gap-2">
-                  <button onClick={(e) => { e.stopPropagation(); setPtsMenu('add'); }} className="flex-1 py-3 bg-emerald-50 text-emerald-600 rounded-xl font-black hover:bg-emerald-100 transition-colors"><Icon name="Plus" size={20} className="mx-auto" /></button>
-                  <button onClick={(e) => { e.stopPropagation(); setPtsMenu('sub'); }} className="flex-1 py-3 bg-red-50 text-red-600 rounded-xl font-black hover:bg-red-100 transition-colors"><Icon name="Minus" size={20} className="mx-auto" /></button>
+                  <button onClick={(e) => { e.stopPropagation(); setPtsMenu('add'); }} className="flex-1 py-3 bg-emerald-50 text-emerald-600 rounded-xl font-black"><Icon name="Plus" size={20} className="mx-auto" /></button>
+                  <button onClick={(e) => { e.stopPropagation(); setPtsMenu('sub'); }} className="flex-1 py-3 bg-red-50 text-red-600 rounded-xl font-black"><Icon name="Minus" size={20} className="mx-auto" /></button>
                 </div>
               )}
               {ptsMenu === 'add' && (
                 <div className="grid grid-cols-2 gap-2">
                   {[5, 10, 15, 25].map(v => (
-                    <button key={v} onClick={(e) => { e.stopPropagation(); addPoints(v, `+${v} Pts (Manual)`); setPtsMenu('closed'); }} className="p-2 bg-emerald-500 text-white rounded-xl font-black text-xs hover:bg-emerald-600 transition-colors">+{v}</button>
+                    <button key={v} onClick={(e) => { e.stopPropagation(); addPoints(v, `+${v} Pts (Manual)`); setPtsMenu('closed'); }} className="p-2 bg-emerald-500 text-white rounded-xl font-black text-xs">+{v}</button>
                   ))}
-                  <button onClick={(e) => { e.stopPropagation(); setPtsMenu('main'); }} className="col-span-2 p-2 bg-slate-100 text-slate-500 rounded-xl text-[10px] font-black uppercase hover:bg-slate-200 transition-colors">Volver</button>
+                  <button onClick={(e) => { e.stopPropagation(); setPtsMenu('main'); }} className="col-span-2 p-2 bg-slate-100 text-slate-500 rounded-xl text-[10px] font-black uppercase">Volver</button>
                 </div>
               )}
               {ptsMenu === 'sub' && (
                 <div className="grid grid-cols-2 gap-2">
                   {[5, 10, 15, 25].map(v => (
-                    <button key={v} onClick={(e) => { e.stopPropagation(); addPoints(-v, `-${v} Pts (Manual)`); setPtsMenu('closed'); }} className="p-2 bg-red-500 text-white rounded-xl font-black text-xs hover:bg-red-600 transition-colors">-{v}</button>
+                    <button key={v} onClick={(e) => { e.stopPropagation(); addPoints(-v, `-${v} Pts (Manual)`); setPtsMenu('closed'); }} className="p-2 bg-red-500 text-white rounded-xl font-black text-xs">-{v}</button>
                   ))}
-                  <button onClick={(e) => { e.stopPropagation(); setPtsMenu('main'); }} className="col-span-2 p-2 bg-slate-100 text-slate-500 rounded-xl text-[10px] font-black uppercase hover:bg-slate-200 transition-colors">Volver</button>
+                  <button onClick={(e) => { e.stopPropagation(); setPtsMenu('main'); }} className="col-span-2 p-2 bg-slate-100 text-slate-500 rounded-xl text-[10px] font-black uppercase">Volver</button>
                 </div>
               )}
             </div>
           )}
         </div>
-
       </div>
 
       <div className="flex flex-col items-center gap-16 relative mt-10">
@@ -858,8 +859,8 @@ function SyllabusView({ topics, setTopics, addPoints, onOpenModal, actionLogs, o
       <div className="flex flex-col sm:flex-row justify-between items-center gap-4 bg-white/50 backdrop-blur p-4 rounded-3xl border border-white/50 shadow-sm">
         <div className="flex items-center gap-3"><Icon name="BookOpen" className="text-amber-600" /><h2 className="text-2xl font-black text-slate-950">Temas</h2></div>
         <div className="flex items-center gap-3 w-full sm:w-auto">
-          <div className="relative flex-1 sm:w-64"><Icon name="Search" size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" /><input placeholder="Buscar por título o número..." value={search} onChange={e=>setSearch(e.target.value)} className="w-full bg-white border-2 border-slate-100 rounded-2xl pl-10 pr-4 py-2 text-sm font-black outline-none focus:border-emerald-200 transition-all" /></div>
-          <button onClick={onReset} className="px-3 py-2 bg-red-50 text-red-600 font-black text-[10px] rounded-xl hover:bg-red-100 transition-all shrink-0 uppercase tracking-widest">Reset</button>
+          <div className="relative flex-1 sm:w-64"><Icon name="Search" size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" /><input placeholder="Filter..." value={search} onChange={e=>setSearch(e.target.value)} className="w-full bg-white border-2 border-slate-100 rounded-2xl pl-10 pr-4 py-2 text-sm font-black outline-none focus:border-emerald-200 transition-all" /></div>
+          <button onClick={onReset} className="px-3 py-2 bg-red-50 text-red-600 font-black text-[10px] rounded-xl uppercase tracking-widest hover:bg-red-100">Reset</button>
         </div>
       </div>
       
@@ -874,7 +875,6 @@ function SyllabusView({ topics, setTopics, addPoints, onOpenModal, actionLogs, o
           return (
             <div key={t.id} className={`bento-card p-5 border-2 transition-all duration-300 relative overflow-hidden ${cardStyle}`}>
               <div onClick={() => cyclePriority(t.id, t.priority)} className={`absolute left-0 top-0 bottom-0 w-2.5 ${getPriorityColor(t)} cursor-pointer transition-all hover:w-4 z-10`} />
-              
               <div className="flex items-center justify-between mb-4 pl-4">
                 <div className="flex items-center gap-4">
                   <div onClick={() => onOpenModal(t)} className={`w-12 h-12 rounded-xl flex items-center justify-center font-black text-lg border-2 cursor-pointer active:scale-90 transition-transform ${badgeStyle}`}>{t.id}</div>
@@ -890,9 +890,7 @@ function SyllabusView({ topics, setTopics, addPoints, onOpenModal, actionLogs, o
               </div>
 
               <div className="grid grid-cols-2 gap-2 mb-4 pl-4">
-                <button onClick={() => updateField(t.id, 'redactado', !t.redactado, t.redactado ? -15 : 15)} className={`py-2.5 rounded-2xl text-[10px] font-black border-2 transition-all active:scale-95 ${t.redactado ? (t.finished ? '!bg-white !text-slate-900 !border-transparent' : 'bg-emerald-500 text-white border-transparent shadow-md') : (t.finished ? '!bg-black/20 !text-white !border-transparent' : 'bg-white text-slate-400 border-slate-50')}`}>
-                  WRITTEN
-                </button>
+                <button onClick={() => updateField(t.id, 'redactado', !t.redactado, t.redactado ? -15 : 15)} className={`py-2.5 rounded-2xl text-[10px] font-black border-2 transition-all active:scale-95 ${t.redactado ? (t.finished ? '!bg-white !text-slate-900 !border-transparent' : 'bg-emerald-500 text-white border-transparent shadow-md') : (t.finished ? '!bg-black/20 !text-white !border-transparent' : 'bg-white text-slate-400 border-slate-50')}`}>WRITTEN</button>
                 <button onClick={() => { const next = (t.estudiado + 1) % 4; updateField(t.id, 'estudiado', next, next === 0 ? -75 : 25); }} className={`py-2.5 rounded-2xl text-[10px] font-black border-2 transition-all relative overflow-hidden active:scale-95 ${t.estudiado > 0 ? (t.finished ? '!bg-white !text-slate-900 !border-transparent' : 'bg-orange-500 text-white border-transparent shadow-md') : (t.finished ? '!bg-black/20 !text-white !border-transparent' : 'bg-white text-slate-400 border-slate-50')}`}>
                   {t.estudiado > 0 && t.estudiado < 3 && !t.finished && <div className="absolute left-0 top-0 bottom-0 bg-white/20 transition-all" style={{ width: `${(t.estudiado/3)*100}%` }} />}
                   <span className="relative z-10 uppercase">Studied {t.estudiado > 0 ? `(${t.estudiado}/3)` : ''}</span>
@@ -1097,16 +1095,48 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam }) {
   const [name, setName] = useState("");
   const [editingId, setEditingId] = useState(null);
 
-  const startExamMode = () => { const allCards = decks.flatMap(d => d.cards.map(c => ({...c, deckName: d.name}))); if (allCards.length === 0) return alert("Empty library!"); onExam({ id: 'exam-mode', name: 'TOTAL EXAM', cards: allCards.sort(() => Math.random() - 0.5) }); };
-  const saveDeck = () => { if(txt.includes(':') && name){ const cards = txt.split('\n').filter(l=>l.includes(':')).map(l=>{const [q,a]=l.split(':'); return {q:q.trim(),a:a.trim(),id:Math.random().toString(36)};}); if(editingId) setDecks(decks.map(d=>d.id===editingId?{...d,name,cards}:d)); else setDecks([{id:Date.now().toString(),name,cards}, ...decks]); setOpen(false); setName(""); setTxt(""); setEditingId(null); } };
-  const loadForEdit = (deck) => { setName(deck.name); setTxt(deck.cards.map(c => `${c.q} : ${c.a}`).join('\n')); setEditingId(deck.id); setOpen(true); };
+  const startExamMode = () => { 
+    const allCards = decks.flatMap(d => d.cards.map(c => ({...c, deckName: d.name}))); 
+    if (allCards.length === 0) return alert("Empty library!"); 
+    onExam({ id: 'exam-mode', name: 'TOTAL EXAM', cards: allCards.sort(() => Math.random() - 0.5) }); 
+  };
+
+  const saveDeck = () => { 
+    if(txt.includes(':') && name){ 
+      const cards = txt.split('\n').filter(l=>l.includes(':')).map(l=>{const [q,a]=l.split(':'); return {q:q.trim(),a:a.trim(),id:Math.random().toString(36)};}); 
+      if(editingId) setDecks(decks.map(d=>d.id===editingId?{...d,name,cards}:d)); 
+      else setDecks([{id:Date.now().toString(),name,cards}, ...decks]); 
+      setOpen(false); setName(""); setTxt(""); setEditingId(null); 
+    } 
+  };
+
+  const loadForEdit = (deck) => { 
+    setName(deck.name); 
+    setTxt(deck.cards.map(c => `${c.q} : ${c.a}`).join('\n')); 
+    setEditingId(deck.id); setOpen(true); 
+  };
+
+  const sortedDecks = useMemo(() => [...decks].sort((a, b) => a.name.localeCompare(b.name)), [decks]);
 
   return (
     <div className="space-y-6 text-left">
       <div className="flex justify-between items-center bg-white/50 backdrop-blur px-4 py-2 rounded-2xl shadow-sm border border-white/50"><h2 className="text-2xl font-black text-rose-950">Library</h2><button onClick={startExamMode} className="p-3 bg-rose-100 text-rose-700 rounded-xl font-black text-[10px] flex items-center gap-2 border border-rose-200 active:scale-95 transition-all shadow-sm"><Icon name="Zap" size={14} className="fill-rose-700"/> EXAM MODE</button></div>
       <button onClick={()=>{setOpen(!open); setEditingId(null); setName(""); setTxt("");}} className="w-full p-4 bg-rose-600 text-white rounded-2xl font-black shadow-lg shadow-rose-100 active:scale-95 transition-all">{editingId ? 'EDITING DECK' : 'NEW DECK'}</button>
       {open && (<div className="bento-card p-6 border-rose-100 space-y-4 shadow-xl animate-in zoom-in-95 bg-white"><input placeholder="Deck name..." value={name} onChange={e=>setName(e.target.value)} className="w-full bg-slate-50 p-3 rounded-xl font-black outline-none border-2 border-transparent focus:border-rose-200 shadow-inner" /><textarea placeholder="Question : Answer (One per line)" value={txt} onChange={e=>setTxt(e.target.value)} className="w-full h-32 bg-slate-50 p-3 rounded-xl font-black outline-none resize-none border-2 border-transparent focus:border-rose-200 shadow-inner" /><button onClick={saveDeck} className="w-full p-3 bg-rose-600 text-white rounded-xl font-black shadow-md uppercase">{editingId ? 'Save Changes' : 'Create Deck'}</button></div>)}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">{decks.map(d=>(<div key={d.id} onClick={()=>onSelect(d.id.toString())} className="bento-card bg-white p-5 flex justify-between items-center cursor-pointer hover:border-rose-300 transition-all shadow-sm group"><div><p className="font-black text-left text-slate-800 leading-tight">{d.name}</p><p className="text-[9px] text-rose-400 font-black uppercase tracking-widest mt-1 flex items-center gap-2">{d.cards.length} cards</p></div><div className="flex gap-2"><button onClick={(e)=>{e.stopPropagation(); loadForEdit(d)}} className="text-slate-300 hover:text-emerald-500 p-1"><Icon name="Edit" size={18}/></button><button onClick={(e)=>{e.stopPropagation(); setDecks(decks.filter(x=>x.id.toString()!==d.id.toString()))}} className="text-slate-300 hover:text-red-500 p-1"><Icon name="Trash2" size={18}/></button></div></div>))}</div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {sortedDecks.map(d=>(
+          <div key={d.id} onClick={()=>onSelect(d.id.toString())} className="bento-card bg-white p-5 flex justify-between items-center cursor-pointer hover:border-rose-300 transition-all shadow-sm group">
+            <div>
+              <p className="font-black text-left text-slate-800 leading-tight">{d.name}</p>
+              <p className="text-[9px] text-rose-400 font-black uppercase tracking-widest mt-1 flex items-center gap-2">{d.cards.length} cards</p>
+            </div>
+            <div className="flex gap-2">
+              <button onClick={(e)=>{e.stopPropagation(); loadForEdit(d)}} className="text-slate-300 hover:text-emerald-500 p-1"><Icon name="Edit" size={18}/></button>
+              <button onClick={(e)=>{e.stopPropagation(); setDecks(decks.filter(x=>x.id.toString()!==d.id.toString()))}} className="text-slate-300 hover:text-red-500 p-1"><Icon name="Trash2" size={18}/></button>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -1114,10 +1144,48 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam }) {
 function DeckStudyView({ deck, onBack, addPoints }) {
   const [idx, setIdx] = useState(0);
   const [flipped, setFlipped] = useState(false);
-  const card = deck?.cards[idx];
+  const [isShuffled, setIsShuffled] = useState(false);
+
+  const cardsToStudy = useMemo(() => {
+    if (!isShuffled) return deck.cards;
+    return [...deck.cards].sort(() => Math.random() - 0.5);
+  }, [deck.cards, isShuffled]);
+
+  const card = cardsToStudy[idx];
   if(!card) return null;
+
   return (
-    <div className="max-w-xl mx-auto py-10 space-y-8 text-left"><button onClick={onBack} className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-rose-600 transition-all"><Icon name="ChevronRight" className="rotate-180" size={16}/> Back to Library</button><div className="h-80 w-full relative" style={{ perspective: '1000px' }} onClick={()=>{if(!flipped) addPoints(2,"Flashcard Mastery"); setFlipped(!flipped);}}><div className={`relative w-full h-full transition-transform duration-500 rounded-[40px] shadow-2xl cursor-pointer ${flipped ? '[transform:rotateY(180deg)]' : ''}`} style={{ transformStyle: 'preserve-3d' }}><div className="absolute inset-0 bg-white border-8 border-rose-50 rounded-[40px] flex flex-col items-center justify-center p-10 text-center [backface-visibility:hidden] shadow-inner">{card?.deckName && <span className="absolute top-6 px-3 py-1 bg-rose-50 text-rose-500 text-[8px] font-black rounded-full uppercase border border-rose-100">{card.deckName}</span>}<p className="text-2xl font-black text-slate-800">{card?.q}</p></div><div className="absolute inset-0 bg-rose-600 text-white rounded-[40px] flex items-center justify-center p-10 text-center [transform:rotateY(180deg)] [backface-visibility:hidden] shadow-xl shadow-rose-200"><p className="text-xl font-medium italic">{card?.a}</p></div></div></div><div className="flex gap-4"><button onClick={()=>{setIdx(p=>Math.max(0,p-1)); setFlipped(false);}} className="flex-1 py-4 bg-white border-2 border-rose-100 rounded-2xl font-black text-rose-600 shadow-sm active:scale-95 transition-all" disabled={idx===0}>PREVIOUS</button><button onClick={()=>{setIdx(p=>Math.min(deck.cards.length-1,p+1)); setFlipped(false);}} className="flex-1 py-4 bg-rose-600 text-white rounded-2xl font-black shadow-xl shadow-rose-100 active:scale-95 transition-all" disabled={idx===deck.cards.length-1}>NEXT</button></div></div>
+    <div className="max-w-xl mx-auto py-10 space-y-8 text-left">
+      <div className="flex justify-between items-center">
+        <button onClick={onBack} className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-rose-600 transition-all">
+          <Icon name="ChevronRight" className="rotate-180" size={16}/> Back to Library
+        </button>
+        <button 
+          onClick={() => { setIsShuffled(!isShuffled); setIdx(0); setFlipped(false); }}
+          className={`flex items-center gap-2 px-3 py-1.5 rounded-xl font-black text-[10px] uppercase transition-all ${isShuffled ? 'bg-rose-600 text-white shadow-lg' : 'bg-slate-100 text-slate-400 hover:bg-slate-200'}`}
+        >
+          <Icon name="Shuffle" size={14}/> {isShuffled ? 'Shuffled' : 'Normal'}
+        </button>
+      </div>
+
+      <div className="h-80 w-full relative" style={{ perspective: '1000px' }} onClick={()=>{if(!flipped) addPoints(2,"Flashcard Mastery"); setFlipped(!flipped);}}>
+        <div className={`relative w-full h-full transition-transform duration-500 rounded-[40px] shadow-2xl cursor-pointer ${flipped ? '[transform:rotateY(180deg)]' : ''}`} style={{ transformStyle: 'preserve-3d' }}>
+          <div className="absolute inset-0 bg-white border-8 border-rose-50 rounded-[40px] flex flex-col items-center justify-center p-10 text-center [backface-visibility:hidden] shadow-inner">
+            {card?.deckName && <span className="absolute top-6 px-3 py-1 bg-rose-50 text-rose-500 text-[8px] font-black rounded-full uppercase border border-rose-100">{card.deckName}</span>}
+            <p className="text-2xl font-black text-slate-800">{card?.q}</p>
+          </div>
+          <div className="absolute inset-0 bg-rose-600 text-white rounded-[40px] flex items-center justify-center p-10 text-center [transform:rotateY(180deg)] [backface-visibility:hidden] shadow-xl shadow-rose-200">
+            <p className="text-xl font-medium italic">{card?.a}</p>
+          </div>
+        </div>
+      </div>
+      
+      <div className="flex gap-4">
+        <button onClick={()=>{setIdx(p=>Math.max(0,p-1)); setFlipped(false);}} className="flex-1 py-4 bg-white border-2 border-rose-100 rounded-2xl font-black text-rose-600 shadow-sm active:scale-95 transition-all" disabled={idx===0}>PREVIOUS</button>
+        <button onClick={()=>{setIdx(p=>Math.min(cardsToStudy.length-1,p+1)); setFlipped(false);}} className="flex-1 py-4 bg-rose-600 text-white rounded-2xl font-black shadow-xl shadow-rose-100 active:scale-95 transition-all" disabled={idx===cardsToStudy.length-1}>NEXT</button>
+      </div>
+      <p className="text-center text-[10px] font-black text-slate-300 uppercase tracking-widest">{idx + 1} / {cardsToStudy.length}</p>
+    </div>
   );
 }
 
