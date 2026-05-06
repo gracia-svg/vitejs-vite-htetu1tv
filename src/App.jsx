@@ -1398,10 +1398,7 @@ function DeckStudyView({ deck, onBack, addPoints, onUpdateCard, onFinishChalleng
   const isChallenge = deck.isChallenge;
   const [challengeQueue, setChallengeQueue] = useState(isChallenge ? deck.cards : []);
 
-  // Reset de la vuelta al cambiar de tarjeta para evitar el "spoiler" de la respuesta
-  useEffect(() => {
-    setFlipped(false);
-  }, [idx]);
+  // Se ha eliminado el useEffect que causaba el spoiler visual.
 
   const cardsToStudy = useMemo(() => {
     if (isChallenge) return challengeQueue;
@@ -1440,39 +1437,27 @@ function DeckStudyView({ deck, onBack, addPoints, onUpdateCard, onFinishChalleng
   const handleAnki = (rating) => {
     if (!onUpdateCard) return;
 
-    // Fix del cuelgue: Aseguramos que deckId sea un string válido
     const targetDeckId = (card.deckId || deck.id)?.toString();
-    if (!targetDeckId) {
-        console.error("Error: No se pudo encontrar el ID del mazo para esta tarjeta.");
-        return;
-    }
+    if (!targetDeckId) return;
 
     let { interval = 0, ease = 2.5 } = card;
-    let newInterval = interval;
-    let newEase = ease;
+    let newInterval = interval, newEase = ease;
 
-    if (rating === 'repeat') {
-      newInterval = 0;
-    } else if (rating === 'hard') {
-      newInterval = Math.max(1, interval * 1.2);
-      newEase = Math.max(1.3, ease - 0.15);
-    } else if (rating === 'good') {
-      newInterval = interval === 0 ? 1 : interval * 2.5;
-    } else if (rating === 'easy') {
-      newInterval = interval === 0 ? 4 : interval * ease * 1.3;
-      newEase += 0.15;
-    }
+    if (rating === 'repeat') newInterval = 0;
+    else if (rating === 'hard') { newInterval = Math.max(1, interval * 1.2); newEase = Math.max(1.3, ease - 0.15); }
+    else if (rating === 'good') newInterval = interval === 0 ? 1 : interval * 2.5;
+    else if (rating === 'easy') { newInterval = interval === 0 ? 4 : interval * ease * 1.3; newEase += 0.15; }
 
     const newNextDate = rating === 'repeat' ? 0 : Date.now() + (newInterval * 86400000);
-    
-    // Llamada segura
     onUpdateCard(targetDeckId, card.id, { interval: newInterval, ease: newEase, nextDate: newNextDate });
 
     if (rating === 'repeat' && isChallenge) {
       setChallengeQueue(prev => [...prev, {...card, interval: newInterval, ease: newEase, nextDate: newNextDate}]);
     }
 
+    // Actualización atómica de estado
     setIdx(p => p + 1);
+    setFlipped(false);
   };
 
   return (
@@ -1483,7 +1468,7 @@ function DeckStudyView({ deck, onBack, addPoints, onUpdateCard, onFinishChalleng
         </button>
         {!isChallenge && (
           <button 
-            onClick={() => { setIsShuffled(!isShuffled); setIdx(0); }}
+            onClick={() => { setIsShuffled(!isShuffled); setIdx(0); setFlipped(false); }}
             className={`flex items-center gap-2 px-3 py-1.5 rounded-xl font-black text-[10px] uppercase transition-all ${isShuffled ? 'bg-rose-600 text-white shadow-lg' : 'bg-slate-100 text-slate-400 hover:bg-slate-200'}`}
           >
             <Icon name="Shuffle" size={14}/> {isShuffled ? 'Shuffled' : 'Normal'}
@@ -1505,15 +1490,26 @@ function DeckStudyView({ deck, onBack, addPoints, onUpdateCard, onFinishChalleng
       
       {flipped ? (
         <div className="grid grid-cols-4 gap-2 animate-in fade-in slide-in-from-bottom-2">
-          <button onClick={(e)=>{e.stopPropagation(); handleAnki('repeat')}} className="py-4 bg-slate-100 text-slate-600 rounded-2xl font-black text-[10px] uppercase shadow-sm active:scale-95 transition-all">Repetir<br/><span className="text-[8px] opacity-60">Ahora</span></button>
-          <button onClick={(e)=>{e.stopPropagation(); handleAnki('hard')}} className="py-4 bg-orange-100 text-orange-700 rounded-2xl font-black text-[10px] uppercase shadow-sm active:scale-95 transition-all">Difícil<br/><span className="text-[8px] opacity-60">Mañana</span></button>
-          <button onClick={(e)=>{e.stopPropagation(); handleAnki('good')}} className="py-4 bg-emerald-100 text-emerald-700 rounded-2xl font-black text-[10px] uppercase shadow-sm active:scale-95 transition-all">Bien<br/><span className="text-[8px] opacity-60">Días</span></button>
-          <button onClick={(e)=>{e.stopPropagation(); handleAnki('easy')}} className="py-4 bg-blue-100 text-blue-700 rounded-2xl font-black text-[10px] uppercase shadow-sm active:scale-95 transition-all">Fácil<br/><span className="text-[8px] opacity-60">Semanas</span></button>
+          <button onClick={(e)=>{e.stopPropagation(); handleAnki('repeat')}} className="py-4 bg-slate-100 text-slate-600 rounded-2xl font-black text-[10px] uppercase shadow-sm active:scale-95 transition-all">Repetir</button>
+          <button onClick={(e)=>{e.stopPropagation(); handleAnki('hard')}} className="py-4 bg-orange-100 text-orange-700 rounded-2xl font-black text-[10px] uppercase shadow-sm active:scale-95 transition-all">Difícil</button>
+          <button onClick={(e)=>{e.stopPropagation(); handleAnki('good')}} className="py-4 bg-emerald-100 text-emerald-700 rounded-2xl font-black text-[10px] uppercase shadow-sm active:scale-95 transition-all">Bien</button>
+          <button onClick={(e)=>{e.stopPropagation(); handleAnki('easy')}} className="py-4 bg-blue-100 text-blue-700 rounded-2xl font-black text-[10px] uppercase shadow-sm active:scale-95 transition-all">Fácil</button>
         </div>
       ) : (
         <div className="flex gap-4">
-          <button onClick={(e)=>{e.stopPropagation(); setIdx(p=>Math.max(0,p-1))}} className="flex-1 py-4 bg-white border-2 border-rose-100 rounded-2xl font-black text-rose-600 shadow-sm active:scale-95 transition-all" disabled={idx===0}>PREVIOUS</button>
-          <button onClick={(e)=>{e.stopPropagation(); setIdx(p=>p+1)}} className="flex-1 py-4 bg-rose-600 text-white rounded-2xl font-black shadow-xl shadow-rose-100 active:scale-95 transition-all">NEXT</button>
+          <button 
+            onClick={(e)=>{e.stopPropagation(); setIdx(p=>Math.max(0,p-1)); setFlipped(false);}} 
+            className="flex-1 py-4 bg-white border-2 border-rose-100 rounded-2xl font-black text-rose-600 shadow-sm active:scale-95 transition-all" 
+            disabled={idx===0}
+          >
+            PREVIOUS
+          </button>
+          <button 
+            onClick={(e)=>{e.stopPropagation(); setIdx(p=>p+1); setFlipped(false);}} 
+            className="flex-1 py-4 bg-rose-600 text-white rounded-2xl font-black shadow-xl shadow-rose-100 active:scale-95 transition-all"
+          >
+            NEXT
+          </button>
         </div>
       )}
       <p className="text-center text-[10px] font-black text-slate-300 uppercase tracking-widest">{idx + 1} / {cardsToStudy.length}</p>
