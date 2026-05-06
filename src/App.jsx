@@ -60,8 +60,10 @@ const getWeekId = () => {
   const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
   return `${d.getUTCFullYear()}-W${weekNo}`;
 };
+// 1. La lista oficial de categorías (en inglés abreviado)
 const DECK_CATEGORIES = ["General", "Meth.", "Comm.", "Phon.", "Gram.", "Disc.", "Brit Lit", "Amer Lit", "Cult."];
 
+// 2. El mapa de colores para los badges de las Flashcards
 const getCategoryBadge = (cat) => {
   const mapping = {
     "Meth.": "bg-orange-100 text-orange-700 border-orange-200",
@@ -77,6 +79,7 @@ const getCategoryBadge = (cat) => {
   return mapping[cat] || mapping["General"];
 };
 
+// 3. El mapa para los colores de los Temas (Syllabus)
 const getTopicBlock = (id) => {
   if (typeof id === 'string' && id.startsWith('ud')) return { name: 'Unit', badge: 'bg-teal-100 text-teal-700 border-teal-200', color: '!bg-teal-500' };
   if (typeof id === 'string' && id.startsWith('p')) return { name: 'Planning', badge: 'bg-blue-100 text-blue-700 border-blue-200', color: '!bg-blue-500' };
