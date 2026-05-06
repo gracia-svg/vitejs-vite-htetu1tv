@@ -89,75 +89,75 @@ const getCurricularMapping = (id) => {
 };
 
 const RAW_TITLES = [
-  "Language learning in the educational curriculum. Language as communication. Learning and acquisition.",
-  "Communication. The communicative competence. Components.",
-  "The communication process. Functions and language use. Language in context.",
-  "The English language as a vehicle for culture. Integration of linguistic and cultural contents.",
-  "Oral language. Elements and rules of oral communication. Functions and strategies.",
-  "Written language. Reading and writing. Evolution, types, and strategies.",
-  "The phonological system I. Vowels and diphthongs. Comparison with the mother tongue.",
-  "The phonological system II. Consonants. Comparison with the mother tongue.",
-  "The phonological system III. Stress, rhythm, and intonation. Comparison with the mother tongue.",
-  "Concept of grammar. Main grammar models. Linguistic categories.",
-  "The Noun Phrase I. The noun: types, gender, and number.",
-  "The Noun Phrase II. The determiner: articles, pronouns, and adjectives.",
-  "The Verb Phrase I. The verb: tense, aspect, and mood.",
-  "The Verb Phrase II. Modal verbs.",
-  "The Adjective Phrase. Types, comparison, and order.",
-  "The Adverbial Phrase. Adverbs and adverbial locutions.",
-  "Prepositions and prepositional phrases.",
-  "The simple sentence. Constituents and types.",
-  "Coordination and subordination. Sentence linking.",
-  "Expression of quantity, quality, and degree.",
-  "Expression of time, space, and manner.",
-  "Expression of possession, focus, and emphasis.",
-  "Expression of cause, consequence, and purpose.",
-  "Expression of condition and concession.",
-  "Expression of assertion, negation, and doubt.",
-  "The passive voice and the impersonal voice.",
-  "Reported speech.",
-  "Lexicology. Word formation. Semantic relations.",
-  "Textual linguistics I. Cohesion and coherence.",
-  "Textual linguistics II. Macro-structure and micro-structure.",
-  "The narrative text. Characteristics and structures.",
-  "The descriptive text. Characteristics and structures.",
-  "The expository text. Characteristics and structures.",
-  "The argumentative text. Characteristics and structures.",
-  "The instructional text. Characteristics and structures.",
-  "The poetic text. Characteristics and structures.",
-  "The dramatic text. Characteristics and structures.",
-  "Discourse analysis I. Register and style.",
-  "Discourse analysis II. Pragmatics and speech acts.",
-  "The use of ICT in English language learning.",
-  "Old and Middle English literature. Beowulf and Chaucer.",
-  "The Renaissance and the Elizabethan Age. Shakespeare.",
-  "17th Century literature. Milton and the metaphysical poets.",
-  "The 18th Century. The rise of the novel. Defoe, Swift, and Richardson.",
-  "Romanticism. The Lake Poets and the second generation.",
-  "The American Revolution and the foundation of the USA.",
-  "Victorian literature I. The great novelists: Dickens, Bronte, Thackeray.",
-  "Victorian literature II. Poetry and drama: Tennyson, Browning, Wilde.",
-  "Modernism in Britain. James Joyce and Virginia Woolf.",
-  "Contemporary British literature. Main trends.",
-  "The development of English in the USA. Colonial period.",
-  "19th Century American literature. Hawthorne, Melville, and Poe.",
-  "American Romanticism. Transcendentalism: Emerson and Thoreau.",
-  "American Realism and Naturalism. Mark Twain and Henry James.",
-  "20th Century American literature I. The Lost Generation.",
-  "20th Century American literature II. The Southern Renaissance.",
-  "20th Century American literature III. Contemporary trends.",
-  "History and culture of the United Kingdom.",
-  "History and culture of the United States.",
-  "Commonwealth literature. Main authors and themes.",
-  "Institutions and political systems of the UK and the USA.",
-  "Social and educational systems in the English-speaking world.",
-  "The press and media in the UK and the USA.",
-  "Scientific and technical development in the English-speaking world.",
-  "Art and architecture in the UK and the USA.",
-  "Music and cinema in the English-speaking world.",
-  "Traditions and festivals in the UK and the USA.",
-  "Geography and natural resources of the UK and the USA.",
-  "Current challenges in the English-speaking world."
+  "Evolution of language teaching methodology. Current trends in teaching English as a foreign language. Communicative approaches.",
+  "General theories on foreign language learning and acquisition. The concept of interlanguage. Error treatment.",
+  "The communication process. Language functions. Language in use. The negotiation of meaning.",
+  "Communicative competence. Analysis of its components.",
+  "Oral communication. Elements and rules governing oral discourse. Common routines and formulas. Strategies specific to oral communication.",
+  "Written communication. Different types of written texts. Structure and formal elements. Rules governing written texts. Routines and formulas.",
+  "English phonological system I: Vowels. Phonetic symbols. Strong and weak forms. Diphthongs. Phonetic symbols. Comparison with the phonological system of the official language or languages of the corresponding Autonomous Community.",
+  "English phonological system II: Consonants. Phonetic symbols. Comparison with the phonological system of the official language or languages of the corresponding Autonomous Community.",
+  "English phonological system III: Stress, rhythm, and intonation. Comparison with the phonological system of the official language or languages of the corresponding Autonomous Community.",
+  "Lexis. Characteristics of word formation in English. Prefixation, suffixation, and compounding.",
+  "The word as a linguistic sign. Homonymy. Synonymy. Antonymy. False friends. Lexical creativity.",
+  "The concept of grammar: Reflection on language and its learning. From prescriptive grammar to grammar based on language use and communication.",
+  "Expression of quantity.",
+  "Expression of quality. Expression of degree and comparison.",
+  "Expression of manner, means, and instrument.",
+  "Expression of possession.",
+  "Location in space: Place, direction, and distance.",
+  "Location in time: Temporal relations. Frequency.",
+  "Real time and grammatical tense. Aspect and mood.",
+  "Auxiliary and modal verbs: Forms and functions.",
+  "The infinitive and the -ing form: Their uses.",
+  "Multi-word verbs.",
+  "Sentence structure in English: Statements, questions, negations, and exclamations.",
+  "Expression of assertion, emphasis, and objection.",
+  "Relations of cause, consequence, and purpose.",
+  "Expression of doubt, condition, hypothesis, and contrast.",
+  "The passive voice. Forms and functions.",
+  "Linguistic macro-functions to express the most common communicative intentions: Establishing and maintaining social relationships, giving and asking for information about objects, people, and actions, expressing intellectual and emotional attitudes.",
+  "Discourse analysis and articulation. Cohesion and coherence. Anaphora and cataphora. Connectors. Deixis.",
+  "Direct and indirect speech.",
+  "Text and context. Text types. Criteria for textual classification. Register.",
+  "The narrative text. Structure and characteristics.",
+  "The descriptive text. Structure and characteristics.",
+  "The argumentative text. Structure and characteristics.",
+  "The explanatory text. Structure and characteristics.",
+  "Dialogic texts. Structure and characteristics.",
+  "Literary language. Literary genres. Literary criticism.",
+  "Scientific and technological, commercial, and administrative English.",
+  "Text analysis strategies.",
+  "Communication strategies. Definition and typology.",
+  "Romanization. The influence of Latin on the English language. Loanwords and calques.",
+  "The Norman Conquest. The influence of French on the English language. Loanwords and calques.",
+  "Medieval oral literature: The Arthurian legend. G. Chaucer: The Canterbury Tales.",
+  "Shakespeare and his time. Most representative works.",
+  "Great Britain in the 18th century: Socioeconomic development and political articulation; cultural and technical activity. Great novelists of the period.",
+  "The historical configuration of the United States of America: From independence to the Civil War. Reference novels: The Scarlet Letter, The Red Badge of Courage.",
+  "The English Industrial Revolution; its influence as a model of historical transformation. Social and political changes through the literature of the time. C. Dickens.",
+  "Romanticism in Great Britain: Novel and poetry.",
+  "Construction and administration of the British colonial Empire in the 18th and 19th centuries. J. Conrad and R. Kipling.",
+  "The Victorian novel.",
+  "O. Wilde and B. Shaw.",
+  "The historical evolution of the United States: From A. Lincoln to F. D. Roosevelt.",
+  "The novel, the short story, and poetry in the United States: H. Melville, E.A. Poe, and W. Whitman.",
+  "Humorism: M. Twain. H. James and cosmopolitanism.",
+  "The Lost Generation: S. Fitzgerald, J. Steinbeck, and E. Hemingway. The narrative of W. Faulkner.",
+  "Historical relations between Ireland and Great Britain. Irish authors: S. O'Casey and J. Joyce.",
+  "The United Kingdom in the interwar period and during the Second World War. Representative literary authors.",
+  "Political, social, and economic evolution of the United Kingdom and Ireland since 1945. Their presence in the European Community. Literary panorama of this period in these countries.",
+  "Political, social, and economic evolution of the United States since 1945. Its significance in international politics. Current literary panorama in the United States.",
+  "The American crime novel: D. Hammett and R. Chandler. The English detective novel: P.D. James.",
+  "The impact of cinema on the dissemination of literary production in the English language.",
+  "The Commonwealth. Cultural diversity. The development of linguistic varieties. Intercultural influences and manifestations. The novels of E.M. Forster, D. Lessing, and N. Gordimer.",
+  "British institutions. The Houses of Parliament. The Government. Political parties and the electoral system. The Crown.",
+  "American institutions. The Constitution. Territorial organization. The President. Congress. Political parties and the electoral system.",
+  "The educational system in the English-speaking world.",
+  "The cultural dimension of the English-speaking world today. British English and American English. Presence of the English language in Spain. Anglicisms.",
+  "Mass media in the English language (1): Journalistic style. The press. Quality newspapers and tabloids.",
+  "Mass media in the English language (2): Radio and television. Advertising in English-speaking cultures: Linguistic and semiological aspects.",
+  "Society and culture. Stereotypes and emblems of English-speaking countries. The song in the English language as a vehicle of cultural influence."
 ];
 
 const getEnhancedSchema = (id, title) => {
@@ -191,7 +191,7 @@ const INITIAL_PLANNING = [
 ];
 
 const INITIAL_UNITS = Array.from({ length: 6 }, (_, i) => ({ 
-  id: `ud${i + 1}`, title: `Unidad Didáctica ${i + 1}`, status: 0, indexNotes: "", priority: null, ce: "", sb: "", do: "", cr: ""
+  id: `ud${i + 1}`, title: `Unidad Didáctica ${i + 1}`, status: 0, indexNotes: "", priority: null, ce: "", sb: "", do: "", cr: "", leg: "LOMLOE"
 }));
 
 const INITIAL_SKILLS = [
@@ -298,6 +298,7 @@ export default function App() {
   const [isTimerActive, setIsTimerActive] = useState(false);
   const [endTime, setEndTime] = useState(null);
   const [showTimerMenu, setShowTimerMenu] = useState(false);
+  const [customMinutes, setCustomMinutes] = useState("");
 
   const [luckyNumbers, setLuckyNumbers] = useState([0,0,0,0]);
   const [activeDeckId, setActiveDeckId] = useState(null);
@@ -667,7 +668,35 @@ export default function App() {
                     <button onClick={()=>{setTimeLeft(7200); setEndTime(Date.now() + 7200000); setIsTimerActive(true); setShowTimerMenu(false)}} className="p-2 bg-slate-50 hover:bg-emerald-50 rounded-xl text-[10px] font-black uppercase">2H Focus</button>
                     <button onClick={()=>{setTimeLeft(3600); setEndTime(Date.now() + 3600000); setIsTimerActive(true); setShowTimerMenu(false)}} className="p-2 bg-slate-50 hover:bg-emerald-50 rounded-xl text-[10px] font-black uppercase">1H Plan</button>
                   </div>
-                  <button onClick={()=>{setTimeLeft(0); setEndTime(null); setIsTimerActive(false); setShowTimerMenu(false)}} className="w-full p-2 bg-red-50 text-red-600 rounded-xl text-[10px] font-black uppercase tracking-widest">Reset Timer</button>
+                  
+                  {/* Temporizador Personalizado */}
+                  <div className="pt-2 border-t border-slate-100 flex gap-2 items-center">
+                    <input 
+                      type="number" 
+                      placeholder="Min..." 
+                      className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-xs font-black outline-none focus:border-emerald-300"
+                      value={customMinutes}
+                      onChange={e => setCustomMinutes(e.target.value)}
+                    />
+                    <button 
+                      onClick={() => {
+                        const mins = parseInt(customMinutes);
+                        if(mins > 0) {
+                          const ms = mins * 60 * 1000;
+                          setTimeLeft(mins * 60);
+                          setEndTime(Date.now() + ms);
+                          setIsTimerActive(true);
+                          setShowTimerMenu(false);
+                          setCustomMinutes("");
+                        }
+                      }}
+                      className="bg-emerald-600 text-white px-3 py-1 rounded-lg text-[10px] font-black"
+                    >
+                      SET
+                    </button>
+                  </div>
+
+                  <button onClick={()=>{setTimeLeft(0); setEndTime(null); setIsTimerActive(false); setShowTimerMenu(false)}} className="w-full p-2 bg-red-50 text-red-600 rounded-xl text-[10px] font-black uppercase tracking-widest mt-2">Reset Timer</button>
                 </div>
               )}
             </div>
@@ -1095,15 +1124,50 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam }) {
   const [txt, setTxt] = useState("");
   const [name, setName] = useState("");
   const [editingId, setEditingId] = useState(null);
-  const startExamMode = () => { const allCards = decks.flatMap(d => d.cards.map(c => ({...c, deckName: d.name}))); if (allCards.length === 0) return alert("Empty library!"); onExam({ id: 'exam-mode', name: 'TOTAL EXAM', cards: allCards.sort(() => Math.random() - 0.5) }); };
-  const saveDeck = () => { if(txt.includes(':') && name){ const cards = txt.split('\n').filter(l=>l.includes(':')).map(l=>{const [q,a]=l.split(':'); return {q:q.trim(),a:a.trim(),id:Math.random().toString(36)};}); if(editingId) setDecks(decks.map(d=>d.id===editingId?{...d,name,cards}:d)); else setDecks([{id:Date.now().toString(),name,cards}, ...decks]); setOpen(false); setName(""); setTxt(""); setEditingId(null); } };
-  const loadForEdit = (deck) => { setName(deck.name); setTxt(deck.cards.map(c => `${c.q} : ${c.a}`).join('\n')); setEditingId(deck.id); setOpen(true); };
+
+  const startExamMode = () => { 
+    const allCards = decks.flatMap(d => d.cards.map(c => ({...c, deckName: d.name}))); 
+    if (allCards.length === 0) return alert("Empty library!"); 
+    onExam({ id: 'exam-mode', name: 'TOTAL EXAM', cards: allCards.sort(() => Math.random() - 0.5) }); 
+  };
+
+  const saveDeck = () => { 
+    if(txt.includes(':') && name){ 
+      const cards = txt.split('\n').filter(l=>l.includes(':')).map(l=>{const [q,a]=l.split(':'); return {q:q.trim(),a:a.trim(),id:Math.random().toString(36)};}); 
+      if(editingId) setDecks(decks.map(d=>d.id===editingId?{...d,name,cards}:d)); 
+      else setDecks([{id:Date.now().toString(),name,cards}, ...decks]); 
+      setOpen(false); setName(""); setTxt(""); setEditingId(null); 
+    } 
+  };
+
+  const loadForEdit = (deck) => { 
+    setName(deck.name); 
+    setTxt(deck.cards.map(c => `${c.q} : ${c.a}`).join('\n')); 
+    setEditingId(deck.id); setOpen(true); 
+  };
+
+  // Ordenar mazos alfabéticamente automáticamente
+  const sortedDecks = useMemo(() => [...decks].sort((a, b) => a.name.localeCompare(b.name)), [decks]);
+
   return (
     <div className="space-y-6 text-left">
       <div className="flex justify-between items-center bg-white/50 backdrop-blur px-4 py-2 rounded-2xl shadow-sm border border-white/50"><h2 className="text-2xl font-black text-rose-950">Library</h2><button onClick={startExamMode} className="p-3 bg-rose-100 text-rose-700 rounded-xl font-black text-[10px] flex items-center gap-2 border border-rose-200 active:scale-95 transition-all shadow-sm"><Icon name="Zap" size={14} className="fill-rose-700"/> EXAM MODE</button></div>
       <button onClick={()=>{setOpen(!open); setEditingId(null); setName(""); setTxt("");}} className="w-full p-4 bg-rose-600 text-white rounded-2xl font-black shadow-lg shadow-rose-100 active:scale-95 transition-all">{editingId ? 'EDITING DECK' : 'NEW DECK'}</button>
       {open && (<div className="bento-card p-6 border-rose-100 space-y-4 shadow-xl animate-in zoom-in-95 bg-white"><input placeholder="Deck name..." value={name} onChange={e=>setName(e.target.value)} className="w-full bg-slate-50 p-3 rounded-xl font-black outline-none border-2 border-transparent focus:border-rose-200 shadow-inner" /><textarea placeholder="Question : Answer (One per line)" value={txt} onChange={e=>setTxt(e.target.value)} className="w-full h-32 bg-slate-50 p-3 rounded-xl font-black outline-none resize-none border-2 border-transparent focus:border-rose-200 shadow-inner" /><button onClick={saveDeck} className="w-full p-3 bg-rose-600 text-white rounded-xl font-black shadow-md uppercase">{editingId ? 'Save Changes' : 'Create Deck'}</button></div>)}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">{decks.map(d=>(<div key={d.id} onClick={()=>onSelect(d.id.toString())} className="bento-card bg-white p-5 flex justify-between items-center cursor-pointer hover:border-rose-300 transition-all shadow-sm group"><div><p className="font-black text-left text-slate-800 leading-tight">{d.name}</p><p className="text-[9px] text-rose-400 font-black uppercase tracking-widest mt-1 flex items-center gap-2">{d.cards.length} cards</p></div><div className="flex gap-2"><button onClick={(e)=>{e.stopPropagation(); loadForEdit(d)}} className="text-slate-300 hover:text-emerald-500 p-1"><Icon name="Edit" size={18}/></button><button onClick={(e)=>{e.stopPropagation(); setDecks(decks.filter(x=>x.id.toString()!==d.id.toString()))}} className="text-slate-300 hover:text-red-500 p-1"><Icon name="Trash2" size={18}/></button></div></div>))}</div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {sortedDecks.map(d=>(
+          <div key={d.id} onClick={()=>onSelect(d.id.toString())} className="bento-card bg-white p-5 flex justify-between items-center cursor-pointer hover:border-rose-300 transition-all shadow-sm group">
+            <div>
+              <p className="font-black text-left text-slate-800 leading-tight">{d.name}</p>
+              <p className="text-[9px] text-rose-400 font-black uppercase tracking-widest mt-1 flex items-center gap-2">{d.cards.length} cards</p>
+            </div>
+            <div className="flex gap-2">
+              <button onClick={(e)=>{e.stopPropagation(); loadForEdit(d)}} className="text-slate-300 hover:text-emerald-500 p-1"><Icon name="Edit" size={18}/></button>
+              <button onClick={(e)=>{e.stopPropagation(); setDecks(decks.filter(x=>x.id.toString()!==d.id.toString()))}} className="text-slate-300 hover:text-red-500 p-1"><Icon name="Trash2" size={18}/></button>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -1111,10 +1175,51 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam }) {
 function DeckStudyView({ deck, onBack, addPoints }) {
   const [idx, setIdx] = useState(0);
   const [flipped, setFlipped] = useState(false);
-  const card = deck?.cards[idx];
+  const [isShuffled, setIsShuffled] = useState(false);
+
+  // Generar lista de tarjetas (normal o mezclada)
+  const cardsToStudy = useMemo(() => {
+    if (!isShuffled) return deck.cards;
+    return [...deck.cards].sort(() => Math.random() - 0.5);
+  }, [deck.cards, isShuffled]);
+
+  const card = cardsToStudy[idx];
   if(!card) return null;
+
   return (
-    <div className="max-w-xl mx-auto py-10 space-y-8 text-left"><button onClick={onBack} className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-rose-600 transition-all"><Icon name="ChevronRight" className="rotate-180" size={16}/> Back to Library</button><div className="h-80 w-full relative" style={{ perspective: '1000px' }} onClick={()=>{if(!flipped) addPoints(2,"Flashcard Mastery"); setFlipped(!flipped);}}><div className={`relative w-full h-full transition-transform duration-500 rounded-[40px] shadow-2xl cursor-pointer ${flipped ? '[transform:rotateY(180deg)]' : ''}`} style={{ transformStyle: 'preserve-3d' }}><div className="absolute inset-0 bg-white border-8 border-rose-50 rounded-[40px] flex flex-col items-center justify-center p-10 text-center [backface-visibility:hidden] shadow-inner">{card?.deckName && <span className="absolute top-6 px-3 py-1 bg-rose-50 text-rose-500 text-[8px] font-black rounded-full uppercase border border-rose-100">{card.deckName}</span>}<p className="text-2xl font-black text-slate-800">{card?.q}</p></div><div className="absolute inset-0 bg-rose-600 text-white rounded-[40px] flex items-center justify-center p-10 text-center [transform:rotateY(180deg)] [backface-visibility:hidden] shadow-xl shadow-rose-200"><p className="text-xl font-medium italic">{card?.a}</p></div></div></div><div className="flex gap-4"><button onClick={()=>{setIdx(p=>Math.max(0,p-1)); setFlipped(false);}} className="flex-1 py-4 bg-white border-2 border-rose-100 rounded-2xl font-black text-rose-600 shadow-sm active:scale-95 transition-all" disabled={idx===0}>PREVIOUS</button><button onClick={()=>{setIdx(p=>Math.min(deck.cards.length-1,p+1)); setFlipped(false);}} className="flex-1 py-4 bg-rose-600 text-white rounded-2xl font-black shadow-xl shadow-rose-100 active:scale-95 transition-all" disabled={idx===deck.cards.length-1}>NEXT</button></div></div>
+    <div className="max-w-xl mx-auto py-10 space-y-8 text-left">
+      <div className="flex justify-between items-center">
+        <button onClick={onBack} className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-rose-600 transition-all">
+          <Icon name="ChevronRight" className="rotate-180" size={16}/> Back to Library
+        </button>
+        
+        {/* Botón Shuffle / Unshuffle */}
+        <button 
+          onClick={() => { setIsShuffled(!isShuffled); setIdx(0); setFlipped(false); }}
+          className={`flex items-center gap-2 px-3 py-1.5 rounded-xl font-black text-[10px] uppercase transition-all ${isShuffled ? 'bg-rose-600 text-white shadow-lg' : 'bg-slate-100 text-slate-400 hover:bg-slate-200'}`}
+        >
+          <Icon name="Shuffle" size={14}/> {isShuffled ? 'Shuffled' : 'Normal'}
+        </button>
+      </div>
+
+      <div className="h-80 w-full relative" style={{ perspective: '1000px' }} onClick={()=>{if(!flipped) addPoints(2,"Flashcard Mastery"); setFlipped(!flipped);}}>
+        <div className={`relative w-full h-full transition-transform duration-500 rounded-[40px] shadow-2xl cursor-pointer ${flipped ? '[transform:rotateY(180deg)]' : ''}`} style={{ transformStyle: 'preserve-3d' }}>
+          <div className="absolute inset-0 bg-white border-8 border-rose-50 rounded-[40px] flex flex-col items-center justify-center p-10 text-center [backface-visibility:hidden] shadow-inner">
+            {card?.deckName && <span className="absolute top-6 px-3 py-1 bg-rose-50 text-rose-500 text-[8px] font-black rounded-full uppercase border border-rose-100">{card.deckName}</span>}
+            <p className="text-2xl font-black text-slate-800">{card?.q}</p>
+          </div>
+          <div className="absolute inset-0 bg-rose-600 text-white rounded-[40px] flex items-center justify-center p-10 text-center [transform:rotateY(180deg)] [backface-visibility:hidden] shadow-xl shadow-rose-200">
+            <p className="text-xl font-medium italic">{card?.a}</p>
+          </div>
+        </div>
+      </div>
+      
+      <div className="flex gap-4">
+        <button onClick={()=>{setIdx(p=>Math.max(0,p-1)); setFlipped(false);}} className="flex-1 py-4 bg-white border-2 border-rose-100 rounded-2xl font-black text-rose-600 shadow-sm active:scale-95 transition-all" disabled={idx===0}>PREVIOUS</button>
+        <button onClick={()=>{setIdx(p=>Math.min(cardsToStudy.length-1,p+1)); setFlipped(false);}} className="flex-1 py-4 bg-rose-600 text-white rounded-2xl font-black shadow-xl shadow-rose-100 active:scale-95 transition-all" disabled={idx===cardsToStudy.length-1}>NEXT</button>
+      </div>
+      <p className="text-center text-[10px] font-black text-slate-300 uppercase tracking-widest">{idx + 1} / {cardsToStudy.length}</p>
+    </div>
   );
 }
 
