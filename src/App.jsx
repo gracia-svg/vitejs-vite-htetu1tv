@@ -358,75 +358,90 @@ export default function App() {
     const init = async () => { try { await signInAnonymously(auth); } catch(e){} }; init();
   }, [syncCode]);
 
-// 1. LÓGICA DE MIGRACIÓN (Sube los temas a la nube la primera vez)
+ // 1. LÓGICA DE MIGRACIÓN (Sube los temas a la nube si no están)
   useEffect(() => {
     if (!isLogged) return;
     const syncDatabaseStructure = async () => {
-      const masterRef = doc(db, 'artifacts', APP_ID_PATH, 'public', 'master_syllabus');
-      const masterSnap = await getDoc(masterRef);
-      if (!masterSnap.exists()) {
-        console.log("Iniciando migración de temas a Firestore...");
-        await setDoc(masterRef, { 
-          master_topics: INITIAL_TOPICS.map(t => ({
-            id: t.id, title: t.title, ce: t.ce, do: t.do, sb: t.sb, cr: t.cr, leg: t.leg, indexNotes: t.indexNotes 
-          }))
-        });
-        console.log("Migración completada.");
-      }
+      try {
+        const masterRef = doc(db, 'artifacts', APP_ID_PATH, 'public', 'master_syllabus');
+        const masterSnap = await getDoc(masterRef);
+        if (!masterSnap.exists()) {
+          console.log("Migrando temas a Firestore...");
+          await setDoc(masterRef, { 
+            master_topics: INITIAL_TOPICS.map(t => ({
+              id: t.id, title: t.title, ce: t.ce, do: t.do, sb: t.sb, cr: t.cr, leg: t.leg, indexNotes: t.indexNotes 
+            }))
+          });
+        }
+      } catch (e) { console.error("Error en migración:", e); }
     };
     syncDatabaseStructure();
   }, [isLogged]);
 
-  // 2. CARGA INTELIGENTE (Escucha cambios y combina datos)
+  // 2. CARGA INTELIGENTE Y SEGURO DE DESBLOQUEO
   useEffect(() => {
     if (!isLogged || !syncCode) return;
     const userDocRef = doc(db, 'artifacts', APP_ID_PATH, 'public', 'data', 'turtle_users', syncCode);
     const masterDocRef = doc(db, 'artifacts', APP_ID_PATH, 'public', 'master_syllabus');
 
-    return onSnapshot(userDocRef, async (userSnap) => {
-      if (userSnap.exists() && !isDataLoaded) {
-        const userData = userSnap.data();
-        const masterSnap = await getDoc(masterDocRef);
-        const masterTopics = masterSnap.exists() ? masterSnap.data().master_topics : INITIAL_TOPICS;
+    const unsubscribe = onSnapshot(userDocRef, async (userSnap) => {
+      try {
+        if (userSnap.exists()) {
+          const userData = userSnap.data();
+          // Intentamos traer títulos de la nube, si falla usamos los del código
+          let masterTopics = INITIAL_TOPICS;
+          try {
+            const masterSnap = await getDoc(masterDocRef);
+            if (masterSnap.exists()) masterTopics = masterSnap.data().master_topics;
+          } catch (e) { console.warn("Usando temas locales temporalmente"); }
 
-        const finalTopics = masterTopics.map(mT => {
-          const uT = userData.topics?.find(ts => ts.id === mT.id);
-          return {
-            ...mT, // Datos maestros (Título, Competencias, Leyes)
-            redactado: uT?.redactado || false,
-            estudiado: uT?.estudiado || 0,
-            reviews: uT?.reviews || 0,
-            mocks: uT?.mocks || 0,
-            miniMocks: uT?.miniMocks || 0,
-            finished: uT?.finished || false,
-            discarded: uT?.discarded || false,
-            stars: uT?.stars || 0,
-            indexNotes: uT?.indexNotes || mT.indexNotes, 
-            priority: uT?.priority ?? null
-          };
-        });
+          const finalTopics = masterTopics.map(mT => {
+            const uT = userData.topics?.find(ts => ts.id === mT.id);
+            return {
+              ...mT,
+              redactado: uT?.redactado || false,
+              estudiado: uT?.estudiado || 0,
+              reviews: uT?.reviews || 0,
+              mocks: uT?.mocks || 0,
+              miniMocks: uT?.miniMocks || 0,
+              finished: uT?.finished || false,
+              discarded: uT?.discarded || false,
+              stars: uT?.stars || 0,
+              indexNotes: uT?.indexNotes || mT.indexNotes, 
+              priority: uT?.priority ?? null
+            };
+          });
 
-        // Actualización de estados fieles al original
-        setPoints(userData.points || 0);
-        setTopics(finalTopics);
-        setPlanning(userData.planning || INITIAL_PLANNING);
-        setUnits(userData.units || INITIAL_UNITS);
-        setSkills(userData.skills || INITIAL_SKILLS);
-        setDecks(userData.decks || []);
-        setTodos(userData.todos || []); 
-        setNotes(userData.notes || []); 
-        setActionLogs(userData.actionLogs || []);
-        setStreak(userData.streak || 0);
-        setMaxStreak(userData.maxStreak || 0); 
-        setLevelDates(userData.levelDates || { 1: new Date().toLocaleDateString() });
-        setPerfectWeeks(userData.perfectWeeks || 0);
-        setWeeklyData(userData.weeklyData || weeklyData);
-        setTotalDailyChallenges(userData.totalDailyChallenges || 0);
-        setVaultItems(userData.vaultItems || []);
+          setPoints(userData.points || 0);
+          setTopics(finalTopics);
+          setPlanning(userData.planning || INITIAL_PLANNING);
+          setUnits(userData.units || INITIAL_UNITS);
+          setSkills(userData.skills || INITIAL_SKILLS);
+          setDecks(userData.decks || []);
+          setTodos(userData.todos || []); 
+          setNotes(userData.notes || []); 
+          setActionLogs(userData.actionLogs || []);
+          setStreak(userData.streak || 0);
+          setMaxStreak(userData.maxStreak || 0); 
+          setLevelDates(userData.levelDates || { 1: new Date().toLocaleDateString() });
+          setPerfectWeeks(userData.perfectWeeks || 0);
+          setWeeklyData(userData.weeklyData || weeklyData);
+          setTotalDailyChallenges(userData.totalDailyChallenges || 0);
+          setVaultItems(userData.vaultItems || []);
+        } else {
+          // Si el usuario es nuevo, no lo bloqueamos
+          setTopics(INITIAL_TOPICS);
+        }
+      } catch (err) {
+        console.error("Error crítico de carga:", err);
+      } finally {
+        // ESTO ES LO IMPORTANTE: Pase lo que pase, quitamos la pantalla de carga
+        setIsDataLoaded(true);
       }
-      setIsDataLoaded(true);
     });
-  }, [isLogged, syncCode, isDataLoaded]);
+
+    return () => unsubscribe();
+  }, [isLogged, syncCode]);
 
   useEffect(() => {
     if (!isDataLoaded || !isLogged) return;
