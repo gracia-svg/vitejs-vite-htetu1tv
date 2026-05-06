@@ -1264,7 +1264,7 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam }) {
 
   const startExamMode = () => { 
     const allCards = decks.flatMap(d => d.cards.map(c => ({...c, deckName: d.name, deckId: d.id, category: d.category}))); 
-    if (allCards.length === 0) return alert("Empty library!"); 
+    if (allCards.length === 0) return alert("Library is empty!"); 
     onExam({ id: 'exam-mode', name: 'TOTAL EXAM', cards: allCards.sort(() => Math.random() - 0.5) }); 
   };
 
@@ -1281,7 +1281,7 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam }) {
         });
       }
     });
-    if (dueCards.length === 0) return alert("No hay tarjetas urgentes en estas categorías.");
+    if (dueCards.length === 0) return alert("No cards due in selected categories.");
     dueCards = dueCards.sort(() => Math.random() - 0.5).slice(0, 50);
     onExam({ id: 'daily-challenge', name: 'DAILY CHALLENGE', isChallenge: true, cards: dueCards });
     setShowDailyModal(false);
@@ -1329,7 +1329,7 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam }) {
                 </button>
               ))}
             </div>
-            <button onClick={startDailyChallenge} className="w-full p-4 bg-rose-600 text-white rounded-2xl font-black shadow-lg hover:bg-rose-700 active:scale-95 transition-all uppercase">…Ready For It? 🐍</button>
+            <button onClick={startDailyChallenge} className="w-full p-4 bg-rose-600 text-white rounded-xl font-black shadow-lg hover:bg-rose-700 active:scale-95 transition-all uppercase">Ready For It? 🐍</button>
           </div>
         </div>
       )}
@@ -1337,7 +1337,7 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam }) {
       <div className="flex flex-col sm:flex-row justify-between items-center bg-white/50 backdrop-blur px-4 py-2 rounded-2xl shadow-sm border border-white/50 gap-4">
         <h2 className="text-2xl font-black text-rose-950">Library</h2>
         <div className="flex items-center gap-2">
-          <button onClick={()=>setShowDailyModal(true)} className="px-3 py-2 bg-amber-100 text-amber-700 rounded-xl font-black text-[10px] flex items-center gap-2 border border-amber-200 active:scale-95 transition-all shadow-sm"><Icon name="Flame" size={14} className="fill-amber-700"/> DAILY RETO</button>
+          <button onClick={()=>setShowDailyModal(true)} className="px-3 py-2 bg-amber-100 text-amber-700 rounded-xl font-black text-[10px] flex items-center gap-2 border border-amber-200 active:scale-95 transition-all shadow-sm"><Icon name="Flame" size={14} className="fill-amber-700"/> DAILY CHALLENGE</button>
           <button onClick={startExamMode} className="px-3 py-2 bg-rose-100 text-rose-700 rounded-xl font-black text-[10px] flex items-center gap-2 border border-rose-200 active:scale-95 transition-all shadow-sm"><Icon name="Dices" size={14}/> EXAM MODE</button>
         </div>
       </div>
@@ -1369,7 +1369,7 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam }) {
             </div>
             <div className="flex gap-2">
               <button onClick={(e)=>{e.stopPropagation(); loadForEdit(d)}} className="text-slate-300 hover:text-emerald-500 p-1"><Icon name="Edit" size={18}/></button>
-              <button onClick={(e)=>{e.stopPropagation(); if(window.confirm("¿Eliminar mazo?")) setDecks(decks.filter(x=>x.id.toString()!==d.id.toString()))}} className="text-slate-300 hover:text-red-500 p-1"><Icon name="Trash2" size={18}/></button>
+              <button onClick={(e)=>{e.stopPropagation(); if(window.confirm("Delete deck?")) setDecks(decks.filter(x=>x.id.toString()!==d.id.toString()))}} className="text-slate-300 hover:text-red-500 p-1"><Icon name="Trash2" size={18}/></button>
             </div>
           </div>
         ))}
@@ -1378,9 +1378,6 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam }) {
   );
 }
 
-// ==========================================
-// 2. COMPONENTE: INTERFAZ DE TARJETA (ANTISPOILER)
-// ==========================================
 function FlashcardUI({ card, deckName, addPoints, isFlipped, setIsFlipped }) {
   return (
     <div className="h-80 w-full relative" style={{ perspective: '1000px' }} onClick={() => { if(!isFlipped) { addPoints(2, "Flashcard Mastery"); setIsFlipped(true); } }}>
