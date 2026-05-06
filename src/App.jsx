@@ -1365,10 +1365,12 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam }) {
           <div key={d.id} onClick={()=>onSelect(d.id.toString())} className="bento-card bg-white p-5 flex justify-between items-center cursor-pointer hover:border-rose-300 transition-all shadow-sm group">
             <div>
               <p className="font-black text-left text-slate-800 leading-tight">{d.name}</p>
-              <div className="flex gap-2 items-center mt-1">
-                <span className={`text-[8px] px-2 py-0.5 rounded uppercase font-black border ${getCategoryBadge(d.category)}`}>{d.category || "General"}</span>
-                <p className="text-[9px] text-rose-400 font-black uppercase tracking-widest">{d.cards.length} cards</p>
-              </div>
+<div className="flex gap-2 items-center mt-1">
+  <span className={`text-[8px] px-2 py-0.5 rounded uppercase font-black border ${getCategoryBadge(d.category)}`}>
+    {d.category || "General"}
+  </span>
+  <p className="text-[9px] text-rose-400 font-black uppercase tracking-widest">{d.cards.length} cards</p>
+</div>
             </div>
             <div className="flex gap-2">
               <button onClick={(e)=>{e.stopPropagation(); loadForEdit(d)}} className="text-slate-300 hover:text-emerald-500 p-1"><Icon name="Edit" size={18}/></button>
