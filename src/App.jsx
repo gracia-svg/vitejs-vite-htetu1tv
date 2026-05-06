@@ -52,18 +52,18 @@ const Icon = ({ name, size = 24, strokeWidth = 2, className = "" }) => {
 };
 
 // ==========================================
-// 2. DATA MAPPING (LOMLOE CV)
+// 2. DATA MAPPING (LOMLOE CV EXHAUSTIVO)
 // ==========================================
 const getCurricularMapping = (id) => {
   let ce = "1, 2, 3, 4, 5, 6";
-  let doVal = "CCL1, CP1, CP2, CP3, CD2, CPSAA4, CE1";
+  let doVal = "CCL1, CCL2, CP1, CP2, CP3, CD2, CPSAA4, CE1";
   let sb = "Block B. Plurilingualism";
-  let cr = "1.1, 1.2, 2.1, 2.2";
-  let leg = "LOMLOE (LO 3/2020) + RD 217/2022 & Decree 107/2022 (ESO Curriculum CV) + RD 243/2022 & Decree 108/2022 (Bachillerato Curriculum CV) + Order 19/2023 (Evaluation CV)";
+  let cr = "1.1, 1.2, 2.1, 3.1, 4.1, 5.1, 6.1";
+  let leg = "LOMLOE (LO 3/2020) + RD 217/2022 & Decree 107/2022 (ESO CV) + RD 243/2022 & Decree 108/2022 (Bach CV) + Order 19/2023 (Evaluation CV)";
 
   if ([1, 2, 39, 40].includes(id)) { 
     ce = "1, 2, 3, 4"; 
-    sb = "Block A. Communication"; 
+    sb = "Block A. Communication (Methods & Strategies)"; 
     leg += " + Decree 104/2018 & Order 20/2019 (Inclusión Educativa CV)"; 
   }
   else if ([62, 65, 66].includes(id)) { 
@@ -71,15 +71,28 @@ const getCurricularMapping = (id) => {
     sb = "Block C. Interculturality"; 
     leg += " + Law 1/2024 (Libertad Educativa CV)"; 
   }
-  else if (id >= 3 && id <= 6) { ce = "1, 2, 3"; sb = "Block A. Communication"; }
-  else if (id >= 7 && id <= 9) { ce = "1, 2"; sb = "Block A. Communication (Phonetics)"; }
-  else if (id >= 10 && id <= 27) { ce = "1, 2"; sb = "Block A. Communication (Grammar & Lexis)"; }
-  else if (id >= 28 && id <= 36) { ce = "1, 2, 3"; sb = "Block A. Communication (Discourse)"; }
+  else if (id >= 3 && id <= 6) { 
+    ce = "1, 2, 3"; 
+    sb = "Block A. Communication"; 
+  }
+  else if (id >= 7 && id <= 9) { 
+    ce = "1, 2"; 
+    sb = "Block A. Communication (Phonetics)"; 
+    doVal = "CCL1, CP1, CD2"; 
+  }
+  else if (id >= 10 && id <= 27) { 
+    ce = "1, 2"; 
+    sb = "Block A. Communication (Grammar & Lexis)"; 
+  }
+  else if (id >= 28 && id <= 36) { 
+    ce = "1, 2, 3"; 
+    sb = "Block A. Communication (Discourse Analysis)"; 
+  }
   else if ((id >= 37 && id <= 61) || (id >= 67 && id <= 69) || id === 63 || id === 64) { 
     ce = "6"; 
     sb = "Block C. Interculturality"; 
-    doVal = "CCL1, CP3, CC1, CC2, CC3"; 
-    cr = "6.1, 6.2, 6.3"; 
+    doVal = "CCL1, CCL4, CC1, CC2, CC3"; 
+    cr = "6.1, 6.2"; 
   }
   
   return { ce, do: doVal, sb, cr, leg };
@@ -159,44 +172,45 @@ const RAW_TITLES = [
 
 const getEnhancedSchema = (id, title) => {
   const map = getCurricularMapping(id);
-  const legislationList = map.leg.split(' + ').map(l => `• ${l}`).join('\n');
-  return `Introduction\n\n${title.split('. ').join('\n')}\n\nTopic ${id} in the classroom\n\nConclusion\n\nBibliography\n\nAPPLICABLE LEGISLATION:\n${legislationList}`;
+  const titleLines = title.split('. ').join('\n');
+  const legList = map.leg.split(' + ').map(l => `• ${l}`).join('\n');
+  return `Introduction\n\n${titleLines}\n\nTopic ${id} in the classroom\n\nConclusion\n\nBibliography\n\nAPPLICABLE LEGISLATION:\n${legList}`;
 };
 
 const INITIAL_TOPICS = Array.from({ length: 69 }, (_, i) => {
   const id = i + 1;
   const t = RAW_TITLES[i];
-  const mapping = getCurricularMapping(id);
+  const m = getCurricularMapping(id);
   return { 
     id, title: t, redactado: false, estudiado: 0, reviews: 0, mocks: 0, miniMocks: 0, finished: false, discarded: false, stars: 0,
     indexNotes: getEnhancedSchema(id, t),
     priority: null,
-    ce: mapping.ce,
-    do: mapping.do,
-    sb: mapping.sb,
-    cr: mapping.cr,
-    leg: mapping.leg
+    ce: m.ce, 
+    do: m.do, 
+    sb: m.sb, 
+    cr: m.cr, 
+    leg: m.leg
   };
 });
 
 const INITIAL_PLANNING = [
-  { id: 'p1', title: 'Introducción y Justificación', status: 0, indexNotes: "", priority: null, leg: "LOMLOE" },
-  { id: 'p2', title: 'Contextualización', status: 0, indexNotes: "", priority: null, leg: "LOMLOE" },
-  { id: 'p3', title: 'Marco Legal', status: 0, indexNotes: "", priority: null, leg: "LOMLOE" },
-  { id: 'p4', title: 'Objetivos', status: 0, indexNotes: "", priority: null, leg: "LOMLOE" },
-  { id: 'p5', title: 'Competencias', status: 0, indexNotes: "", priority: null, leg: "LOMLOE" },
-  { id: 'p6', title: 'Saberes Básicos', status: 0, indexNotes: "", priority: null, leg: "LOMLOE" },
-  { id: 'p7', title: 'Metodología y DUA', status: 0, indexNotes: "", priority: null, leg: "LOMLOE" },
-  { id: 'p8', title: 'Elementos Transversales', status: 0, indexNotes: "", priority: null, leg: "LOMLOE" },
-  { id: 'p9', title: 'Interdisciplinariedad', status: 0, indexNotes: "", priority: null, leg: "LOMLOE" },
-  { id: 'p10', title: 'Evaluación y Criterios', status: 0, indexNotes: "", priority: null, leg: "LOMLOE" },
-  { id: 'p11', title: 'Recursos y Materiales', status: 0, indexNotes: "", priority: null, leg: "LOMLOE" },
-  { id: 'p12', title: 'Actividades Complementarias', status: 0, indexNotes: "", priority: null, leg: "LOMLOE" },
-  { id: 'p13', title: 'Conclusión y Bibliografía', status: 0, indexNotes: "", priority: null, leg: "LOMLOE" }
+  { id: 'p1', title: 'Introduction and Justification', status: 0, indexNotes: "", priority: null, leg: "LOMLOE" },
+  { id: 'p2', title: 'Contextualization', status: 0, indexNotes: "", priority: null, leg: "LOMLOE" },
+  { id: 'p3', title: 'Legal Framework', status: 0, indexNotes: "", priority: null, leg: "LOMLOE" },
+  { id: 'p4', title: 'Objectives', status: 0, indexNotes: "", priority: null, leg: "LOMLOE" },
+  { id: 'p5', title: 'Competences', status: 0, indexNotes: "", priority: null, leg: "LOMLOE" },
+  { id: 'p6', title: 'Basic Knowledge', status: 0, indexNotes: "", priority: null, leg: "LOMLOE" },
+  { id: 'p7', title: 'Methodology and DUA', status: 0, indexNotes: "", priority: null, leg: "LOMLOE" },
+  { id: 'p8', title: 'Transversal Elements', status: 0, indexNotes: "", priority: null, leg: "LOMLOE" },
+  { id: 'p9', title: 'Interdisciplinarity', status: 0, indexNotes: "", priority: null, leg: "LOMLOE" },
+  { id: 'p10', title: 'Evaluation and Criteria', status: 0, indexNotes: "", priority: null, leg: "LOMLOE" },
+  { id: 'p11', title: 'Resources and Materials', status: 0, indexNotes: "", priority: null, leg: "LOMLOE" },
+  { id: 'p12', title: 'Complementary Activities', status: 0, indexNotes: "", priority: null, leg: "LOMLOE" },
+  { id: 'p13', title: 'Conclusion and Bibliography', status: 0, indexNotes: "", priority: null, leg: "LOMLOE" }
 ];
 
 const INITIAL_UNITS = Array.from({ length: 6 }, (_, i) => ({ 
-  id: `ud${i + 1}`, title: `Unidad Didáctica ${i + 1}`, status: 0, indexNotes: "", priority: null, ce: "", sb: "", do: "", cr: "", leg: "LOMLOE"
+  id: `ud${i + 1}`, title: `Didactic Unit ${i + 1}`, status: 0, indexNotes: "", priority: null, ce: "", sb: "", do: "", cr: "", leg: "LOMLOE"
 }));
 
 const INITIAL_SKILLS = [
@@ -210,24 +224,24 @@ const getTopicBlock = (id) => {
   if (typeof id === 'string' && id.startsWith('ud')) return { name: 'Unit', badge: 'bg-teal-100 text-teal-700 border-teal-200', color: '!bg-teal-500' };
   if (typeof id === 'string' && id.startsWith('p')) return { name: 'Planning', badge: 'bg-blue-100 text-blue-700 border-blue-200', color: '!bg-blue-500' };
   
-  if ([1, 2].includes(id)) return { name: 'Metodología', badge: 'bg-orange-100 text-orange-700 border-orange-200', color: '!bg-orange-500' };
-  if ([3, 4, 5, 6, 28, 40].includes(id)) return { name: 'Comunicación', badge: 'bg-purple-100 text-purple-700 border-purple-200', color: '!bg-purple-500' };
-  if ([7, 8, 9].includes(id)) return { name: 'Fonética', badge: 'bg-slate-200 text-slate-800 border-slate-300', color: '!bg-slate-500' };
-  if (id >= 10 && id <= 27) return { name: 'Gramática', badge: 'bg-sky-100 text-sky-700 border-sky-200', color: '!bg-sky-500' };
-  if (id >= 29 && id <= 39) return { name: 'Análisis Discurso', badge: 'bg-pink-100 text-pink-700 border-pink-200', color: '!bg-pink-500' };
-  if ([41, 42, 43, 44, 45, 47, 48, 49, 50, 51, 56, 57, 58, 62].includes(id)) return { name: 'Lit. Británica', badge: 'bg-green-100 text-green-700 border-green-200', color: '!bg-green-500' };
-  if ([46, 52, 53, 54, 55, 59, 60].includes(id)) return { name: 'Lit. Americana', badge: 'bg-yellow-100 text-yellow-700 border-yellow-200', color: '!bg-yellow-500' };
-  if ([61, 63, 64, 65, 66, 67, 68, 69].includes(id)) return { name: 'Cultura', badge: 'bg-indigo-100 text-indigo-700 border-indigo-200', color: '!bg-indigo-500' };
+  if ([1, 2].includes(id)) return { name: 'Methodology', badge: 'bg-orange-100 text-orange-700 border-orange-200', color: '!bg-orange-500' };
+  if ([3, 4, 5, 6, 28, 40].includes(id)) return { name: 'Communication', badge: 'bg-purple-100 text-purple-700 border-purple-200', color: '!bg-purple-500' };
+  if ([7, 8, 9].includes(id)) return { name: 'Phonetics', badge: 'bg-slate-200 text-slate-800 border-slate-300', color: '!bg-slate-500' };
+  if (id >= 10 && id <= 27) return { name: 'Grammar', badge: 'bg-sky-100 text-sky-700 border-sky-200', color: '!bg-sky-500' };
+  if (id >= 29 && id <= 39) return { name: 'Discourse', badge: 'bg-pink-100 text-pink-700 border-pink-200', color: '!bg-pink-500' };
+  if ([41, 42, 43, 44, 45, 47, 48, 49, 50, 51, 56, 57, 58, 62].includes(id)) return { name: 'Brit Lit', badge: 'bg-green-100 text-green-700 border-green-200', color: '!bg-green-500' };
+  if ([46, 52, 53, 54, 55, 59, 60].includes(id)) return { name: 'Amer Lit', badge: 'bg-yellow-100 text-yellow-700 border-yellow-200', color: '!bg-yellow-500' };
+  if ([61, 63, 64, 65, 66, 67, 68, 69].includes(id)) return { name: 'Culture', badge: 'bg-indigo-100 text-indigo-700 border-indigo-200', color: '!bg-indigo-500' };
   return { name: 'General', badge: 'bg-gray-100 text-gray-700 border-gray-200', color: '!bg-slate-600' };
 };
 
 const getPlanningStatusLabel = (status) => {
-  if (status === 0) return 'NADA';
-  if (status <= 3) return `ESBOZO (${status}/3)`;
-  if (status <= 6) return `REDACCIÓN (${status-3}/3)`;
-  if (status <= 9) return `ENSAYO (${status-6}/3)`;
-  if (status === 10) return 'FINALIZADA';
-  return 'NADA';
+  if (status === 0) return 'NONE';
+  if (status <= 3) return `SKETCH (${status}/3)`;
+  if (status <= 6) return `WRITING (${status-3}/3)`;
+  if (status <= 9) return `REHEARSAL (${status-6}/3)`;
+  if (status === 10) return 'FINISHED';
+  return 'NONE';
 };
 
 const EditableText = ({ value, onSave, className, isArea = false }) => {
@@ -390,6 +404,7 @@ export default function App() {
   const addPoints = (amount, desc, actionData = null) => {
     let finalLogs = [...actionLogs];
 
+    // Payload Cleanup 24h
     const twentyFourHoursAgo = Date.now() - 86400000;
     finalLogs = finalLogs.map(log => {
       if (log.actionData && log.timestamp < twentyFourHoursAgo) {
@@ -517,6 +532,7 @@ export default function App() {
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
       `}</style>
 
+      {/* MODAL GLOBAL */}
       {selectedTopicModal && (
         <div className="modal-overlay animate-in fade-in duration-300" onClick={() => { setSelectedTopicModal(null); setIsModalFullscreen(false); }}>
           <div className={`modal-content p-8 custom-scrollbar animate-in zoom-in-95 duration-300 ${isModalFullscreen ? 'modal-fullscreen' : ''}`} onClick={e => e.stopPropagation()}>
@@ -547,6 +563,7 @@ export default function App() {
                 />
               </div>
 
+              {/* CURRICULAR ALIGNMENT */}
               {selectedTopicModal.id.toString().startsWith('ud') ? (
                 <div className="flex flex-wrap justify-center gap-2 px-4 border-b border-slate-50 pb-6">
                   {['ce', 'sb', 'do', 'cr', 'leg'].map(key => (
@@ -601,11 +618,12 @@ export default function App() {
                 </div>
               )}
 
+              {/* LEY ALERT */}
               {!selectedTopicModal.id.toString().startsWith('p') && !selectedTopicModal.id.toString().startsWith('ud') && [1, 2, 39, 40, 62, 65, 66].includes(selectedTopicModal.id) && (
                 <div className="mx-4 p-3 bg-amber-50 border-2 border-amber-200 rounded-2xl flex items-center gap-3 text-amber-700 animate-pulse">
                   <Icon name="AlertTriangle" size={24} />
                   <p className="text-[10px] font-black text-left uppercase leading-tight">
-                    { [62, 65, 66].includes(selectedTopicModal.id) ? "Must comply with Ley 1/2024 (Libertad Educativa CV)" : "Must comply with Decree 104/2018 (Inclusión CV)" }
+                    { [62, 65, 66].includes(selectedTopicModal.id) ? "Must comply with Law 1/2024 (Libertad Educativa CV)" : "Must comply with Decree 104/2018 (Inclusión CV)" }
                   </p>
                 </div>
               )}
@@ -644,6 +662,7 @@ export default function App() {
         </div>
       )}
 
+      {/* HEADER PREMIUM */}
       <header className="sticky top-0 z-[100] bg-white/95 backdrop-blur-md border-b-2 border-slate-100 p-4 shadow-sm">
         <div className="max-w-5xl mx-auto flex justify-between items-center">
           <div className="flex items-center gap-2 cursor-pointer transition-transform active:scale-95" onClick={() => setActiveTab('map')}>
@@ -664,16 +683,38 @@ export default function App() {
               {showTimerMenu && (
                 <div className="absolute top-full right-0 mt-2 bg-white border-2 border-slate-100 rounded-2xl p-4 shadow-2xl z-[200] w-64 animate-in zoom-in-95">
                   <div className="grid grid-cols-2 gap-2 mb-3">
-                    <button onClick={()=>{const ms=7200000; setEndTime(Date.now()+ms); setTimeLeft(7200); setIsTimerActive(true); setShowTimerMenu(false)}} className="p-2 bg-slate-50 hover:bg-emerald-50 rounded-xl text-[10px] font-black uppercase">2H Focus</button>
-                    <button onClick={()=>{const ms=3600000; setEndTime(Date.now()+ms); setTimeLeft(3600); setIsTimerActive(true); setShowTimerMenu(false)}} className="p-2 bg-slate-50 hover:bg-emerald-50 rounded-xl text-[10px] font-black uppercase">1H Plan</button>
+                    <button onClick={()=>{setTimeLeft(7200); setEndTime(Date.now() + 7200000); setIsTimerActive(true); setShowTimerMenu(false)}} className="p-2 bg-slate-50 hover:bg-emerald-50 rounded-xl text-[10px] font-black uppercase">2H Focus</button>
+                    <button onClick={()=>{setTimeLeft(3600); setEndTime(Date.now() + 3600000); setIsTimerActive(true); setShowTimerMenu(false)}} className="p-2 bg-slate-50 hover:bg-emerald-50 rounded-xl text-[10px] font-black uppercase">1H Plan</button>
                   </div>
                   
+                  {/* Temporizador Personalizado */}
                   <div className="pt-2 border-t border-slate-100 flex gap-2 items-center">
-                    <input type="number" placeholder="Min..." className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-xs font-black outline-none focus:border-emerald-300" value={customMinutes} onChange={e => setCustomMinutes(e.target.value)} />
-                    <button onClick={() => { const mins=parseInt(customMinutes); if(mins>0){ setEndTime(Date.now()+mins*60000); setTimeLeft(mins*60); setIsTimerActive(true); setShowTimerMenu(false); setCustomMinutes(""); } }} className="bg-emerald-600 text-white px-3 py-1 rounded-lg text-[10px] font-black">SET</button>
+                    <input 
+                      type="number" 
+                      placeholder="Min..." 
+                      className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-xs font-black outline-none focus:border-emerald-300"
+                      value={customMinutes}
+                      onChange={e => setCustomMinutes(e.target.value)}
+                    />
+                    <button 
+                      onClick={() => {
+                        const mins = parseInt(customMinutes);
+                        if(mins > 0) {
+                          const ms = mins * 60 * 1000;
+                          setTimeLeft(mins * 60);
+                          setEndTime(Date.now() + ms);
+                          setIsTimerActive(true);
+                          setShowTimerMenu(false);
+                          setCustomMinutes("");
+                        }
+                      }}
+                      className="bg-emerald-600 text-white px-3 py-1 rounded-lg text-[10px] font-black"
+                    >
+                      SET
+                    </button>
                   </div>
 
-                  <button onClick={()=>{setEndTime(null); setTimeLeft(0); setIsTimerActive(false); setShowTimerMenu(false)}} className="w-full p-2 bg-red-50 text-red-600 rounded-xl text-[10px] font-black uppercase tracking-widest mt-2">Reset Timer</button>
+                  <button onClick={()=>{setTimeLeft(0); setEndTime(null); setIsTimerActive(false); setShowTimerMenu(false)}} className="w-full p-2 bg-red-50 text-red-600 rounded-xl text-[10px] font-black uppercase tracking-widest mt-2">Reset Timer</button>
                 </div>
               )}
             </div>
@@ -720,6 +761,7 @@ export default function App() {
         )}
       </header>
 
+      {/* MAIN CONTAINER */}
       <main className="max-w-5xl mx-auto p-4 md:p-8">
         {activeTab === 'map' && <ProgressMap points={points} level={Math.floor(points/200)+1} xp={points%200} examDate={examDate} setExamDate={setExamDate} addPoints={addPoints} levelDates={levelDates} />}
         {activeTab === 'syllabus' && <SyllabusView topics={topics} setTopics={setTopics} addPoints={addPoints} onOpenModal={setSelectedTopicModal} actionLogs={actionLogs} onReset={handleResetTopics} />}
@@ -733,6 +775,7 @@ export default function App() {
         {activeTab === 'stats' && <StatsView actionLogs={actionLogs} undoAction={undoAction} topics={topics} planning={planning} units={units} />}
       </main>
 
+      {/* NAV FOOTER FIXED */}
       <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t-2 border-slate-100 p-4 pb-8 z-50 shadow-lg">
         <div className="max-w-md mx-auto flex justify-around">
           <NavBtn active={activeTab==='map'} icon="MapIcon" label="MAPA" color="emerald" onClick={()=>setActiveTab('map')} />
@@ -746,7 +789,7 @@ export default function App() {
 }
 
 // ==========================================
-// 5. COMPONENTES DE VISTA
+// 5. COMPONENTES DE VISTA (COMPLETOS)
 // ==========================================
 
 function ProgressMap({ points, level, xp, examDate, setExamDate, addPoints, levelDates }) {
@@ -758,6 +801,7 @@ function ProgressMap({ points, level, xp, examDate, setExamDate, addPoints, leve
   return (
     <div className="space-y-12 max-w-xl mx-auto py-8 text-center animate-in fade-in">
       <div className="grid grid-cols-2 gap-4">
+        
         <div className="bento-card p-6 border-emerald-100 shadow-md relative overflow-hidden">
           <Icon name="Calendar" className="absolute -right-4 -bottom-4 text-emerald-50 opacity-50" size={100} />
           <p className="text-4xl font-black text-emerald-950 tabular-nums cursor-pointer relative z-10" onClick={() => setShowDate(!showDate)}>{days}</p>
@@ -780,29 +824,30 @@ function ProgressMap({ points, level, xp, examDate, setExamDate, addPoints, leve
             <div className="absolute top-full left-0 right-0 mt-2 bg-white border-2 border-emerald-100 rounded-2xl p-3 shadow-2xl z-50 flex flex-col gap-2 animate-in zoom-in-95">
               {ptsMenu === 'main' && (
                 <div className="flex gap-2">
-                  <button onClick={(e) => { e.stopPropagation(); setPtsMenu('add'); }} className="flex-1 py-3 bg-emerald-50 text-emerald-600 rounded-xl font-black"><Icon name="Plus" size={20} className="mx-auto" /></button>
-                  <button onClick={(e) => { e.stopPropagation(); setPtsMenu('sub'); }} className="flex-1 py-3 bg-red-50 text-red-600 rounded-xl font-black"><Icon name="Minus" size={20} className="mx-auto" /></button>
+                  <button onClick={(e) => { e.stopPropagation(); setPtsMenu('add'); }} className="flex-1 py-3 bg-emerald-50 text-emerald-600 rounded-xl font-black hover:bg-emerald-100 transition-colors"><Icon name="Plus" size={20} className="mx-auto" /></button>
+                  <button onClick={(e) => { e.stopPropagation(); setPtsMenu('sub'); }} className="flex-1 py-3 bg-red-50 text-red-600 rounded-xl font-black hover:bg-red-100 transition-colors"><Icon name="Minus" size={20} className="mx-auto" /></button>
                 </div>
               )}
               {ptsMenu === 'add' && (
                 <div className="grid grid-cols-2 gap-2">
                   {[5, 10, 15, 25].map(v => (
-                    <button key={v} onClick={(e) => { e.stopPropagation(); addPoints(v, `+${v} Pts (Manual)`); setPtsMenu('closed'); }} className="p-2 bg-emerald-500 text-white rounded-xl font-black text-xs">+{v}</button>
+                    <button key={v} onClick={(e) => { e.stopPropagation(); addPoints(v, `+${v} Pts (Manual)`); setPtsMenu('closed'); }} className="p-2 bg-emerald-500 text-white rounded-xl font-black text-xs hover:bg-emerald-600 transition-colors">+{v}</button>
                   ))}
-                  <button onClick={(e) => { e.stopPropagation(); setPtsMenu('main'); }} className="col-span-2 p-2 bg-slate-100 text-slate-500 rounded-xl text-[10px] font-black uppercase">Volver</button>
+                  <button onClick={(e) => { e.stopPropagation(); setPtsMenu('main'); }} className="col-span-2 p-2 bg-slate-100 text-slate-500 rounded-xl text-[10px] font-black uppercase hover:bg-slate-200 transition-colors">Volver</button>
                 </div>
               )}
               {ptsMenu === 'sub' && (
                 <div className="grid grid-cols-2 gap-2">
                   {[5, 10, 15, 25].map(v => (
-                    <button key={v} onClick={(e) => { e.stopPropagation(); addPoints(-v, `-${v} Pts (Manual)`); setPtsMenu('closed'); }} className="p-2 bg-red-500 text-white rounded-xl font-black text-xs">-{v}</button>
+                    <button key={v} onClick={(e) => { e.stopPropagation(); addPoints(-v, `-${v} Pts (Manual)`); setPtsMenu('closed'); }} className="p-2 bg-red-500 text-white rounded-xl font-black text-xs hover:bg-red-600 transition-colors">-{v}</button>
                   ))}
-                  <button onClick={(e) => { e.stopPropagation(); setPtsMenu('main'); }} className="col-span-2 p-2 bg-slate-100 text-slate-500 rounded-xl text-[10px] font-black uppercase">Volver</button>
+                  <button onClick={(e) => { e.stopPropagation(); setPtsMenu('main'); }} className="col-span-2 p-2 bg-slate-100 text-slate-500 rounded-xl text-[10px] font-black uppercase hover:bg-slate-200 transition-colors">Volver</button>
                 </div>
               )}
             </div>
           )}
         </div>
+
       </div>
 
       <div className="flex flex-col items-center gap-16 relative mt-10">
@@ -852,15 +897,18 @@ function SyllabusView({ topics, setTopics, addPoints, onOpenModal, actionLogs, o
     return diff < 7 ? 'bg-emerald-500/40' : diff < 15 ? 'bg-amber-500/40' : 'bg-red-500/40';
   };
 
-  const displayList = topics.filter(t => (t.title.toLowerCase().includes(search.toLowerCase()) || t.id.toString().includes(search))).sort((a, b) => a.discarded !== b.discarded ? (a.discarded ? 1 : -1) : a.id - b.id);
+  const displayList = topics.filter(t => (t.title.toLowerCase().includes(search.toLowerCase()) || t.id.toString().includes(search))).sort((a, b) => {
+    if (a.discarded !== b.discarded) return a.discarded ? 1 : -1;
+    return a.id - b.id;
+  });
 
   return (
     <div className="space-y-6 animate-in fade-in">
       <div className="flex flex-col sm:flex-row justify-between items-center gap-4 bg-white/50 backdrop-blur p-4 rounded-3xl border border-white/50 shadow-sm">
         <div className="flex items-center gap-3"><Icon name="BookOpen" className="text-amber-600" /><h2 className="text-2xl font-black text-slate-950">Temas</h2></div>
         <div className="flex items-center gap-3 w-full sm:w-auto">
-          <div className="relative flex-1 sm:w-64"><Icon name="Search" size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" /><input placeholder="Filter..." value={search} onChange={e=>setSearch(e.target.value)} className="w-full bg-white border-2 border-slate-100 rounded-2xl pl-10 pr-4 py-2 text-sm font-black outline-none focus:border-emerald-200 transition-all" /></div>
-          <button onClick={onReset} className="px-3 py-2 bg-red-50 text-red-600 font-black text-[10px] rounded-xl uppercase tracking-widest hover:bg-red-100">Reset</button>
+          <div className="relative flex-1 sm:w-64"><Icon name="Search" size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" /><input placeholder="Buscar por título o número..." value={search} onChange={e=>setSearch(e.target.value)} className="w-full bg-white border-2 border-slate-100 rounded-2xl pl-10 pr-4 py-2 text-sm font-black outline-none focus:border-emerald-200 transition-all" /></div>
+          <button onClick={onReset} className="px-3 py-2 bg-red-50 text-red-600 font-black text-[10px] rounded-xl hover:bg-red-100 transition-all shrink-0 uppercase tracking-widest">Reset</button>
         </div>
       </div>
       
@@ -875,6 +923,7 @@ function SyllabusView({ topics, setTopics, addPoints, onOpenModal, actionLogs, o
           return (
             <div key={t.id} className={`bento-card p-5 border-2 transition-all duration-300 relative overflow-hidden ${cardStyle}`}>
               <div onClick={() => cyclePriority(t.id, t.priority)} className={`absolute left-0 top-0 bottom-0 w-2.5 ${getPriorityColor(t)} cursor-pointer transition-all hover:w-4 z-10`} />
+              
               <div className="flex items-center justify-between mb-4 pl-4">
                 <div className="flex items-center gap-4">
                   <div onClick={() => onOpenModal(t)} className={`w-12 h-12 rounded-xl flex items-center justify-center font-black text-lg border-2 cursor-pointer active:scale-90 transition-transform ${badgeStyle}`}>{t.id}</div>
@@ -890,7 +939,9 @@ function SyllabusView({ topics, setTopics, addPoints, onOpenModal, actionLogs, o
               </div>
 
               <div className="grid grid-cols-2 gap-2 mb-4 pl-4">
-                <button onClick={() => updateField(t.id, 'redactado', !t.redactado, t.redactado ? -15 : 15)} className={`py-2.5 rounded-2xl text-[10px] font-black border-2 transition-all active:scale-95 ${t.redactado ? (t.finished ? '!bg-white !text-slate-900 !border-transparent' : 'bg-emerald-500 text-white border-transparent shadow-md') : (t.finished ? '!bg-black/20 !text-white !border-transparent' : 'bg-white text-slate-400 border-slate-50')}`}>WRITTEN</button>
+                <button onClick={() => updateField(t.id, 'redactado', !t.redactado, t.redactado ? -15 : 15)} className={`py-2.5 rounded-2xl text-[10px] font-black border-2 transition-all active:scale-95 ${t.redactado ? (t.finished ? '!bg-white !text-slate-900 !border-transparent' : 'bg-emerald-500 text-white border-transparent shadow-md') : (t.finished ? '!bg-black/20 !text-white !border-transparent' : 'bg-white text-slate-400 border-slate-50')}`}>
+                  WRITTEN
+                </button>
                 <button onClick={() => { const next = (t.estudiado + 1) % 4; updateField(t.id, 'estudiado', next, next === 0 ? -75 : 25); }} className={`py-2.5 rounded-2xl text-[10px] font-black border-2 transition-all relative overflow-hidden active:scale-95 ${t.estudiado > 0 ? (t.finished ? '!bg-white !text-slate-900 !border-transparent' : 'bg-orange-500 text-white border-transparent shadow-md') : (t.finished ? '!bg-black/20 !text-white !border-transparent' : 'bg-white text-slate-400 border-slate-50')}`}>
                   {t.estudiado > 0 && t.estudiado < 3 && !t.finished && <div className="absolute left-0 top-0 bottom-0 bg-white/20 transition-all" style={{ width: `${(t.estudiado/3)*100}%` }} />}
                   <span className="relative z-10 uppercase">Studied {t.estudiado > 0 ? `(${t.estudiado}/3)` : ''}</span>
