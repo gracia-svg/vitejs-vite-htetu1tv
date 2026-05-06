@@ -1167,13 +1167,50 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam }) {
     setEditingId(deck.id); setOpen(true); 
   };
 
+  // NUEVO: Funciones de Exportar e Importar
+  const exportDecks = () => {
+    const json = JSON.stringify(decks);
+    navigator.clipboard.writeText(json).then(() => {
+      alert("¡Mazos copiados al portapapeles! Pégalos en un bloc de notas para guardarlos.");
+    }).catch(err => {
+      prompt("Tu navegador bloqueó el copiado automático. Copia este texto manualmente:", json);
+    });
+  };
+
+  const importDecks = () => {
+    const input = prompt("Pega aquí el código de tus mazos exportados:");
+    if (input) {
+      try {
+        const imported = JSON.parse(input);
+        if (Array.isArray(imported)) {
+          setDecks(prev => [...prev, ...imported]);
+          alert("¡Mazos importados con éxito!");
+        } else {
+          alert("El formato de los datos no es válido.");
+        }
+      } catch (e) {
+        alert("Error al importar. Asegúrate de haber pegado el código completo.");
+      }
+    }
+  };
+
   const sortedDecks = useMemo(() => [...decks].sort((a, b) => a.name.localeCompare(b.name)), [decks]);
 
   return (
     <div className="space-y-6 text-left">
-      <div className="flex justify-between items-center bg-white/50 backdrop-blur px-4 py-2 rounded-2xl shadow-sm border border-white/50"><h2 className="text-2xl font-black text-rose-950">Library</h2><button onClick={startExamMode} className="p-3 bg-rose-100 text-rose-700 rounded-xl font-black text-[10px] flex items-center gap-2 border border-rose-200 active:scale-95 transition-all shadow-sm"><Icon name="Zap" size={14} className="fill-rose-700"/> EXAM MODE</button></div>
+      <div className="flex flex-col sm:flex-row justify-between items-center bg-white/50 backdrop-blur px-4 py-2 rounded-2xl shadow-sm border border-white/50 gap-4">
+        <h2 className="text-2xl font-black text-rose-950">Library</h2>
+        <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto custom-scrollbar pb-1 sm:pb-0">
+          <button onClick={exportDecks} className="px-3 py-2 bg-slate-100 text-slate-600 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-200 transition-colors shrink-0">Exportar</button>
+          <button onClick={importDecks} className="px-3 py-2 bg-slate-100 text-slate-600 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-200 transition-colors shrink-0">Importar</button>
+          <button onClick={startExamMode} className="px-3 py-2 bg-rose-100 text-rose-700 rounded-xl font-black text-[10px] flex items-center gap-2 border border-rose-200 active:scale-95 transition-all shadow-sm shrink-0"><Icon name="Zap" size={14} className="fill-rose-700"/> EXAM MODE</button>
+        </div>
+      </div>
+      
       <button onClick={()=>{setOpen(!open); setEditingId(null); setName(""); setTxt("");}} className="w-full p-4 bg-rose-600 text-white rounded-2xl font-black shadow-lg shadow-rose-100 active:scale-95 transition-all">{editingId ? 'EDITING DECK' : 'NEW DECK'}</button>
-      {open && (<div className="bento-card p-6 border-rose-100 space-y-4 shadow-xl animate-in zoom-in-95 bg-white"><input placeholder="Deck name..." value={name} onChange={e=>setName(e.target.value)} className="w-full bg-slate-50 p-3 rounded-xl font-black outline-none border-2 border-transparent focus:border-rose-200 shadow-inner" /><textarea placeholder="Question : Answer (One per line)" value={txt} onChange={e=>setTxt(e.target.value)} className="w-full h-32 bg-slate-50 p-3 rounded-xl font-black outline-none resize-none border-2 border-transparent focus:border-rose-200 shadow-inner" /><button onClick={saveDeck} className="w-full p-3 bg-rose-600 text-white rounded-xl font-black shadow-md uppercase">{editingId ? 'Save Changes' : 'Create Deck'}</button></div>)}
+      
+      {open && (<div className="bento-card p-6 border-rose-100 space-y-4 shadow-xl animate-in zoom-in-95 bg-white"><input placeholder="Deck name..." value={name} onChange={e=>setName(e.target.value)} className="w-full bg-slate-50 p-3 rounded-xl font-black outline-none border-2 border-transparent focus:border-rose-200 shadow-inner" /><textarea placeholder="Question : Answer (One per line)" value={txt} onChange={e=>setTxt(e.target.value)} className="w-full h-32 bg-slate-50 p-3 rounded-xl font-black outline-none resize-none border-2 border-transparent focus:border-rose-200 shadow-inner custom-scrollbar" /><button onClick={saveDeck} className="w-full p-3 bg-rose-600 text-white rounded-xl font-black shadow-md uppercase">{editingId ? 'Save Changes' : 'Create Deck'}</button></div>)}
+      
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {sortedDecks.map(d=>(
           <div key={d.id} onClick={()=>onSelect(d.id.toString())} className="bento-card bg-white p-5 flex justify-between items-center cursor-pointer hover:border-rose-300 transition-all shadow-sm group">
@@ -1191,7 +1228,6 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam }) {
     </div>
   );
 }
-
 function DeckStudyView({ deck, onBack, addPoints }) {
   const [idx, setIdx] = useState(0);
   const [flipped, setFlipped] = useState(false);
