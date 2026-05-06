@@ -1257,18 +1257,20 @@ function NotesView({ notes, setNotes }) {
 // COMPONENTES DE FLASHCARDS ACTUALIZADOS
 // ==========================================
 
+// ==========================================
+// 1. COMPONENTE: GESTOR DE MAZOS (BIBLIOTECA)
+// ==========================================
 function FlashcardsManager({ decks, setDecks, onSelect, onExam }) {
   const [open, setOpen] = useState(false);
   const [txt, setTxt] = useState("");
   const [name, setName] = useState("");
   const [deckCat, setDeckCat] = useState("General");
   const [editingId, setEditingId] = useState(null);
-
   const [showDailyModal, setShowDailyModal] = useState(false);
   const [dailyCats, setDailyCats] = useState(DECK_CATEGORIES);
 
   const startExamMode = () => { 
-    const allCards = decks.flatMap(d => d.cards.map(c => ({...c, deckName: d.name, deckId: d.id}))); 
+    const allCards = decks.flatMap(d => d.cards.map(c => ({...c, deckName: d.name, deckId: d.id, category: d.category}))); 
     if (allCards.length === 0) return alert("Empty library!"); 
     onExam({ id: 'exam-mode', name: 'TOTAL EXAM', cards: allCards.sort(() => Math.random() - 0.5) }); 
   };
@@ -1281,12 +1283,12 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam }) {
       if (dailyCats.includes(ctg)) {
         d.cards.forEach(c => {
           if (!c.nextDate || c.nextDate <= now) {
-            dueCards.push({...c, deckId: d.id, deckName: d.name});
+            dueCards.push({...c, deckId: d.id, deckName: d.name, category: d.category});
           }
         });
       }
     });
-    if (dueCards.length === 0) return alert("¡No hay tarjetas urgentes en estas categorías hoy!");
+    if (dueCards.length === 0) return alert("No hay tarjetas urgentes en estas categorías.");
     dueCards = dueCards.sort(() => Math.random() - 0.5).slice(0, 50);
     onExam({ id: 'daily-challenge', name: 'DAILY CHALLENGE', isChallenge: true, cards: dueCards });
     setShowDailyModal(false);
@@ -1311,83 +1313,54 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam }) {
     setEditingId(deck.id); setOpen(true); 
   };
 
-  const exportDecks = () => {
-    const json = JSON.stringify(decks);
-    navigator.clipboard.writeText(json).then(() => {
-      alert("¡Mazos copiados al portapapeles!");
-    });
-  };
-
-  const importDecks = () => {
-    const input = prompt("Pega aquí el código de tus mazos:");
-    if (input) {
-      try {
-        const imported = JSON.parse(input);
-        if (Array.isArray(imported)) {
-          setDecks(prev => [...prev, ...imported]);
-          alert("¡Mazos importados!");
-        }
-      } catch (e) { alert("Error al importar."); }
-    }
-  };
-
   const sortedDecks = useMemo(() => [...decks].sort((a, b) => a.name.localeCompare(b.name)), [decks]);
 
   return (
     <div className="space-y-6 text-left relative">
       {showDailyModal && (
-        <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[200] flex items-center justify-center p-4" onClick={()=>setShowDailyModal(false)}>
-          <div className="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl animate-in zoom-in-95" onClick={e=>e.stopPropagation()}>
-            <h3 className="text-xl font-black text-rose-950 mb-4 flex items-center gap-2"><Icon name="Zap" className="text-amber-500"/> Reto Diario SRS</h3>
-            
+        <div className="modal-overlay" onClick={()=>setShowDailyModal(false)}>
+          <div className="bg-white rounded-[40px] p-8 w-full max-w-md shadow-2xl animate-in zoom-in-95" onClick={e=>e.stopPropagation()}>
+            <h3 className="text-xl font-black text-rose-950 mb-4 flex items-center gap-2"><Icon name="Zap" className="text-amber-500"/> Daily Challenge</h3>
             <div className="flex justify-between items-center mb-4">
-               <p className="text-xs font-bold text-slate-500">Selecciona categorías:</p>
-               <button 
-                onClick={() => setDailyCats(DECK_CATEGORIES)}
-                className="text-[10px] font-black text-rose-600 uppercase hover:underline"
-               >
-                 Seleccionar Todas
-               </button>
+               <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Select categories</p>
+               <button onClick={() => setDailyCats([...DECK_CATEGORIES])} className="text-[10px] font-black text-rose-600 uppercase hover:bg-rose-50 px-2 py-1 rounded-lg transition-colors">Select All</button>
             </div>
-
             <div className="flex flex-wrap gap-2 mb-6">
               {DECK_CATEGORIES.map(c => (
                 <button 
                   key={c} 
                   onClick={() => setDailyCats(prev => prev.includes(c) ? prev.filter(x=>x!==c) : [...prev, c])}
-                  className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all ${dailyCats.includes(c) ? 'bg-rose-100 text-rose-700 border border-rose-300' : 'bg-slate-100 text-slate-400'}`}
+                  className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all border ${dailyCats.includes(c) ? getCategoryBadge(c) : 'bg-slate-50 text-slate-300 border-transparent'}`}
                 >
                   {c}
                 </button>
               ))}
             </div>
-            <button onClick={startDailyChallenge} className="w-full p-4 bg-rose-600 text-white rounded-xl font-black shadow-lg hover:bg-rose-700 active:scale-95 transition-all uppercase">…Ready For It? 🐍</button>
+            <button onClick={startDailyChallenge} className="w-full p-4 bg-rose-600 text-white rounded-2xl font-black shadow-lg hover:bg-rose-700 active:scale-95 transition-all uppercase">…Ready For It? 🐍</button>
           </div>
         </div>
       )}
 
       <div className="flex flex-col sm:flex-row justify-between items-center bg-white/50 backdrop-blur px-4 py-2 rounded-2xl shadow-sm border border-white/50 gap-4">
         <h2 className="text-2xl font-black text-rose-950">Library</h2>
-        <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto custom-scrollbar pb-1 sm:pb-0">
-          <button onClick={exportDecks} className="px-3 py-2 bg-slate-100 text-slate-600 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-200 transition-colors shrink-0">Exportar</button>
-          <button onClick={importDecks} className="px-3 py-2 bg-slate-100 text-slate-600 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-200 transition-colors shrink-0">Importar</button>
-          <button onClick={()=>setShowDailyModal(true)} className="px-3 py-2 bg-amber-100 text-amber-700 rounded-xl font-black text-[10px] flex items-center gap-2 border border-amber-200 active:scale-95 transition-all shadow-sm shrink-0"><Icon name="Flame" size={14} className="fill-amber-700"/> RETO DIARIO</button>
-          <button onClick={startExamMode} className="px-3 py-2 bg-rose-100 text-rose-700 rounded-xl font-black text-[10px] flex items-center gap-2 border border-rose-200 active:scale-95 transition-all shadow-sm shrink-0"><Icon name="Dices" size={14}/> EXAM MODE</button>
+        <div className="flex items-center gap-2">
+          <button onClick={()=>setShowDailyModal(true)} className="px-3 py-2 bg-amber-100 text-amber-700 rounded-xl font-black text-[10px] flex items-center gap-2 border border-amber-200 active:scale-95 transition-all shadow-sm"><Icon name="Flame" size={14} className="fill-amber-700"/> DAILY RETO</button>
+          <button onClick={startExamMode} className="px-3 py-2 bg-rose-100 text-rose-700 rounded-xl font-black text-[10px] flex items-center gap-2 border border-rose-200 active:scale-95 transition-all shadow-sm"><Icon name="Dices" size={14}/> EXAM MODE</button>
         </div>
       </div>
       
-      <button onClick={()=>{setOpen(!open); setEditingId(null); setName(""); setDeckCat("General"); setTxt("");}} className="w-full p-4 bg-rose-600 text-white rounded-2xl font-black shadow-lg shadow-rose-100 active:scale-95 transition-all">{editingId ? 'EDITING DECK' : 'NEW DECK'}</button>
+      <button onClick={()=>{setOpen(!open); setEditingId(null); setName(""); setDeckCat("General"); setTxt("");}} className="w-full p-4 bg-rose-600 text-white rounded-2xl font-black shadow-lg active:scale-95 transition-all">{editingId ? 'EDITING DECK' : 'NEW DECK'}</button>
       
       {open && (
         <div className="bento-card p-6 border-rose-100 space-y-4 shadow-xl animate-in zoom-in-95 bg-white">
           <div className="flex gap-2">
-            <input placeholder="Deck name..." value={name} onChange={e=>setName(e.target.value)} className="flex-1 bg-slate-50 p-3 rounded-xl font-black outline-none border-2 border-transparent focus:border-rose-200 shadow-inner" />
-            <select value={deckCat} onChange={e=>setDeckCat(e.target.value)} className="bg-slate-50 p-3 rounded-xl font-black outline-none border-2 border-transparent focus:border-rose-200 text-slate-600 cursor-pointer shadow-inner">
+            <input placeholder="Deck name..." value={name} onChange={e=>setName(e.target.value)} className="flex-1 bg-slate-50 p-3 rounded-xl font-black outline-none border-2 border-transparent focus:border-rose-200" />
+            <select value={deckCat} onChange={e=>setDeckCat(e.target.value)} className="bg-slate-50 p-3 rounded-xl font-black outline-none border-2 border-transparent focus:border-rose-200 text-slate-600">
               {DECK_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
             </select>
           </div>
-          <textarea placeholder="Question : Answer (One per line)" value={txt} onChange={e=>setTxt(e.target.value)} className="w-full h-32 bg-slate-50 p-3 rounded-xl font-black outline-none resize-none border-2 border-transparent focus:border-rose-200 shadow-inner custom-scrollbar" />
-          <button onClick={saveDeck} className="w-full p-3 bg-rose-600 text-white rounded-xl font-black shadow-md uppercase">{editingId ? 'Save Changes' : 'Create Deck'}</button>
+          <textarea placeholder="Question : Answer" value={txt} onChange={e=>setTxt(e.target.value)} className="w-full h-32 bg-slate-50 p-3 rounded-xl font-black outline-none resize-none border-2 border-transparent focus:border-rose-200" />
+          <button onClick={saveDeck} className="w-full p-3 bg-rose-600 text-white rounded-xl font-black uppercase">{editingId ? 'Save Changes' : 'Create Deck'}</button>
         </div>
       )}
       
@@ -1397,13 +1370,13 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam }) {
             <div>
               <p className="font-black text-left text-slate-800 leading-tight">{d.name}</p>
               <div className="flex gap-2 items-center mt-1">
-                <span className="text-[8px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded uppercase font-black">{d.category || "General"}</span>
+                <span className={`text-[8px] px-2 py-0.5 rounded uppercase font-black border ${getCategoryBadge(d.category)}`}>{d.category || "General"}</span>
                 <p className="text-[9px] text-rose-400 font-black uppercase tracking-widest">{d.cards.length} cards</p>
               </div>
             </div>
             <div className="flex gap-2">
               <button onClick={(e)=>{e.stopPropagation(); loadForEdit(d)}} className="text-slate-300 hover:text-emerald-500 p-1"><Icon name="Edit" size={18}/></button>
-              <button onClick={(e)=>{e.stopPropagation(); setDecks(decks.filter(x=>x.id.toString()!==d.id.toString()))}} className="text-slate-300 hover:text-red-500 p-1"><Icon name="Trash2" size={18}/></button>
+              <button onClick={(e)=>{e.stopPropagation(); if(window.confirm("¿Eliminar mazo?")) setDecks(decks.filter(x=>x.id.toString()!==d.id.toString()))}} className="text-slate-300 hover:text-red-500 p-1"><Icon name="Trash2" size={18}/></button>
             </div>
           </div>
         ))}
@@ -1412,18 +1385,19 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam }) {
   );
 }
 
+// ==========================================
+// 2. COMPONENTE: INTERFAZ DE TARJETA (ANTISPOILER)
+// ==========================================
 function FlashcardUI({ card, deckName, addPoints, isFlipped, setIsFlipped }) {
   return (
     <div className="h-80 w-full relative" style={{ perspective: '1000px' }} onClick={() => { if(!isFlipped) { addPoints(2, "Flashcard Mastery"); setIsFlipped(true); } }}>
       <div className={`relative w-full h-full transition-transform duration-500 rounded-[40px] shadow-2xl cursor-pointer ${isFlipped ? '[transform:rotateY(180deg)]' : ''}`} style={{ transformStyle: 'preserve-3d' }}>
-        {/* CARA A: PREGUNTA */}
         <div className="absolute inset-0 bg-white border-8 border-rose-50 rounded-[40px] flex flex-col items-center justify-center p-10 text-center [backface-visibility:hidden] shadow-inner">
           <span className={`absolute top-6 px-3 py-1 text-[8px] font-black rounded-full uppercase border ${getCategoryBadge(card.category)}`}>
             {card.deckName || deckName}
           </span>
           <p className="text-2xl font-black text-slate-800">{card.q}</p>
         </div>
-        {/* CARA B: RESPUESTA */}
         <div className="absolute inset-0 bg-rose-600 text-white rounded-[40px] flex items-center justify-center p-10 text-center [transform:rotateY(180deg)] [backface-visibility:hidden] shadow-xl shadow-rose-200">
           <p className="text-xl font-medium italic">{card.a}</p>
         </div>
@@ -1432,6 +1406,109 @@ function FlashcardUI({ card, deckName, addPoints, isFlipped, setIsFlipped }) {
   );
 }
 
+// ==========================================
+// 3. COMPONENTE: MODO ESTUDIO
+// ==========================================
+function DeckStudyView({ deck, onBack, addPoints, onUpdateCard, onFinishChallenge }) {
+  const [idx, setIdx] = useState(0);
+  const [flipped, setFlipped] = useState(false);
+  const [isShuffled, setIsShuffled] = useState(false);
+  const [challengeStarted, setChallengeStarted] = useState(false);
+  
+  const isChallenge = deck.isChallenge;
+  const [challengeQueue, setChallengeQueue] = useState(isChallenge ? deck.cards : []);
+
+  const cardsToStudy = useMemo(() => {
+    if (isChallenge) return challengeQueue;
+    if (!isShuffled) return deck.cards;
+    return [...deck.cards].sort(() => Math.random() - 0.5);
+  }, [deck.cards, isShuffled, challengeQueue, isChallenge]);
+
+  if (isChallenge && !challengeStarted) {
+    return (
+      <div className="max-w-xl mx-auto py-20 text-center space-y-8 animate-in zoom-in-95">
+        <div className="w-24 h-24 bg-slate-900 rounded-3xl flex items-center justify-center mx-auto text-4xl">🧣</div>
+        <h2 className="text-2xl font-black text-slate-800 leading-tight">Do you have 10 minutes to spare?</h2>
+        <button onClick={() => setChallengeStarted(true)} className="px-12 py-5 bg-slate-900 text-white rounded-2xl font-black shadow-xl active:scale-95 transition-all uppercase">Yes</button>
+      </div>
+    );
+  }
+
+  if (idx >= cardsToStudy.length) {
+    return (
+      <div className="max-w-xl mx-auto py-20 text-center space-y-6 animate-in zoom-in-95">
+        <Icon name="Award" size={80} className="mx-auto text-amber-500" />
+        <h2 className="text-3xl font-black text-rose-950">You're out of the woods! 🌲</h2>
+        <button onClick={onFinishChallenge || onBack} className="px-8 py-4 bg-rose-600 text-white rounded-2xl font-black shadow-xl hover:bg-rose-700 active:scale-95 transition-all uppercase">Back</button>
+      </div>
+    );
+  }
+
+  const card = cardsToStudy[idx];
+
+  const handleAnki = (rating) => {
+    const targetDeckId = (card.deckId || deck.id)?.toString();
+    if (!targetDeckId || !onUpdateCard) return;
+
+    let { interval = 0, ease = 2.5 } = card;
+    let newInterval = interval, newEase = ease;
+
+    if (rating === 'repeat') newInterval = 0;
+    else if (rating === 'hard') { newInterval = Math.max(1, interval * 1.2); newEase = Math.max(1.3, ease - 0.15); }
+    else if (rating === 'good') newInterval = interval === 0 ? 1 : interval * 2.5;
+    else if (rating === 'easy') { newInterval = interval === 0 ? 4 : interval * ease * 1.3; newEase += 0.15; }
+
+    onUpdateCard(targetDeckId, card.id, { interval: newInterval, ease: newEase, nextDate: rating === 'repeat' ? 0 : Date.now() + (newInterval * 86400000) });
+
+    if (rating === 'repeat' && isChallenge) {
+      setChallengeQueue(prev => [...prev, {...card, interval: newInterval, ease: newEase, nextDate: 0}]);
+    }
+    setFlipped(false);
+    setIdx(p => p + 1);
+  };
+
+  return (
+    <div className="max-w-xl mx-auto py-10 space-y-8 text-left">
+      <div className="flex justify-between items-center">
+        <button onClick={onBack} className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-rose-600 transition-all">
+          <Icon name="ChevronRight" className="rotate-180" size={16}/> Back
+        </button>
+        {!isChallenge && (
+          <button 
+            onClick={() => { setIsShuffled(!isShuffled); setIdx(0); setFlipped(false); }}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-xl font-black text-[10px] uppercase transition-all ${isShuffled ? 'bg-rose-600 text-white shadow-lg' : 'bg-slate-100 text-slate-400 hover:bg-slate-200'}`}
+          >
+            <Icon name="Shuffle" size={14}/> {isShuffled ? 'Shuffled' : 'Normal'}
+          </button>
+        )}
+      </div>
+
+      <FlashcardUI 
+        key={card.id + idx} 
+        card={card} 
+        deckName={deck.name} 
+        addPoints={addPoints} 
+        isFlipped={flipped} 
+        setIsFlipped={setFlipped} 
+      />
+      
+      {flipped ? (
+        <div className="grid grid-cols-4 gap-2 animate-in fade-in slide-in-from-bottom-2">
+          <button onClick={(e)=>{e.stopPropagation(); handleAnki('repeat')}} className="py-4 bg-slate-100 text-slate-600 rounded-2xl font-black text-[10px] uppercase active:scale-95 transition-all">Repeat</button>
+          <button onClick={(e)=>{e.stopPropagation(); handleAnki('hard')}} className="py-4 bg-orange-100 text-orange-700 rounded-2xl font-black text-[10px] uppercase active:scale-95 transition-all">Hard</button>
+          <button onClick={(e)=>{e.stopPropagation(); handleAnki('good')}} className="py-4 bg-emerald-100 text-emerald-700 rounded-2xl font-black text-[10px] uppercase active:scale-95 transition-all">Good</button>
+          <button onClick={(e)=>{e.stopPropagation(); handleAnki('easy')}} className="py-4 bg-blue-100 text-blue-700 rounded-2xl font-black text-[10px] uppercase active:scale-95 transition-all">Easy</button>
+        </div>
+      ) : (
+        <div className="flex gap-4">
+          <button onClick={(e)=>{e.stopPropagation(); setIdx(p=>Math.max(0,p-1)); setFlipped(false);}} className="flex-1 py-4 bg-white border-2 border-rose-100 rounded-2xl font-black text-rose-600 shadow-sm active:scale-95 transition-all" disabled={idx===0}>PREVIOUS</button>
+          <button onClick={(e)=>{e.stopPropagation(); setIdx(p=>p+1); setFlipped(false);}} className="flex-1 py-4 bg-rose-600 text-white rounded-2xl font-black shadow-xl active:scale-95 transition-all">NEXT</button>
+        </div>
+      )}
+      <p className="text-center text-[10px] font-black text-slate-300 uppercase tracking-widest">{idx + 1} / {cardsToStudy.length}</p>
+    </div>
+  );
+}
 function DeckStudyView({ deck, onBack, addPoints, onUpdateCard, onFinishChallenge }) {
   const [idx, setIdx] = useState(0);
   const [flipped, setFlipped] = useState(false);
