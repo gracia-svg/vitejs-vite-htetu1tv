@@ -1246,24 +1246,47 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam }) {
     onExam({ id: 'exam-mode', name: 'TOTAL EXAM', cards: allCards.sort(() => Math.random() - 0.5) }); 
   };
 
-  const startDailyChallenge = () => {
-    let dueCards = [];
-    const now = Date.now();
+// SUSTITUIR la función startDailyChallenge dentro de FlashcardsManager:
+const startDailyChallenge = () => {
+  let dueCards = [];
+  const now = Date.now();
+  
+  decks.forEach(d => {
+    // Solo si la categoría está seleccionada
+    if (dailyCats.includes(d.category || "General")) {
+      d.cards.forEach(c => {
+        // Tarjetas que tocan hoy (nextDate <= now o no tienen fecha)
+        if (!c.nextDate || c.nextDate <= now) {
+          dueCards.push({ ...c, deckId: d.id, deckName: d.name });
+        }
+      });
+    }
+  });
+
+  // LÓGICA DE FALLBACK: Si no hay urgentes, cogemos 50 al azar de las categorías elegidas
+  if (dueCards.length === 0) {
+    let allSelectedCards = [];
     decks.forEach(d => {
-      const ctg = d.category || "General";
-      if (dailyCats.includes(ctg)) {
-        d.cards.forEach(c => {
-          if (!c.nextDate || c.nextDate <= now) {
-            dueCards.push({...c, deckId: d.id, deckName: d.name});
-          }
-        });
+      if (dailyCats.includes(d.category || "General")) {
+        d.cards.forEach(c => allSelectedCards.push({ ...c, deckId: d.id, deckName: d.name }));
       }
     });
-    if (dueCards.length === 0) return alert("¡No hay tarjetas urgentes en estas categorías hoy!");
+    
+    if (allSelectedCards.length === 0) return alert("No hay tarjetas en estas categorías.");
+    
+    // Mezclamos y cogemos 50
+    dueCards = allSelectedCards.sort(() => Math.random() - 0.5).slice(0, 50);
+  } else {
+    // Si hay urgentes, las mezclamos y limitamos a 50 para que no sea infinito
     dueCards = dueCards.sort(() => Math.random() - 0.5).slice(0, 50);
-    onExam({ id: 'daily-challenge', name: 'DAILY CHALLENGE', isChallenge: true, cards: dueCards });
-    setShowDailyModal(false);
-  };
+  }
+
+  onExam({ id: 'daily-challenge', name: 'DAILY CHALLENGE', isChallenge: true, cards: dueCards });
+  setShowDailyModal(false);
+};
+
+// BUSCA en el modal de categorías el texto "Selecciona categorías" y añade este botón al lado:
+// <button onClick={() => setDailyCats(DECK_CATEGORIES)} className="text-[10px] font-black text-rose-600 uppercase">TODAS</button>
 
   const saveDeck = () => { 
     if(txt.includes(':') && name){ 
