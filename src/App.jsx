@@ -963,13 +963,26 @@ function SyllabusView({ topics, setTopics, addPoints, onOpenModal, actionLogs, o
 
 function CounterPill({ label, count, onAdd, onSub }) {
   const [open, setOpen] = useState(false);
+  
+  useEffect(() => {
+    let timer;
+    if (open) {
+      timer = setTimeout(() => setOpen(false), 3000);
+    }
+    return () => clearTimeout(timer);
+  }, [open, count]);
+
   return (
-    <div className={`flex flex-col items-center p-2 rounded-2xl border-2 transition-all cursor-pointer relative h-12 justify-center bg-slate-50 hover:border-emerald-100 shadow-inner`} onClick={() => setOpen(!open)}>
+    <div 
+      className={`flex flex-col items-center p-2 rounded-2xl border-2 transition-all cursor-pointer relative h-12 justify-center bg-slate-50 hover:border-emerald-100 shadow-inner`} 
+      onClick={() => setOpen(true)}
+      onMouseLeave={() => setOpen(false)}
+    >
       <p className="text-[7px] font-black text-slate-400 uppercase mb-1 leading-none">{label}</p>
       <div className="flex items-center justify-center w-full relative">
-        {open && (<button onClick={(e)=>{e.stopPropagation(); onSub();}} className={`absolute left-0 w-7 h-7 bg-white shadow-sm rounded-lg flex items-center justify-center text-[10px] active:scale-90`}><Icon name="Minus" size={12} /></button>)}
+        {open && (<button onClick={(e)=>{e.stopPropagation(); onSub(); setOpen(true);}} className={`absolute left-0 w-7 h-7 bg-white shadow-sm rounded-lg flex items-center justify-center text-[10px] active:scale-90`}><Icon name="Minus" size={12} /></button>)}
         <span className="text-sm font-black text-slate-700 tabular-nums">{count || 0}</span>
-        {open && (<button onClick={(e)=>{e.stopPropagation(); onAdd();}} className={`absolute right-0 w-7 h-7 bg-white shadow-sm rounded-lg flex items-center justify-center text-[10px] active:scale-90`}><Icon name="Plus" size={12} /></button>)}
+        {open && (<button onClick={(e)=>{e.stopPropagation(); onAdd(); setOpen(true);}} className={`absolute right-0 w-7 h-7 bg-white shadow-sm rounded-lg flex items-center justify-center text-[10px] active:scale-90`}><Icon name="Plus" size={12} /></button>)}
       </div>
     </div>
   );
@@ -1099,17 +1112,26 @@ function PracticoView({ skills, setSkills, addPoints, sessions, setSessions, onR
 function NoteItem({ n, notes, setNotes }) {
   const [isEditing, setIsEditing] = useState(false);
   const [temp, setTemp] = useState(n.text);
+  
   return (
-    <div style={{transform:`rotate(${n.rot}deg)`}} className={`relative p-5 aspect-square rounded shadow-lg border-t-[8px] ${n.color.bg} ${n.color.border} group transition-all hover:scale-105 shadow-yellow-100`}>
+    <div style={{transform:`rotate(${n.rot}deg)`}} className={`relative p-5 aspect-square rounded shadow-lg border-t-[8px] ${n.color.bg} ${n.color.border} transition-all hover:scale-105 shadow-yellow-100`}>
       <Icon name="Pin" size={16} className={`absolute top-2 left-1/2 -translate-x-1/2 opacity-20 ${n.color.pin}`} />
+      
+      <button onClick={() => setIsEditing(!isEditing)} className={`absolute top-2 right-2 text-slate-400 hover:text-emerald-600 transition-colors ${isEditing ? 'text-emerald-600' : ''}`}>
+        <Icon name={isEditing ? "Check" : "Edit"} size={14} />
+      </button>
+
       <div className="pt-2 h-full">
         {isEditing ? (
           <textarea autoFocus value={temp} onChange={e=>setTemp(e.target.value)} onBlur={() => { if(temp.trim()) setNotes(notes.map(x=>x.id===n.id?{...x,text:temp}:x)); setIsEditing(false); }} className={`w-full h-full bg-transparent resize-none outline-none text-[11px] font-black ${n.color.text} custom-scrollbar`} />
         ) : (
-          <p onClick={()=>setIsEditing(true)} className={`text-[11px] font-black h-full ${n.color.text} text-left overflow-y-auto custom-scrollbar cursor-pointer`}>{n.text}</p>
+          <p className={`text-[11px] font-black h-full ${n.color.text} text-left overflow-y-auto custom-scrollbar`}>{n.text}</p>
         )}
       </div>
-      <button onClick={()=>setNotes(notes.filter(x=>x.id!==n.id))} className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-500 transition-all"><Icon name="Trash2" size={14}/></button>
+      
+      <button onClick={()=>setNotes(notes.filter(x=>x.id!==n.id))} className="absolute bottom-2 right-2 text-slate-400 hover:text-red-500 transition-colors">
+        <Icon name="Trash2" size={14}/>
+      </button>
     </div>
   );
 }
@@ -1167,7 +1189,6 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam }) {
     setEditingId(deck.id); setOpen(true); 
   };
 
-  // NUEVO: Funciones de Exportar e Importar
   const exportDecks = () => {
     const json = JSON.stringify(decks);
     navigator.clipboard.writeText(json).then(() => {
@@ -1219,8 +1240,8 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam }) {
               <p className="text-[9px] text-rose-400 font-black uppercase tracking-widest mt-1 flex items-center gap-2">{d.cards.length} cards</p>
             </div>
             <div className="flex gap-2">
-              <button onClick={(e)=>{e.stopPropagation(); loadForEdit(d)}} className="text-slate-300 hover:text-emerald-500 p-1"><Icon name="Edit" size={18}/></button>
-              <button onClick={(e)=>{e.stopPropagation(); setDecks(decks.filter(x=>x.id.toString()!==d.id.toString()))}} className="text-slate-300 hover:text-red-500 p-1"><Icon name="Trash2" size={18}/></button>
+              <button onClick={(e)=>{e.stopPropagation(); loadForEdit(d)}} className="text-slate-300 hover:text-emerald-500 p-1 transition-colors"><Icon name="Edit" size={18}/></button>
+              <button onClick={(e)=>{e.stopPropagation(); setDecks(decks.filter(x=>x.id.toString()!==d.id.toString()))}} className="text-slate-300 hover:text-red-500 p-1 transition-colors"><Icon name="Trash2" size={18}/></button>
             </div>
           </div>
         ))}
@@ -1228,6 +1249,7 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam }) {
     </div>
   );
 }
+
 function DeckStudyView({ deck, onBack, addPoints }) {
   const [idx, setIdx] = useState(0);
   const [flipped, setFlipped] = useState(false);
@@ -1343,6 +1365,36 @@ function StatsView({ actionLogs, undoAction, topics, planning, units }) {
   const [tab, setTab] = useState('hist');
   const [statsView, setStatsView] = useState('syllabus');
 
+  const exportData = () => {
+    const exportObj = {
+      topics: {},
+      planning: {},
+      practico: []
+    };
+    actionLogs.forEach(log => {
+      if (log.actionData) {
+        const { entity, id, field } = log.actionData;
+        const date = new Date(log.timestamp).toLocaleString();
+        if (entity === 'topic') {
+          if (!exportObj.topics[id]) exportObj.topics[id] = [];
+          exportObj.topics[id].push({ date, action: field || log.description, points: log.amount });
+        } else if (entity === 'planning' || entity === 'unit') {
+          if (!exportObj.planning[id]) exportObj.planning[id] = [];
+          exportObj.planning[id].push({ date, action: field || log.description, points: log.amount });
+        } else {
+          exportObj.practico.push({ date, entity, action: log.description, points: log.amount });
+        }
+      }
+    });
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportObj, null, 2));
+    const downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute("href", dataStr);
+    downloadAnchorNode.setAttribute("download", "study_logs_export.json");
+    document.body.appendChild(downloadAnchorNode);
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
+  };
+
   const syllabusStats = useMemo(() => {
     const useful = topics.filter(t => !t.discarded);
     const total = useful.length;
@@ -1380,8 +1432,48 @@ function StatsView({ actionLogs, undoAction, topics, planning, units }) {
           </div>
         </div>
       </div>
-      <div id="activity-log" className="flex justify-between items-center bg-white/50 backdrop-blur px-4 py-2 rounded-2xl overflow-x-auto shadow-sm border border-white/50"><h2 className="text-xl font-black text-violet-950">Activity Log</h2><div className="flex bg-slate-200 p-1 rounded-xl shrink-0">{['hist','week','month'].map(t=>(<button key={t} onClick={()=>setTab(t)} className={`px-3 py-1 text-[10px] font-black rounded-lg uppercase transition-all ${tab===t?'bg-white shadow-md text-violet-600':'text-slate-500'}`}>{t==='hist'?'History':t==='week'?'Weeks':'Months'}</button>))}</div></div>
-      <div className="min-h-[400px]">{tab === 'hist' ? (<div className="space-y-3 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">{actionLogs.length === 0 ? <p className="italic text-slate-300 font-bold">No records found.</p> : actionLogs.slice(0,50).map(l=>(<div key={l.id} className="bento-card bg-white p-4 flex justify-between items-center border-violet-50 hover:border-violet-200 transition-all"><div className="text-left leading-tight"><p className="text-sm font-black text-slate-800 line-clamp-1">{l.description}</p><p className="text-[9px] font-bold text-slate-400 uppercase mt-1">{new Date(l.timestamp).toLocaleString()}</p></div><div className="flex items-center gap-3"><span className={`text-xs font-black px-2 py-1 rounded-lg shadow-inner ${l.amount > 0 ? 'text-violet-700 bg-violet-50' : l.amount < 0 ? 'text-red-700 bg-red-50' : 'text-slate-500 bg-slate-100'}`}>{l.amount > 0 ? '+'+l.amount : l.amount}</span><button onClick={()=>undoAction(l.id)} className="text-slate-300 hover:text-red-500 transition-colors" title="Undo"><Icon name="Undo2" size={16}/></button></div></div>))}</div>) : (<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">{groupLogs(tab).map(([key, data]) => (<div key={key} className="bento-card bg-white p-6 border-violet-100 flex justify-between items-center shadow-md"><div className="text-left leading-tight"><p className="text-xs font-black text-violet-900 uppercase tracking-tighter">{key}</p><p className="text-[10px] font-bold text-slate-400">{data.count} actions</p></div><div className="text-right"><p className="text-2xl font-black text-violet-600">{data.pts > 0 ? '+'+data.pts : data.pts}</p><p className="text-[8px] font-black opacity-40 uppercase tracking-widest">Points</p></div></div>))}</div>)}</div>
+      <div id="activity-log" className="flex flex-col sm:flex-row justify-between items-center bg-white/50 backdrop-blur px-4 py-2 rounded-2xl shadow-sm border border-white/50 gap-4">
+        <div className="flex items-center gap-4 w-full sm:w-auto">
+          <h2 className="text-xl font-black text-violet-950">Activity Log</h2>
+          <button onClick={exportData} className="px-3 py-1.5 bg-violet-100 text-violet-700 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-violet-200 transition-colors shadow-sm whitespace-nowrap">Export Logs</button>
+        </div>
+        <div className="flex bg-slate-200 p-1 rounded-xl shrink-0 w-full sm:w-auto overflow-x-auto">
+          {['hist','week','month'].map(t=>(<button key={t} onClick={()=>setTab(t)} className={`px-3 py-1 text-[10px] font-black rounded-lg uppercase transition-all flex-1 sm:flex-none ${tab===t?'bg-white shadow-md text-violet-600':'text-slate-500'}`}>{t==='hist'?'History':t==='week'?'Weeks':'Months'}</button>))}
+        </div>
+      </div>
+      <div className="min-h-[400px]">
+        {tab === 'hist' ? (
+          <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
+            {actionLogs.length === 0 ? <p className="italic text-slate-300 font-bold">No records found.</p> : actionLogs.slice(0,50).map(l=>(
+              <div key={l.id} className="bento-card bg-white p-4 flex justify-between items-center border-violet-50 hover:border-violet-200 transition-all">
+                <div className="text-left leading-tight">
+                  <p className="text-sm font-black text-slate-800 line-clamp-1">{l.description}</p>
+                  <p className="text-[9px] font-bold text-slate-400 uppercase mt-1">{new Date(l.timestamp).toLocaleString()}</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className={`text-xs font-black px-2 py-1 rounded-lg shadow-inner ${l.amount > 0 ? 'text-violet-700 bg-violet-50' : l.amount < 0 ? 'text-red-700 bg-red-50' : 'text-slate-500 bg-slate-100'}`}>{l.amount > 0 ? '+'+l.amount : l.amount}</span>
+                  <button onClick={()=>undoAction(l.id)} className="text-slate-300 hover:text-red-500 transition-colors active:scale-90" title="Undo"><Icon name="Undo2" size={16}/></button>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {groupLogs(tab).map(([key, data]) => (
+              <div key={key} className="bento-card bg-white p-6 border-violet-100 flex justify-between items-center shadow-md">
+                <div className="text-left leading-tight">
+                  <p className="text-xs font-black text-violet-900 uppercase tracking-tighter">{key}</p>
+                  <p className="text-[10px] font-bold text-slate-400">{data.count} actions</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-2xl font-black text-violet-600">{data.pts > 0 ? '+'+data.pts : data.pts}</p>
+                  <p className="text-[8px] font-black opacity-40 uppercase tracking-widest">Points</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -1389,19 +1481,63 @@ function StatsView({ actionLogs, undoAction, topics, planning, units }) {
 function TodoView({ todos, setTodos, addPoints }) {
   const [type, setType] = useState('goal');
   const [inp, setInp] = useState("");
-  return (<div className="space-y-6 text-left"><div className="flex p-1 bg-slate-100 rounded-2xl shadow-inner"><button onClick={()=>setType('goal')} className={`flex-1 py-3 rounded-xl text-xs font-black transition-all ${type==='goal'?'bg-white text-orange-600 shadow-md':'text-slate-400'}`}>GOALS</button><button onClick={()=>setType('review')} className={`flex-1 py-3 rounded-xl text-xs font-black transition-all ${type==='review'?'bg-white text-orange-600 shadow-md':'text-slate-400'}`}>REVIEWS</button></div><form onSubmit={e=>{e.preventDefault(); if(inp.trim()){setTodos([{id:Date.now().toString(),text:inp,completed:false,type}, ...todos]); setInp("");}}} className="flex gap-2"><input placeholder="Add task..." value={inp} onChange={e=>setInp(e.target.value)} className="flex-1 bento-card bg-white px-4 py-3 text-sm font-black outline-none border-orange-50 focus:border-orange-200 shadow-sm" /><button type="submit" className="p-3 bg-orange-600 text-white rounded-xl shadow-lg shadow-orange-100 active:scale-95 transition-all"><Icon name="Plus" size={24}/></button></form><div className="space-y-3">{todos.filter(t=>t.type===type).map(t=>(<div key={t.id} className="bento-card bg-white p-4 flex items-center justify-between shadow-sm hover:shadow-md transition-all"><div className="flex items-center gap-3"><button onClick={()=>{const isDone = !t.completed; setTodos(todos.map(pt=>pt.id===t.id?{...pt,completed:isDone}:pt)); addPoints(isDone ? 5 : -5, t.text, { entity: 'todo', id: t.id, prevValue: t.completed });}} className={`w-8 h-8 rounded-lg border-2 flex items-center justify-center transition-all ${t.completed?'bg-emerald-500 border-emerald-500 text-white shadow-sm':'border-orange-100 hover:border-orange-300'}`}>{t.completed && <Icon name="Check" size={16}/>}</button><span className={`text-sm font-black text-left transition-all ${t.completed?'line-through text-slate-300':'text-slate-700'}`}>{t.text}</span></div><button onClick={()=>setTodos(todos.filter(x=>x.id!==t.id))} className="text-slate-200 hover:text-red-500 transition-colors active:scale-90"><Icon name="Trash2" size={18}/></button></div>))}</div></div>);
+  return (
+    <div className="space-y-6 text-left">
+      <div className="flex p-1 bg-slate-100 rounded-2xl shadow-inner">
+        <button onClick={()=>setType('goal')} className={`flex-1 py-3 rounded-xl text-xs font-black transition-all ${type==='goal'?'bg-white text-orange-600 shadow-md':'text-slate-400'}`}>GOALS</button>
+        <button onClick={()=>setType('review')} className={`flex-1 py-3 rounded-xl text-xs font-black transition-all ${type==='review'?'bg-white text-orange-600 shadow-md':'text-slate-400'}`}>REVIEWS</button>
+      </div>
+      <form onSubmit={e=>{e.preventDefault(); if(inp.trim()){setTodos([{id:Date.now().toString(),text:inp,completed:false,type}, ...todos]); setInp("");}}} className="flex gap-2">
+        <input placeholder="Add task..." value={inp} onChange={e=>setInp(e.target.value)} className="flex-1 bento-card bg-white px-4 py-3 text-sm font-black outline-none border-orange-50 focus:border-orange-200 shadow-sm" />
+        <button type="submit" className="p-3 bg-orange-600 text-white rounded-xl shadow-lg shadow-orange-100 active:scale-95 transition-all"><Icon name="Plus" size={24}/></button>
+      </form>
+      <div className="space-y-3">
+        {todos.filter(t=>t.type===type).map(t=>(
+          <div key={t.id} className="bento-card bg-white p-4 flex items-center justify-between shadow-sm hover:shadow-md transition-all">
+            <div className="flex items-center gap-3">
+              <button onClick={()=>{const isDone = !t.completed; setTodos(todos.map(pt=>pt.id===t.id?{...pt,completed:isDone}:pt)); addPoints(isDone ? 5 : -5, t.text, { entity: 'todo', id: t.id, prevValue: t.completed });}} className={`w-8 h-8 rounded-lg border-2 flex items-center justify-center transition-all ${t.completed?'bg-emerald-500 border-emerald-500 text-white shadow-sm':'border-orange-100 hover:border-orange-300'}`}>{t.completed && <Icon name="Check" size={16}/>}</button>
+              <span className={`text-sm font-black text-left transition-all ${t.completed?'line-through text-slate-300':'text-slate-700'}`}>{t.text}</span>
+            </div>
+            <button onClick={()=>setTodos(todos.filter(x=>x.id!==t.id))} className="text-slate-200 hover:text-red-500 transition-colors active:scale-90"><Icon name="Trash2" size={18}/></button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 function HeaderToolBtn({ active, icon, label, color, onClick }) {
   const c = active ? `bg-${color}-50 text-${color}-600 shadow-md` : `bg-white text-slate-600 border border-slate-100 hover:bg-slate-50`;
   return <button onClick={onClick} className={`flex flex-col items-center gap-1.5 p-2 rounded-xl transition-all active:scale-95 ${c}`}><Icon name={icon} size={16} /><span className="text-[7px] font-black uppercase tracking-widest leading-none mt-0.5">{label}</span></button>;
 }
+
 function NavBtn({ active, icon, label, color, onClick }) {
   const c = active ? `text-${color}-600 bg-${color}-50 shadow-inner` : 'text-slate-400 opacity-60 hover:opacity-100';
   return <button onClick={onClick} className={`flex flex-col items-center gap-1 p-2 transition-all ${active?'scale-110':''}`}><div className={`p-2.5 rounded-xl ${c} transition-all shadow-sm`}><Icon name={icon} size={24} strokeWidth={active?3:2}/></div><span className={`text-[9px] font-black tracking-widest mt-1 ${active?`text-${color}-600`:'text-slate-400'}`}>{label}</span></button>;
 }
+
 function LoginScreen({ onLogin }) {
   const [c, setC] = useState("");
-  return <div className="min-h-screen flex items-center justify-center bg-emerald-50 p-6 text-center animate-in fade-in"><div className="bg-white p-10 rounded-[40px] shadow-2xl w-full max-w-sm border-4 border-emerald-100"><Icon name="Turtle" size={80} className="text-emerald-500 mx-auto mb-6" /><h1 className="text-3xl font-black mb-2 tracking-tighter text-emerald-950 leading-none">TurtleStudy</h1><p className="text-slate-400 text-xs font-bold uppercase mb-6 tracking-widest">Master Syllabus Manager</p><input placeholder="Sync Code" value={c} onChange={e=>setC(e.target.value)} className="w-full p-4 bg-slate-50 rounded-2xl mb-4 text-center font-black outline-none border-2 border-transparent focus:border-emerald-300 transition-all shadow-inner" /><button onClick={()=>onLogin(c)} className="w-full py-5 bg-emerald-600 text-white rounded-[24px] font-black shadow-lg hover:bg-emerald-700 active:scale-95 transition-all shadow-emerald-100 uppercase tracking-tighter">Enter App</button></div></div>;
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-emerald-50 p-6 text-center animate-in fade-in">
+      <div className="bg-white p-10 rounded-[40px] shadow-2xl w-full max-w-sm border-4 border-emerald-100">
+        <Icon name="Turtle" size={80} className="text-emerald-500 mx-auto mb-6" />
+        <h1 className="text-3xl font-black mb-2 tracking-tighter text-emerald-950 leading-none">TurtleStudy</h1>
+        <p className="text-slate-400 text-xs font-bold uppercase mb-6 tracking-widest">Master Syllabus Manager</p>
+        <input placeholder="Sync Code" value={c} onChange={e=>setC(e.target.value)} className="w-full p-4 bg-slate-50 rounded-2xl mb-4 text-center font-black outline-none border-2 border-transparent focus:border-emerald-300 transition-all shadow-inner" />
+        <button onClick={()=>onLogin(c)} className="w-full py-5 bg-emerald-600 text-white rounded-[24px] font-black shadow-lg hover:bg-emerald-700 active:scale-95 transition-all shadow-emerald-100 uppercase tracking-tighter">Enter App</button>
+      </div>
+    </div>
+  );
 }
-function LoadingScreen() { return <div className="min-h-screen flex items-center justify-center bg-white"><div className="text-center space-y-6"><Icon name="Turtle" className="text-emerald-500 animate-bounce mx-auto" size={80} /><p className="font-black text-emerald-900 animate-pulse uppercase tracking-[0.4em] text-xs">Synchronizing Vault...</p></div></div>; }
+
+function LoadingScreen() { 
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-white">
+      <div className="text-center space-y-6">
+        <Icon name="Turtle" className="text-emerald-500 animate-bounce mx-auto" size={80} />
+        <p className="font-black text-emerald-900 animate-pulse uppercase tracking-[0.4em] text-xs">Synchronizing Vault...</p>
+      </div>
+    </div>
+  ); 
+}
