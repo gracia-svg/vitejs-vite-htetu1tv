@@ -358,69 +358,71 @@ export default function App() {
     const init = async () => { try { await signInAnonymously(auth); } catch(e){} }; init();
   }, [syncCode]);
 
+// 1. LÓGICA DE MIGRACIÓN (Sube los temas a la nube la primera vez)
+  useEffect(() => {
+    if (!isLogged) return;
+    const syncDatabaseStructure = async () => {
+      const masterRef = doc(db, 'artifacts', APP_ID_PATH, 'public', 'master_syllabus');
+      const masterSnap = await getDoc(masterRef);
+      if (!masterSnap.exists()) {
+        console.log("Iniciando migración de temas a Firestore...");
+        await setDoc(masterRef, { 
+          master_topics: INITIAL_TOPICS.map(t => ({
+            id: t.id, title: t.title, ce: t.ce, do: t.do, sb: t.sb, cr: t.cr, leg: t.leg, indexNotes: t.indexNotes 
+          }))
+        });
+        console.log("Migración completada.");
+      }
+    };
+    syncDatabaseStructure();
+  }, [isLogged]);
+
+  // 2. CARGA INTELIGENTE (Escucha cambios y combina datos)
   useEffect(() => {
     if (!isLogged || !syncCode) return;
-    const docRef = doc(db, 'artifacts', APP_ID_PATH, 'public', 'data', 'turtle_users', syncCode);
-    return onSnapshot(docRef, (snap) => {
-      if (snap.exists() && !isDataLoaded) {
-        const d = snap.data();
-        setPoints(d.points || 0); 
-        
-        const mergedTopics = INITIAL_TOPICS.map(tInitial => {
-          const tSaved = d.topics?.find(ts => ts.id === tInitial.id);
-          if (!tSaved) return tInitial;
-          return { 
-            ...tSaved, 
-            title: tSaved.title || tInitial.title, 
-            indexNotes: tSaved.indexNotes || tInitial.indexNotes, 
-            priority: tSaved.priority ?? null, 
-            ce: tSaved.ce || tInitial.ce, 
-            do: tSaved.do || tInitial.do,
-            sb: tSaved.sb || tInitial.sb, 
-            cr: tSaved.cr || tInitial.cr,
-            leg: tSaved.leg || tInitial.leg, 
-            estudiado: tSaved.estudiado ?? 0 
+    const userDocRef = doc(db, 'artifacts', APP_ID_PATH, 'public', 'data', 'turtle_users', syncCode);
+    const masterDocRef = doc(db, 'artifacts', APP_ID_PATH, 'public', 'master_syllabus');
+
+    return onSnapshot(userDocRef, async (userSnap) => {
+      if (userSnap.exists() && !isDataLoaded) {
+        const userData = userSnap.data();
+        const masterSnap = await getDoc(masterDocRef);
+        const masterTopics = masterSnap.exists() ? masterSnap.data().master_topics : INITIAL_TOPICS;
+
+        const finalTopics = masterTopics.map(mT => {
+          const uT = userData.topics?.find(ts => ts.id === mT.id);
+          return {
+            ...mT, // Datos maestros (Título, Competencias, Leyes)
+            redactado: uT?.redactado || false,
+            estudiado: uT?.estudiado || 0,
+            reviews: uT?.reviews || 0,
+            mocks: uT?.mocks || 0,
+            miniMocks: uT?.miniMocks || 0,
+            finished: uT?.finished || false,
+            discarded: uT?.discarded || false,
+            stars: uT?.stars || 0,
+            indexNotes: uT?.indexNotes || mT.indexNotes, 
+            priority: uT?.priority ?? null
           };
         });
-        setTopics(mergedTopics);
 
-        const mergedPlanning = INITIAL_PLANNING.map(pInitial => {
-          const pSaved = d.planning?.find(ps => ps.id === pInitial.id);
-          return pSaved ? { ...pSaved, title: pSaved.title || pInitial.title, indexNotes: pSaved.indexNotes || "", priority: pSaved.priority ?? null, leg: pSaved.leg || pInitial.leg } : pInitial;
-        });
-        const extraPlanning = d.planning?.filter(ps => !INITIAL_PLANNING.some(pInitial => pInitial.id === ps.id)) || [];
-        setPlanning([...mergedPlanning, ...extraPlanning]);
-
-        const mergedUnits = INITIAL_UNITS.map(uInitial => {
-          const uSaved = d.units?.find(us => us.id === uInitial.id);
-          return uSaved ? { ...uSaved, title: uSaved.title || uInitial.title, indexNotes: uSaved.indexNotes || "", priority: uSaved.priority ?? null, ce: uSaved.ce || "", sb: uSaved.sb || "", do: uSaved.do || "", cr: uSaved.cr || "", leg: uSaved.leg || uInitial.leg } : uInitial;
-        });
-        setUnits(mergedUnits);
-
-        let loadedSkills = d.skills?.length ? d.skills : INITIAL_SKILLS;
-        if (loadedSkills.length === 3 && loadedSkills[0].label === 'Use of English') { loadedSkills = INITIAL_SKILLS; }
-        setSkills(loadedSkills); 
-
-        setDecks(d.decks || []);
-        setTodos(d.todos || []); 
-        setNotes(d.notes || []); 
-        setActionLogs(d.actionLogs || []);
-        setExamDate(d.examDate || "2026-06-20"); 
-        setSubmissionDate(d.submissionDate || "2026-06-01");
-        setStreak(d.streak || 0);
-        setMaxStreak(d.maxStreak || 0); 
-        setPracticoSessions(d.practicoSessions || 0);
-        setLevelDates(d.levelDates || { 1: new Date().toLocaleDateString() });
-        setLastActiveDate(d.lastActiveDate || null);
-
-        // Cargar nuevos estados
-        setPerfectWeeks(d.perfectWeeks || 0);
-        setTotalDailyChallenges(d.totalDailyChallenges || 0);
-        setLastChallengeDate(d.lastChallengeDate || null);
-        setWeeklyData(d.weeklyData || { weekId: getWeekId(), points: 0, topicsTouched: false, progTouched: false, practicoTouched: false, dailyChallengesDone: 0, claimed1: false, claimed2: false });
-        
-        // Cargar Vault
-        setVaultItems(d.vaultItems || []);
+        // Actualización de estados fieles al original
+        setPoints(userData.points || 0);
+        setTopics(finalTopics);
+        setPlanning(userData.planning || INITIAL_PLANNING);
+        setUnits(userData.units || INITIAL_UNITS);
+        setSkills(userData.skills || INITIAL_SKILLS);
+        setDecks(userData.decks || []);
+        setTodos(userData.todos || []); 
+        setNotes(userData.notes || []); 
+        setActionLogs(userData.actionLogs || []);
+        setStreak(userData.streak || 0);
+        setMaxStreak(userData.maxStreak || 0); 
+        setLevelDates(userData.levelDates || { 1: new Date().toLocaleDateString() });
+        setPerfectWeeks(userData.perfectWeeks || 0);
+        setWeeklyData(userData.weeklyData || weeklyData);
+        setTotalDailyChallenges(userData.totalDailyChallenges || 0);
+        setVaultItems(userData.vaultItems || []);
       }
       setIsDataLoaded(true);
     });
