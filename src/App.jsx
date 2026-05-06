@@ -60,8 +60,31 @@ const getWeekId = () => {
   const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
   return `${d.getUTCFullYear()}-W${weekNo}`;
 };
-
-const DECK_CATEGORIES = ["General", "Metodología", "Comunicación", "Fonética", "Gramática", "Discurso", "Lit. Británica", "Lit. Americana", "Cultura"];
+const getCategoryBadge = (cat) => {
+  const mapping = {
+    "Methodology": "bg-orange-100 text-orange-700 border-orange-200",
+    "Communication": "bg-purple-100 text-purple-700 border-purple-200",
+    "Phonetics": "bg-slate-200 text-slate-800 border-slate-300",
+    "Grammar": "bg-sky-100 text-sky-700 border-sky-200",
+    "Discourse": "bg-pink-100 text-pink-700 border-pink-200",
+    "British Literature": "bg-green-100 text-green-700 border-green-200",
+    "American Literature": "bg-yellow-100 text-yellow-700 border-yellow-200",
+    "Culture": "bg-indigo-100 text-indigo-700 border-indigo-200",
+    "General": "bg-gray-100 text-gray-700 border-gray-200"
+  };
+  return mapping[cat] || mapping["General"];
+};
+const DECK_CATEGORIES = [
+  "General", 
+  "Methodology", 
+  "Communication", 
+  "Phonetics", 
+  "Grammar", 
+  "Discourse", 
+  "British Literature", 
+  "American Literature", 
+  "Culture"
+];
 const INITIAL_TOPICS = [];
 const INITIAL_PLANNING = [
   { id: 'p1', title: 'Introduction and Justification', status: 0, indexNotes: "", priority: null, leg: "LOMLOE" },
@@ -99,8 +122,8 @@ const getTopicBlock = (id) => {
   if ([7, 8, 9].includes(id)) return { name: 'Phonetics', badge: 'bg-slate-200 text-slate-800 border-slate-300', color: '!bg-slate-500' };
   if (id >= 10 && id <= 27) return { name: 'Grammar', badge: 'bg-sky-100 text-sky-700 border-sky-200', color: '!bg-sky-500' };
   if (id >= 29 && id <= 39) return { name: 'Discourse', badge: 'bg-pink-100 text-pink-700 border-pink-200', color: '!bg-pink-500' };
-  if ([41, 42, 43, 44, 45, 47, 48, 49, 50, 51, 56, 57, 58, 62].includes(id)) return { name: 'Brit Lit', badge: 'bg-green-100 text-green-700 border-green-200', color: '!bg-green-500' };
-  if ([46, 52, 53, 54, 55, 59, 60].includes(id)) return { name: 'Amer Lit', badge: 'bg-yellow-100 text-yellow-700 border-yellow-200', color: '!bg-yellow-500' };
+  if ([41, 42, 43, 44, 45, 47, 48, 49, 50, 51, 56, 57, 58, 62].includes(id)) return { name: 'British Literature', badge: 'bg-green-100 text-green-700 border-green-200', color: '!bg-green-500' };
+  if ([46, 52, 53, 54, 55, 59, 60].includes(id)) return { name: 'American Literature', badge: 'bg-yellow-100 text-yellow-700 border-yellow-200', color: '!bg-yellow-500' };
   if ([61, 63, 64, 65, 66, 67, 68, 69].includes(id)) return { name: 'Culture', badge: 'bg-indigo-100 text-indigo-700 border-indigo-200', color: '!bg-indigo-500' };
   return { name: 'General', badge: 'bg-gray-100 text-gray-700 border-gray-200', color: '!bg-slate-600' };
 };
