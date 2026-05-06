@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { initializeApp } from 'firebase/app';
-import { getFirestore, doc, setDoc, onSnapshot } from 'firebase/firestore';
+import { getFirestore, doc, setDoc, onSnapshot, collection, getDoc } from 'firebase/firestore';
 import { getAuth, signInAnonymously } from 'firebase/auth';
 
 // ==========================================
