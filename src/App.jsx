@@ -4,7 +4,7 @@ import { getFirestore, doc, setDoc, onSnapshot } from 'firebase/firestore';
 import { getAuth, signInAnonymously } from 'firebase/auth';
 
 // ==========================================
-// 1. ICONOS
+// 1. ICONOS Y AYUDANTES
 // ==========================================
 const ICON_PATHS = {
   Turtle: '<path d="m12 10 2 4v3a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1v-3a8 8 0 1 0-16 0v3a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1v-3l2-4h4Z"/><path d="M4.82 7.9 8 10"/><path d="M15.18 7.9 12 10"/><path d="M16.93 10H20a2 2 0 0 1 0 4H2"/>',
@@ -50,6 +50,17 @@ const Icon = ({ name, size = 24, strokeWidth = 2, className = "" }) => {
     <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" className={className} dangerouslySetInnerHTML={{ __html: path }} />
   );
 };
+
+// Generador de ID de semana ISO para Misiones Semanales
+const getWeekId = () => {
+  const d = new Date();
+  d.setUTCDate(d.getDate() + 4 - (d.getDay() || 7));
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+  return `${d.getUTCFullYear()}-W${weekNo}`;
+};
+
+const DECK_CATEGORIES = ["General", "Metodología", "Comunicación", "Fonética", "Gramática", "Discurso", "Lit. Británica", "Lit. Americana", "Cultura"];
 
 // ==========================================
 // 2. DATA MAPPING (LOMLOE CV EXHAUSTIVO)
@@ -313,6 +324,14 @@ export default function App() {
   const [practicoSessions, setPracticoSessions] = useState(0);
   const [lastActiveDate, setLastActiveDate] = useState(null);
 
+  // NUEVOS ESTADOS (Misiones y SRS)
+  const [perfectWeeks, setPerfectWeeks] = useState(0);
+  const [totalDailyChallenges, setTotalDailyChallenges] = useState(0);
+  const [lastChallengeDate, setLastChallengeDate] = useState(null);
+  const [weeklyData, setWeeklyData] = useState({ 
+    weekId: getWeekId(), points: 0, topicsTouched: false, progTouched: false, practicoTouched: false, dailyChallengesDone: 0, claimed1: false, claimed2: false 
+  });
+
   const [timeLeft, setTimeLeft] = useState(0);
   const [isTimerActive, setIsTimerActive] = useState(false);
   const [endTime, setEndTime] = useState(null);
@@ -387,6 +406,12 @@ export default function App() {
         setPracticoSessions(d.practicoSessions || 0);
         setLevelDates(d.levelDates || { 1: new Date().toLocaleDateString() });
         setLastActiveDate(d.lastActiveDate || null);
+
+        // Cargar nuevos estados
+        setPerfectWeeks(d.perfectWeeks || 0);
+        setTotalDailyChallenges(d.totalDailyChallenges || 0);
+        setLastChallengeDate(d.lastChallengeDate || null);
+        setWeeklyData(d.weeklyData || { weekId: getWeekId(), points: 0, topicsTouched: false, progTouched: false, practicoTouched: false, dailyChallengesDone: 0, claimed1: false, claimed2: false });
       }
       setIsDataLoaded(true);
     });
@@ -396,10 +421,10 @@ export default function App() {
     if (!isDataLoaded || !isLogged) return;
     const save = async () => {
       const docRef = doc(db, 'artifacts', APP_ID_PATH, 'public', 'data', 'turtle_users', syncCode);
-      await setDoc(docRef, { points, topics, planning, units, skills, decks, todos, notes, actionLogs, examDate, submissionDate, streak, maxStreak, practicoSessions, levelDates, lastActiveDate });
+      await setDoc(docRef, { points, topics, planning, units, skills, decks, todos, notes, actionLogs, examDate, submissionDate, streak, maxStreak, practicoSessions, levelDates, lastActiveDate, perfectWeeks, totalDailyChallenges, lastChallengeDate, weeklyData });
     };
     const t = setTimeout(save, 1500); return () => clearTimeout(t);
-  }, [points, topics, planning, units, skills, decks, todos, notes, actionLogs, examDate, submissionDate, streak, maxStreak, practicoSessions, levelDates, lastActiveDate, isDataLoaded]);
+  }, [points, topics, planning, units, skills, decks, todos, notes, actionLogs, examDate, submissionDate, streak, maxStreak, practicoSessions, levelDates, lastActiveDate, perfectWeeks, totalDailyChallenges, lastChallengeDate, weeklyData, isDataLoaded]);
 
   const addPoints = (amount, desc, actionData = null) => {
     let finalLogs = [...actionLogs];
@@ -434,6 +459,60 @@ export default function App() {
 
     finalLogs.unshift({ id: Date.now().toString(), amount, description: desc, timestamp: Date.now(), actionData });
     setActionLogs(finalLogs);
+
+    // Sumar a Misiones Semanales
+    const currentWeekId = getWeekId();
+    setWeeklyData(prev => {
+      let newData = { ...prev };
+      if (newData.weekId !== currentWeekId) {
+        newData = { weekId: currentWeekId, points: 0, topicsTouched: false, progTouched: false, practicoTouched: false, dailyChallengesDone: 0, claimed1: false, claimed2: false };
+      }
+      if (amount > 0) newData.points += amount;
+      return newData;
+    });
+  };
+
+  const touchWeekly = (field) => {
+    setWeeklyData(prev => {
+      const currentWeek = getWeekId();
+      if (prev.weekId !== currentWeek) {
+        return { weekId: currentWeek, points: 0, topicsTouched: field==='topics', progTouched: field==='prog', practicoTouched: field==='practico', dailyChallengesDone: 0, claimed1: false, claimed2: false };
+      }
+      return { ...prev, [field + 'Touched']: true };
+    });
+  };
+
+  const claimMission = (num) => {
+    addPoints(50, `Misión Semanal ${num} Completada`);
+    setWeeklyData(prev => {
+      const next = {...prev, [`claimed${num}`]: true};
+      if (next.claimed1 && next.claimed2 && (!prev.claimed1 || !prev.claimed2)) {
+        setPerfectWeeks(pw => pw + 1);
+        setTimeout(() => alert("¡ENHORABUENA! ¡Has conseguido una Semana Perfecta y tu Corona ha subido!"), 500);
+      }
+      return next;
+    });
+  };
+
+  const handleUpdateCard = (deckId, cardId, newData) => {
+    setDecks(prev => prev.map(d => {
+       if (d.id.toString() === deckId.toString()) {
+          return { ...d, cards: d.cards.map(c => c.id === cardId ? { ...c, ...newData } : c) };
+       }
+       return d;
+    }));
+  };
+
+  const handleChallengeFinish = () => {
+    setTotalDailyChallenges(prev => prev + 1);
+    const todayStr = new Date().toDateString();
+    if (lastChallengeDate !== todayStr) {
+        setLastChallengeDate(todayStr);
+        setWeeklyData(prev => prev.weekId === getWeekId() ? {...prev, dailyChallengesDone: prev.dailyChallengesDone + 1} : { weekId: getWeekId(), points: 0, topicsTouched: false, progTouched: false, practicoTouched: false, dailyChallengesDone: 1, claimed1: false, claimed2: false });
+    }
+    addPoints(25, "Daily Anki Challenge Completed");
+    setActiveDeckId(null);
+    setExamDeck(null);
   };
 
   const undoAction = (id) => {
@@ -735,11 +814,14 @@ export default function App() {
               <HeaderToolBtn active={activeTab==='stats'} icon="BarChart3" label="STATS" color="violet" onClick={()=>setActiveTab('stats')} />
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <div className="flex items-center justify-center gap-3 p-3 bg-orange-50 rounded-2xl border border-orange-100 text-orange-700 shadow-sm transition-all hover:bg-orange-100">
-                <Icon name="Flame" size={20} className="fill-orange-500" />
-                <div className="text-left leading-none">
-                  <p className="text-[10px] font-black uppercase opacity-60">Racha Diaria</p>
-                  <p className="text-sm font-black">{streak} días</p>
+              <div className="flex bg-orange-50 rounded-2xl border border-orange-100 shadow-sm transition-all hover:bg-orange-100 overflow-hidden">
+                <div className="flex-1 flex flex-col items-center justify-center p-2 border-r border-orange-200">
+                  <Icon name="Flame" size={20} className="fill-orange-500 text-orange-500" />
+                  <p className="text-xs font-black text-orange-700 mt-1">{streak} Días</p>
+                </div>
+                <div className="flex-1 flex flex-col items-center justify-center p-2">
+                  <span className="text-lg leading-none">👑</span>
+                  <p className="text-xs font-black text-amber-600 mt-1">{perfectWeeks} Semanas</p>
                 </div>
               </div>
               <button 
@@ -757,6 +839,27 @@ export default function App() {
                 </div>
               </button>
             </div>
+
+            {/* Misiones Semanales UI */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 p-4 bg-slate-50 rounded-3xl border border-slate-100">
+               <div className="space-y-2">
+                 <div className="flex justify-between items-center"><span className="text-xs font-black uppercase text-slate-700">Misión 1: 500 Puntos</span><span className="text-[10px] font-bold text-slate-400">{weeklyData.points}/500</span></div>
+                 <div className="h-2 bg-slate-200 rounded-full overflow-hidden"><div className="h-full bg-emerald-500 transition-all duration-500" style={{width: `${Math.min(100, (weeklyData.points/500)*100)}%`}}></div></div>
+                 {weeklyData.points >= 500 && !weeklyData.claimed1 && <button onClick={()=>claimMission(1)} className="w-full py-1.5 bg-emerald-600 text-white rounded-lg text-[10px] font-black uppercase shadow-md active:scale-95 transition-all">Reclamar +50 Pts</button>}
+                 {weeklyData.claimed1 && <div className="text-center text-[10px] font-black text-emerald-600 uppercase">¡Completada!</div>}
+               </div>
+               <div className="space-y-2">
+                 <div className="flex justify-between items-center"><span className="text-xs font-black uppercase text-slate-700">Misión 2: Constancia</span><span className="text-[10px] font-bold text-slate-400">{weeklyData.dailyChallengesDone}/5 Retos</span></div>
+                 <div className="flex gap-2 justify-between mt-1">
+                    <span className={`text-[9px] font-black uppercase ${weeklyData.topicsTouched ? 'text-emerald-600' : 'text-slate-400'}`}>Temas {weeklyData.topicsTouched ? '✓' : ''}</span>
+                    <span className={`text-[9px] font-black uppercase ${weeklyData.progTouched ? 'text-emerald-600' : 'text-slate-400'}`}>Prog {weeklyData.progTouched ? '✓' : ''}</span>
+                    <span className={`text-[9px] font-black uppercase ${weeklyData.practicoTouched ? 'text-emerald-600' : 'text-slate-400'}`}>Práctico {weeklyData.practicoTouched ? '✓' : ''}</span>
+                 </div>
+                 {weeklyData.topicsTouched && weeklyData.progTouched && weeklyData.practicoTouched && weeklyData.dailyChallengesDone >= 5 && !weeklyData.claimed2 && <button onClick={()=>claimMission(2)} className="w-full py-1.5 bg-emerald-600 text-white rounded-lg text-[10px] font-black uppercase shadow-md active:scale-95 transition-all">Reclamar +50 Pts</button>}
+                 {weeklyData.claimed2 && <div className="text-center text-[10px] font-black text-emerald-600 uppercase">¡Completada!</div>}
+               </div>
+            </div>
+
           </div>
         )}
       </header>
@@ -764,14 +867,14 @@ export default function App() {
       {/* MAIN CONTAINER */}
       <main className="max-w-5xl mx-auto p-4 md:p-8">
         {activeTab === 'map' && <ProgressMap points={points} level={Math.floor(points/200)+1} xp={points%200} examDate={examDate} setExamDate={setExamDate} addPoints={addPoints} levelDates={levelDates} />}
-        {activeTab === 'syllabus' && <SyllabusView topics={topics} setTopics={setTopics} addPoints={addPoints} onOpenModal={setSelectedTopicModal} actionLogs={actionLogs} onReset={handleResetTopics} />}
-        {activeTab === 'planning' && <PlanningHub planning={planning} setPlanning={setPlanning} units={units} setUnits={setUnits} addPoints={addPoints} submissionDate={submissionDate} setSubmissionDate={setSubmissionDate} actionLogs={actionLogs} onOpenModal={setSelectedTopicModal} onReset={handleResetPlanning} />}
-        {activeTab === 'practico' && <PracticoView skills={skills} setSkills={setSkills} addPoints={addPoints} sessions={practicoSessions} setSessions={setPracticoSessions} onReset={handleResetPractico} />}
+        {activeTab === 'syllabus' && <SyllabusView topics={topics} setTopics={setTopics} addPoints={addPoints} onOpenModal={setSelectedTopicModal} actionLogs={actionLogs} onReset={handleResetTopics} touchWeekly={touchWeekly} />}
+        {activeTab === 'planning' && <PlanningHub planning={planning} setPlanning={setPlanning} units={units} setUnits={setUnits} addPoints={addPoints} submissionDate={submissionDate} setSubmissionDate={setSubmissionDate} actionLogs={actionLogs} onOpenModal={setSelectedTopicModal} onReset={handleResetPlanning} touchWeekly={touchWeekly} />}
+        {activeTab === 'practico' && <PracticoView skills={skills} setSkills={setSkills} addPoints={addPoints} sessions={practicoSessions} setSessions={setPracticoSessions} onReset={handleResetPractico} touchWeekly={touchWeekly} />}
         {activeTab === 'flashcards' && !activeDeckId && !examDeck && <FlashcardsManager decks={decks} setDecks={setDecks} onSelect={setActiveDeckId} onExam={setExamDeck} />}
-        {activeTab === 'flashcards' && (activeDeckId || examDeck) && <DeckStudyView deck={examDeck || decks.find(d=>d.id.toString()===activeDeckId)} onBack={()=>{setActiveDeckId(null); setExamDeck(null);}} addPoints={addPoints} />}
+        {activeTab === 'flashcards' && (activeDeckId || examDeck) && <DeckStudyView deck={examDeck || decks.find(d=>d.id.toString()===activeDeckId)} onBack={()=>{setActiveDeckId(null); setExamDeck(null);}} addPoints={addPoints} onUpdateCard={handleUpdateCard} onFinishChallenge={handleChallengeFinish} />}
         {activeTab === 'todo' && <TodoView todos={todos} setTodos={setTodos} addPoints={addPoints} />}
         {activeTab === 'notes' && <NotesView notes={notes} setNotes={setNotes} />}
-        {activeTab === 'badges' && <BadgesView points={points} streak={streak} maxStreak={maxStreak} topics={topics} planning={planning} units={units} skills={skills} />}
+        {activeTab === 'badges' && <BadgesView points={points} streak={streak} maxStreak={maxStreak} topics={topics} planning={planning} units={units} skills={skills} perfectWeeks={perfectWeeks} totalDailyChallenges={totalDailyChallenges} />}
         {activeTab === 'stats' && <StatsView actionLogs={actionLogs} undoAction={undoAction} topics={topics} planning={planning} units={units} />}
       </main>
 
@@ -864,10 +967,11 @@ function ProgressMap({ points, level, xp, examDate, setExamDate, addPoints, leve
   );
 }
 
-function SyllabusView({ topics, setTopics, addPoints, onOpenModal, actionLogs, onReset }) {
+function SyllabusView({ topics, setTopics, addPoints, onOpenModal, actionLogs, onReset, touchWeekly }) {
   const [search, setSearch] = useState("");
   
   const updateField = (id, field, value, pts) => {
+    touchWeekly('topics');
     setTopics(prev => prev.map(t => {
       if (t.id === id) {
         if (pts && value !== undefined) addPoints(pts, `Topic ${id}: ${field}`, { entity: 'topic', id, field, prevValue: t[field] });
@@ -988,20 +1092,23 @@ function CounterPill({ label, count, onAdd, onSub }) {
   );
 }
 
-function PlanningHub({ planning, setPlanning, units, setUnits, addPoints, submissionDate, setSubmissionDate, actionLogs, onOpenModal, onReset }) {
+function PlanningHub({ planning, setPlanning, units, setUnits, addPoints, submissionDate, setSubmissionDate, actionLogs, onOpenModal, onReset, touchWeekly }) {
   const diff = new Date(submissionDate) - new Date();
   const days = Math.ceil(diff / 864e5);
   const [showSubDate, setShowSubDate] = useState(false);
   const [newPlan, setNewPlan] = useState("");
 
-  const upd = (id, list, setter, field, nv, pts = 0) => setter(list.map(i => { 
-    if(i.id===id){ 
-      if (i[field] === nv) return i;
-      addPoints(pts, i.title, { entity: id.toString().startsWith('ud') ? 'unit' : 'planning', id: i.id, field, prevValue: i[field] }); 
-      return {...i, [field]: nv}; 
-    } 
-    return i; 
-  }));
+  const upd = (id, list, setter, field, nv, pts = 0) => {
+    touchWeekly('prog');
+    setter(list.map(i => { 
+      if(i.id===id){ 
+        if (i[field] === nv) return i;
+        addPoints(pts, i.title, { entity: id.toString().startsWith('ud') ? 'unit' : 'planning', id: i.id, field, prevValue: i[field] }); 
+        return {...i, [field]: nv}; 
+      } 
+      return i; 
+    }));
+  };
 
   const cyclePriority = (id, current, isUnit) => {
     const next = current === null ? 1 : current === 4 ? null : current + 1;
@@ -1076,7 +1183,7 @@ function PlanningHub({ planning, setPlanning, units, setUnits, addPoints, submis
   );
 }
 
-function PracticoView({ skills, setSkills, addPoints, sessions, setSessions, onReset }) {
+function PracticoView({ skills, setSkills, addPoints, sessions, setSessions, onReset, touchWeekly }) {
   const [newSkill, setNewSkill] = useState("");
   return (
     <div className="space-y-6 animate-in slide-in-from-left-4 text-left">
@@ -1091,7 +1198,7 @@ function PracticoView({ skills, setSkills, addPoints, sessions, setSessions, onR
           {skills.length === 0 && <p className="text-xs text-slate-400 font-bold italic text-center py-4">No skills registered yet.</p>}
           {skills.map(s => (
             <div key={s.id} className="space-y-2 text-left mb-4">
-              <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-slate-500"><EditableText value={s.label} onSave={(nv)=>setSkills(skills.map(x=>x.id===s.id?{...x,label:nv}:x))} className="flex-1 mr-2 leading-tight" /><div className="flex gap-1 shrink-0"><button onClick={()=>{if(s.level>0){setSkills(skills.map(ps=>ps.id===s.id?{...ps,level:ps.level-1}:ps)); addPoints(-25,"Skill Adjustment",{entity:'skill',id:s.id,prevValue:s.level});}}} className="w-6 h-6 bg-slate-50 text-slate-400 rounded-lg shadow-sm hover:bg-slate-100 transition-colors font-black flex items-center justify-center active:scale-90">-</button><button onClick={()=>{if(s.level<10){setSkills(skills.map(ps=>ps.id===s.id?{...ps,level:ps.level+1}:ps)); addPoints(25,s.label,{entity:'skill',id:s.id,prevValue:s.level});}}} className="w-6 h-6 bg-indigo-50 text-indigo-600 rounded-lg shadow-sm hover:bg-indigo-100 transition-colors font-black flex items-center justify-center active:scale-90">+</button></div></div>
+              <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-slate-500"><EditableText value={s.label} onSave={(nv)=>{touchWeekly('practico'); setSkills(skills.map(x=>x.id===s.id?{...x,label:nv}:x));}} className="flex-1 mr-2 leading-tight" /><div className="flex gap-1 shrink-0"><button onClick={()=>{touchWeekly('practico'); if(s.level>0){setSkills(skills.map(ps=>ps.id===s.id?{...ps,level:ps.level-1}:ps)); addPoints(-25,"Skill Adjustment",{entity:'skill',id:s.id,prevValue:s.level});}}} className="w-6 h-6 bg-slate-50 text-slate-400 rounded-lg shadow-sm hover:bg-slate-100 transition-colors font-black flex items-center justify-center active:scale-90">-</button><button onClick={()=>{touchWeekly('practico'); if(s.level<10){setSkills(skills.map(ps=>ps.id===s.id?{...ps,level:ps.level+1}:ps)); addPoints(25,s.label,{entity:'skill',id:s.id,prevValue:s.level});}}} className="w-6 h-6 bg-indigo-50 text-indigo-600 rounded-lg shadow-sm hover:bg-indigo-100 transition-colors font-black flex items-center justify-center active:scale-90">+</button></div></div>
               <div className="h-3 bg-slate-100 rounded-full overflow-hidden border border-slate-200"><div className="h-full bg-indigo-500 transition-all duration-700 shadow-sm" style={{width:`${s.level*10}%`}} /></div>
             </div>
           ))}
@@ -1100,8 +1207,8 @@ function PracticoView({ skills, setSkills, addPoints, sessions, setSessions, onR
           <p className="text-6xl font-black text-indigo-600 tabular-nums leading-none tracking-tighter">{sessions || 0}</p>
           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] leading-none">Cases Completed</p>
           <div className="flex gap-2 w-full mt-2">
-            <button onClick={()=>{if(sessions>0){setSessions(s=>s-1); addPoints(-25,"Case adjustment",{entity:'practico_sessions',prevValue:sessions});}}} className="w-16 py-4 bg-slate-100 text-slate-400 rounded-2xl font-black active:scale-95 transition-all hover:bg-slate-200">-</button>
-            <button onClick={()=>{setSessions(s=>(s||0)+1); addPoints(25,"Case Completed",{entity:'practico_sessions',prevValue:sessions});}} className="flex-1 py-4 bg-indigo-600 text-white rounded-2xl font-black shadow-lg shadow-indigo-100 active:scale-95 transition-all hover:bg-indigo-700">RECORD (+25 PTS)</button>
+            <button onClick={()=>{touchWeekly('practico'); if(sessions>0){setSessions(s=>s-1); addPoints(-25,"Case adjustment",{entity:'practico_sessions',prevValue:sessions});}}} className="w-16 py-4 bg-slate-100 text-slate-400 rounded-2xl font-black active:scale-95 transition-all hover:bg-slate-200">-</button>
+            <button onClick={()=>{touchWeekly('practico'); setSessions(s=>(s||0)+1); addPoints(25,"Case Completed",{entity:'practico_sessions',prevValue:sessions});}} className="flex-1 py-4 bg-indigo-600 text-white rounded-2xl font-black shadow-lg shadow-indigo-100 active:scale-95 transition-all hover:bg-indigo-700">RECORD (+25 PTS)</button>
           </div>
         </div>
       </div>
@@ -1166,7 +1273,11 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam }) {
   const [open, setOpen] = useState(false);
   const [txt, setTxt] = useState("");
   const [name, setName] = useState("");
+  const [deckCat, setDeckCat] = useState("General");
   const [editingId, setEditingId] = useState(null);
+
+  const [showDailyModal, setShowDailyModal] = useState(false);
+  const [dailyCats, setDailyCats] = useState(DECK_CATEGORIES);
 
   const startExamMode = () => { 
     const allCards = decks.flatMap(d => d.cards.map(c => ({...c, deckName: d.name}))); 
@@ -1174,17 +1285,40 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam }) {
     onExam({ id: 'exam-mode', name: 'TOTAL EXAM', cards: allCards.sort(() => Math.random() - 0.5) }); 
   };
 
+  const startDailyChallenge = () => {
+    let dueCards = [];
+    const now = Date.now();
+    decks.forEach(d => {
+      const ctg = d.category || "General";
+      if (dailyCats.includes(ctg)) {
+        d.cards.forEach(c => {
+          if (!c.nextDate || c.nextDate <= now) {
+            dueCards.push({...c, deckId: d.id, deckName: d.name});
+          }
+        });
+      }
+    });
+    if (dueCards.length === 0) return alert("¡No hay tarjetas urgentes en estas categorías hoy!");
+    dueCards = dueCards.sort(() => Math.random() - 0.5).slice(0, 50);
+    onExam({ id: 'daily-challenge', name: 'DAILY CHALLENGE', isChallenge: true, cards: dueCards });
+    setShowDailyModal(false);
+  };
+
   const saveDeck = () => { 
     if(txt.includes(':') && name){ 
-      const cards = txt.split('\n').filter(l=>l.includes(':')).map(l=>{const [q,a]=l.split(':'); return {q:q.trim(),a:a.trim(),id:Math.random().toString(36)};}); 
-      if(editingId) setDecks(decks.map(d=>d.id===editingId?{...d,name,cards}:d)); 
-      else setDecks([{id:Date.now().toString(),name,cards}, ...decks]); 
-      setOpen(false); setName(""); setTxt(""); setEditingId(null); 
+      const cards = txt.split('\n').filter(l=>l.includes(':')).map(l=>{
+        const [q,a]=l.split(':'); 
+        return {q:q.trim(), a:a.trim(), id:Math.random().toString(36), interval: 0, ease: 2.5, nextDate: 0};
+      }); 
+      if(editingId) setDecks(decks.map(d=>d.id===editingId?{...d, name, category: deckCat, cards}:d)); 
+      else setDecks([{id:Date.now().toString(), name, category: deckCat, cards}, ...decks]); 
+      setOpen(false); setName(""); setTxt(""); setDeckCat("General"); setEditingId(null); 
     } 
   };
 
   const loadForEdit = (deck) => { 
     setName(deck.name); 
+    setDeckCat(deck.category || "General");
     setTxt(deck.cards.map(c => `${c.q} : ${c.a}`).join('\n')); 
     setEditingId(deck.id); setOpen(true); 
   };
@@ -1218,30 +1352,66 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam }) {
   const sortedDecks = useMemo(() => [...decks].sort((a, b) => a.name.localeCompare(b.name)), [decks]);
 
   return (
-    <div className="space-y-6 text-left">
+    <div className="space-y-6 text-left relative">
+      {showDailyModal && (
+        <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[200] flex items-center justify-center p-4" onClick={()=>setShowDailyModal(false)}>
+          <div className="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl animate-in zoom-in-95" onClick={e=>e.stopPropagation()}>
+            <h3 className="text-xl font-black text-rose-950 mb-4 flex items-center gap-2"><Icon name="Zap" className="text-amber-500"/> Reto Diario SRS</h3>
+            <p className="text-xs font-bold text-slate-500 mb-4">Selecciona las categorías que quieres incluir hoy. Solo se mostrarán las tarjetas que tu cerebro está a punto de olvidar (Máx. 50).</p>
+            <div className="flex flex-wrap gap-2 mb-6">
+              {DECK_CATEGORIES.map(c => (
+                <button 
+                  key={c} 
+                  onClick={() => setDailyCats(prev => prev.includes(c) ? prev.filter(x=>x!==c) : [...prev, c])}
+                  className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all ${dailyCats.includes(c) ? 'bg-rose-100 text-rose-700 border border-rose-300' : 'bg-slate-100 text-slate-400'}`}
+                >
+                  {c}
+                </button>
+              ))}
+            </div>
+            <button onClick={startDailyChallenge} className="w-full p-4 bg-rose-600 text-white rounded-xl font-black shadow-lg hover:bg-rose-700 active:scale-95 transition-all">INICIAR RETO</button>
+          </div>
+        </div>
+      )}
+
       <div className="flex flex-col sm:flex-row justify-between items-center bg-white/50 backdrop-blur px-4 py-2 rounded-2xl shadow-sm border border-white/50 gap-4">
         <h2 className="text-2xl font-black text-rose-950">Library</h2>
         <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto custom-scrollbar pb-1 sm:pb-0">
           <button onClick={exportDecks} className="px-3 py-2 bg-slate-100 text-slate-600 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-200 transition-colors shrink-0">Exportar</button>
           <button onClick={importDecks} className="px-3 py-2 bg-slate-100 text-slate-600 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-200 transition-colors shrink-0">Importar</button>
-          <button onClick={startExamMode} className="px-3 py-2 bg-rose-100 text-rose-700 rounded-xl font-black text-[10px] flex items-center gap-2 border border-rose-200 active:scale-95 transition-all shadow-sm shrink-0"><Icon name="Zap" size={14} className="fill-rose-700"/> EXAM MODE</button>
+          <button onClick={()=>setShowDailyModal(true)} className="px-3 py-2 bg-amber-100 text-amber-700 rounded-xl font-black text-[10px] flex items-center gap-2 border border-amber-200 active:scale-95 transition-all shadow-sm shrink-0"><Icon name="Flame" size={14} className="fill-amber-700"/> RETO DIARIO</button>
+          <button onClick={startExamMode} className="px-3 py-2 bg-rose-100 text-rose-700 rounded-xl font-black text-[10px] flex items-center gap-2 border border-rose-200 active:scale-95 transition-all shadow-sm shrink-0"><Icon name="Dices" size={14}/> EXAM MODE</button>
         </div>
       </div>
       
-      <button onClick={()=>{setOpen(!open); setEditingId(null); setName(""); setTxt("");}} className="w-full p-4 bg-rose-600 text-white rounded-2xl font-black shadow-lg shadow-rose-100 active:scale-95 transition-all">{editingId ? 'EDITING DECK' : 'NEW DECK'}</button>
+      <button onClick={()=>{setOpen(!open); setEditingId(null); setName(""); setDeckCat("General"); setTxt("");}} className="w-full p-4 bg-rose-600 text-white rounded-2xl font-black shadow-lg shadow-rose-100 active:scale-95 transition-all">{editingId ? 'EDITING DECK' : 'NEW DECK'}</button>
       
-      {open && (<div className="bento-card p-6 border-rose-100 space-y-4 shadow-xl animate-in zoom-in-95 bg-white"><input placeholder="Deck name..." value={name} onChange={e=>setName(e.target.value)} className="w-full bg-slate-50 p-3 rounded-xl font-black outline-none border-2 border-transparent focus:border-rose-200 shadow-inner" /><textarea placeholder="Question : Answer (One per line)" value={txt} onChange={e=>setTxt(e.target.value)} className="w-full h-32 bg-slate-50 p-3 rounded-xl font-black outline-none resize-none border-2 border-transparent focus:border-rose-200 shadow-inner custom-scrollbar" /><button onClick={saveDeck} className="w-full p-3 bg-rose-600 text-white rounded-xl font-black shadow-md uppercase">{editingId ? 'Save Changes' : 'Create Deck'}</button></div>)}
+      {open && (
+        <div className="bento-card p-6 border-rose-100 space-y-4 shadow-xl animate-in zoom-in-95 bg-white">
+          <div className="flex gap-2">
+            <input placeholder="Deck name..." value={name} onChange={e=>setName(e.target.value)} className="flex-1 bg-slate-50 p-3 rounded-xl font-black outline-none border-2 border-transparent focus:border-rose-200 shadow-inner" />
+            <select value={deckCat} onChange={e=>setDeckCat(e.target.value)} className="bg-slate-50 p-3 rounded-xl font-black outline-none border-2 border-transparent focus:border-rose-200 text-slate-600 cursor-pointer shadow-inner">
+              {DECK_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </div>
+          <textarea placeholder="Question : Answer (One per line)" value={txt} onChange={e=>setTxt(e.target.value)} className="w-full h-32 bg-slate-50 p-3 rounded-xl font-black outline-none resize-none border-2 border-transparent focus:border-rose-200 shadow-inner custom-scrollbar" />
+          <button onClick={saveDeck} className="w-full p-3 bg-rose-600 text-white rounded-xl font-black shadow-md uppercase">{editingId ? 'Save Changes' : 'Create Deck'}</button>
+        </div>
+      )}
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {sortedDecks.map(d=>(
           <div key={d.id} onClick={()=>onSelect(d.id.toString())} className="bento-card bg-white p-5 flex justify-between items-center cursor-pointer hover:border-rose-300 transition-all shadow-sm group">
             <div>
               <p className="font-black text-left text-slate-800 leading-tight">{d.name}</p>
-              <p className="text-[9px] text-rose-400 font-black uppercase tracking-widest mt-1 flex items-center gap-2">{d.cards.length} cards</p>
+              <div className="flex gap-2 items-center mt-1">
+                <span className="text-[8px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded uppercase font-black">{d.category || "General"}</span>
+                <p className="text-[9px] text-rose-400 font-black uppercase tracking-widest">{d.cards.length} cards</p>
+              </div>
             </div>
             <div className="flex gap-2">
-              <button onClick={(e)=>{e.stopPropagation(); loadForEdit(d)}} className="text-slate-300 hover:text-emerald-500 p-1 transition-colors"><Icon name="Edit" size={18}/></button>
-              <button onClick={(e)=>{e.stopPropagation(); setDecks(decks.filter(x=>x.id.toString()!==d.id.toString()))}} className="text-slate-300 hover:text-red-500 p-1 transition-colors"><Icon name="Trash2" size={18}/></button>
+              <button onClick={(e)=>{e.stopPropagation(); loadForEdit(d)}} className="text-slate-300 hover:text-emerald-500 p-1"><Icon name="Edit" size={18}/></button>
+              <button onClick={(e)=>{e.stopPropagation(); setDecks(decks.filter(x=>x.id.toString()!==d.id.toString()))}} className="text-slate-300 hover:text-red-500 p-1"><Icon name="Trash2" size={18}/></button>
             </div>
           </div>
         ))}
@@ -1250,31 +1420,79 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam }) {
   );
 }
 
-function DeckStudyView({ deck, onBack, addPoints }) {
+function DeckStudyView({ deck, onBack, addPoints, onUpdateCard, onFinishChallenge }) {
   const [idx, setIdx] = useState(0);
   const [flipped, setFlipped] = useState(false);
   const [isShuffled, setIsShuffled] = useState(false);
+  
+  const isChallenge = deck.isChallenge;
+  const [challengeQueue, setChallengeQueue] = useState(isChallenge ? deck.cards : []);
 
   const cardsToStudy = useMemo(() => {
+    if (isChallenge) return challengeQueue;
     if (!isShuffled) return deck.cards;
     return [...deck.cards].sort(() => Math.random() - 0.5);
-  }, [deck.cards, isShuffled]);
+  }, [deck.cards, isShuffled, challengeQueue, isChallenge]);
+
+  // Pantalla de finalización de Reto
+  if (isChallenge && idx >= cardsToStudy.length) {
+    return (
+      <div className="max-w-xl mx-auto py-20 text-center space-y-6 animate-in zoom-in-95">
+        <Icon name="Award" size={80} className="mx-auto text-amber-500" />
+        <h2 className="text-3xl font-black text-rose-950">¡Reto Completado!</h2>
+        <p className="text-sm font-bold text-slate-500">Has repasado tus tarjetas pendientes con éxito.</p>
+        <button onClick={onFinishChallenge} className="px-8 py-4 bg-rose-600 text-white rounded-2xl font-black shadow-xl shadow-rose-200 hover:bg-rose-700 active:scale-95 transition-all tracking-widest uppercase">Reclamar Recompensa</button>
+      </div>
+    );
+  }
 
   const card = cardsToStudy[idx];
   if(!card) return null;
+
+  const handleAnki = (rating) => {
+    if (!onUpdateCard) return;
+
+    let { interval = 0, ease = 2.5 } = card;
+    let newInterval = interval;
+    let newEase = ease;
+
+    if (rating === 'repeat') {
+      newInterval = 0;
+    } else if (rating === 'hard') {
+      newInterval = Math.max(1, interval * 1.2);
+      newEase = Math.max(1.3, ease - 0.15);
+    } else if (rating === 'good') {
+      newInterval = interval === 0 ? 1 : interval * 2.5;
+    } else if (rating === 'easy') {
+      newInterval = interval === 0 ? 4 : interval * ease * 1.3;
+      newEase += 0.15;
+    }
+
+    const newNextDate = rating === 'repeat' ? 0 : Date.now() + (newInterval * 86400000);
+    onUpdateCard(card.deckId, card.id, { interval: newInterval, ease: newEase, nextDate: newNextDate });
+
+    if (rating === 'repeat') {
+      setChallengeQueue(prev => [...prev, {...card, interval: newInterval, ease: newEase, nextDate: newNextDate}]);
+    }
+
+    setIdx(p => p + 1);
+    setFlipped(false);
+  };
 
   return (
     <div className="max-w-xl mx-auto py-10 space-y-8 text-left">
       <div className="flex justify-between items-center">
         <button onClick={onBack} className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-rose-600 transition-all">
-          <Icon name="ChevronRight" className="rotate-180" size={16}/> Back to Library
+          <Icon name="ChevronRight" className="rotate-180" size={16}/> Back
         </button>
-        <button 
-          onClick={() => { setIsShuffled(!isShuffled); setIdx(0); setFlipped(false); }}
-          className={`flex items-center gap-2 px-3 py-1.5 rounded-xl font-black text-[10px] uppercase transition-all ${isShuffled ? 'bg-rose-600 text-white shadow-lg' : 'bg-slate-100 text-slate-400 hover:bg-slate-200'}`}
-        >
-          <Icon name="Shuffle" size={14}/> {isShuffled ? 'Shuffled' : 'Normal'}
-        </button>
+        {!isChallenge && (
+          <button 
+            onClick={() => { setIsShuffled(!isShuffled); setIdx(0); setFlipped(false); }}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-xl font-black text-[10px] uppercase transition-all ${isShuffled ? 'bg-rose-600 text-white shadow-lg' : 'bg-slate-100 text-slate-400 hover:bg-slate-200'}`}
+          >
+            <Icon name="Shuffle" size={14}/> {isShuffled ? 'Shuffled' : 'Normal'}
+          </button>
+        )}
       </div>
 
       <div className="h-80 w-full relative" style={{ perspective: '1000px' }} onClick={()=>{if(!flipped) addPoints(2,"Flashcard Mastery"); setFlipped(!flipped);}}>
@@ -1289,16 +1507,25 @@ function DeckStudyView({ deck, onBack, addPoints }) {
         </div>
       </div>
       
-      <div className="flex gap-4">
-        <button onClick={()=>{setIdx(p=>Math.max(0,p-1)); setFlipped(false);}} className="flex-1 py-4 bg-white border-2 border-rose-100 rounded-2xl font-black text-rose-600 shadow-sm active:scale-95 transition-all" disabled={idx===0}>PREVIOUS</button>
-        <button onClick={()=>{setIdx(p=>Math.min(cardsToStudy.length-1,p+1)); setFlipped(false);}} className="flex-1 py-4 bg-rose-600 text-white rounded-2xl font-black shadow-xl shadow-rose-100 active:scale-95 transition-all" disabled={idx===cardsToStudy.length-1}>NEXT</button>
-      </div>
+      {isChallenge && flipped ? (
+        <div className="grid grid-cols-4 gap-2">
+          <button onClick={(e)=>{e.stopPropagation(); handleAnki('repeat')}} className="py-4 bg-slate-100 text-slate-600 rounded-2xl font-black text-[10px] uppercase shadow-sm active:scale-95 transition-all">Repetir<br/><span className="text-[8px] opacity-60">Ahora</span></button>
+          <button onClick={(e)=>{e.stopPropagation(); handleAnki('hard')}} className="py-4 bg-orange-100 text-orange-700 rounded-2xl font-black text-[10px] uppercase shadow-sm active:scale-95 transition-all">Difícil<br/><span className="text-[8px] opacity-60">Mañana</span></button>
+          <button onClick={(e)=>{e.stopPropagation(); handleAnki('good')}} className="py-4 bg-emerald-100 text-emerald-700 rounded-2xl font-black text-[10px] uppercase shadow-sm active:scale-95 transition-all">Bien<br/><span className="text-[8px] opacity-60">Días</span></button>
+          <button onClick={(e)=>{e.stopPropagation(); handleAnki('easy')}} className="py-4 bg-blue-100 text-blue-700 rounded-2xl font-black text-[10px] uppercase shadow-sm active:scale-95 transition-all">Fácil<br/><span className="text-[8px] opacity-60">Semanas</span></button>
+        </div>
+      ) : (
+        <div className="flex gap-4">
+          <button onClick={()=>{setIdx(p=>Math.max(0,p-1)); setFlipped(false);}} className="flex-1 py-4 bg-white border-2 border-rose-100 rounded-2xl font-black text-rose-600 shadow-sm active:scale-95 transition-all" disabled={idx===0 || isChallenge}>PREVIOUS</button>
+          <button onClick={()=>{if(!isChallenge) {setIdx(p=>Math.min(cardsToStudy.length-1,p+1)); setFlipped(false);}}} className={`flex-1 py-4 rounded-2xl font-black shadow-xl active:scale-95 transition-all ${isChallenge ? 'bg-slate-200 text-slate-400 opacity-50 cursor-not-allowed' : 'bg-rose-600 text-white shadow-rose-100'}`} disabled={idx===cardsToStudy.length-1 || isChallenge}>NEXT</button>
+        </div>
+      )}
       <p className="text-center text-[10px] font-black text-slate-300 uppercase tracking-widest">{idx + 1} / {cardsToStudy.length}</p>
     </div>
   );
 }
 
-function BadgesView({ points, streak, maxStreak, topics, planning, units, skills }) {
+function BadgesView({ points, streak, maxStreak, topics, planning, units, skills, perfectWeeks, totalDailyChallenges }) {
   const doneTopics = topics.filter(t=>t.finished).length;
   const studiedTopics = topics.filter(t=>t.estudiado > 0).length;
   const writtenTopics = topics.filter(t=>t.redactado).length;
@@ -1343,6 +1570,13 @@ function BadgesView({ points, streak, maxStreak, topics, planning, units, skills
 
     { icon: '🎯', title: 'Sharp', desc: '1 Skill Maxed', cond: skills.some(s=>s.level===10) },
     { icon: '👁️‍🗨️', title: 'Flawless', desc: 'All Skills Maxed', cond: allSkills === (skills.length * 10) && skills.length > 0 },
+
+    // NUEVAS MEDALLAS DE CONSTANCIA
+    { icon: '📅', title: 'Guerrero', desc: '1 Sem. Perfecta', cond: perfectWeeks >= 1 },
+    { icon: '🦾', title: 'Imparable', desc: '5 Sem. Perfectas', cond: perfectWeeks >= 5 },
+    { icon: '⚙️', title: 'Máquina', desc: '15 Sem. Perfectas', cond: perfectWeeks >= 15 },
+    { icon: '💎', title: 'Diamante', desc: '30 Sem. Perfectas', cond: perfectWeeks >= 30 },
+    { icon: '🧠', title: 'Leyenda Repaso', desc: '50 Retos Diarios', cond: totalDailyChallenges >= 50 },
   ];
 
   return (
