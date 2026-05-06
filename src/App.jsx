@@ -4,7 +4,7 @@ import { getFirestore, doc, setDoc, onSnapshot } from 'firebase/firestore';
 import { getAuth, signInAnonymously } from 'firebase/auth';
 
 // ==========================================
-// 1. ICONOS Y AYUDANTES
+// 1. ICONOS Y AYUDANTES (AÑADIDO CHESS PAWN)
 // ==========================================
 const ICON_PATHS = {
   Turtle: '<path d="m12 10 2 4v3a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1v-3a8 8 0 1 0-16 0v3a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1v-3l2-4h4Z"/><path d="M4.82 7.9 8 10"/><path d="M15.18 7.9 12 10"/><path d="M16.93 10H20a2 2 0 0 1 0 4H2"/>',
@@ -41,7 +41,8 @@ const ICON_PATHS = {
   Minimize: '<path d="M8 3v3a2 2 0 0 1-2 2H3"/><path d="M21 8h-3a2 2 0 0 1-2-2V3"/><path d="M3 16h3a2 2 0 0 1 2 2v3"/><path d="M16 21v-3a2 2 0 0 1 2-2h3"/>',
   Calendar: '<rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',
   AlertTriangle: '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>',
-  Settings: '<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.72V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.17a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/>'
+  Settings: '<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.72V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.17a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/>',
+  ChessPawn: '<path d="M12 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/><path d="M17 19c-1 0-1-1-1-1a3 3 0 0 0-8 0s0 1-1 1a2 2 0 0 0 0 4h10a2 2 0 0 0 0-4Z"/><path d="M10 9c0-1.7 1-2 2-2s2 .3 2 2c0 1.5-1 3-1 3H11s-1-1.5-1-3Z"/><path d="M10 14h4"/>'
 };
 
 const Icon = ({ name, size = 24, strokeWidth = 2, className = "" }) => {
@@ -245,6 +246,20 @@ const getTopicBlock = (id) => {
   if ([46, 52, 53, 54, 55, 59, 60].includes(id)) return { name: 'Amer Lit', badge: 'bg-yellow-100 text-yellow-700 border-yellow-200', color: '!bg-yellow-500' };
   if ([61, 63, 64, 65, 66, 67, 68, 69].includes(id)) return { name: 'Culture', badge: 'bg-indigo-100 text-indigo-700 border-indigo-200', color: '!bg-indigo-500' };
   return { name: 'General', badge: 'bg-gray-100 text-gray-700 border-gray-200', color: '!bg-slate-600' };
+};
+
+const getCategoryColor = (cat) => {
+    switch(cat) {
+        case "Metodología": return "bg-orange-100 text-orange-700 border-orange-200";
+        case "Comunicación": return "bg-purple-100 text-purple-700 border-purple-200";
+        case "Fonética": return "bg-slate-200 text-slate-800 border-slate-300";
+        case "Gramática": return "bg-sky-100 text-sky-700 border-sky-200";
+        case "Discurso": return "bg-pink-100 text-pink-700 border-pink-200";
+        case "Lit. Británica": return "bg-green-100 text-green-700 border-green-200";
+        case "Lit. Americana": return "bg-yellow-100 text-yellow-700 border-yellow-200";
+        case "Cultura": return "bg-indigo-100 text-indigo-700 border-indigo-200";
+        default: return "bg-gray-100 text-gray-700 border-gray-200";
+    }
 };
 
 const getPlanningStatusLabel = (status) => {
@@ -454,7 +469,10 @@ export default function App() {
     const newLevel = Math.floor(newPoints / 200) + 1;
     setPoints(newPoints);
     
-    if (newLevel > oldLevel) setLevelDates(prev => ({ ...prev, [newLevel]: new Date().toLocaleDateString() }));
+    if (newLevel > oldLevel) {
+        const dateStr = new Date().toLocaleDateString();
+        setLevelDates(prev => ({ ...prev, [newLevel]: dateStr }));
+    }
     
     if (amount > 0) {
       const today = new Date().toDateString();
@@ -497,9 +515,7 @@ export default function App() {
       const next = {...prev, [`claimed${num}`]: true};
       if (next.claimed1 && next.claimed2 && (!prev.claimed1 || !prev.claimed2)) {
         setPerfectWeeks(pw => pw + 1);
-        /* --- SWIFTIE REFERENCE START --- */
         setTimeout(() => alert("Perfect week! That's a real fucking legacy to leave. 🍷"), 500);
-        /* --- SWIFTIE REFERENCE END --- */
       }
       return next;
     });
@@ -677,7 +693,7 @@ export default function App() {
                 />
               </div>
 
-              {/* CURRICULAR ALIGNMENT */}
+              {/* CURRICULAR ALIGNMENT - INTACTO */}
               {selectedTopicModal.id.toString().startsWith('ud') ? (
                 <div className="flex flex-wrap justify-center gap-2 px-4 border-b border-slate-50 pb-6">
                   {['ce', 'sb', 'do', 'cr', 'leg'].map(key => (
@@ -732,7 +748,7 @@ export default function App() {
                 </div>
               )}
 
-              {/* LEY ALERT */}
+              {/* LEY ALERT - INTACTO */}
               {!selectedTopicModal.id.toString().startsWith('p') && !selectedTopicModal.id.toString().startsWith('ud') && [1, 2, 39, 40, 62, 65, 66].includes(selectedTopicModal.id) && (
                 <div className="mx-4 p-3 bg-amber-50 border-2 border-amber-200 rounded-2xl flex items-center gap-3 text-amber-700 animate-pulse">
                   <Icon name="AlertTriangle" size={24} />
@@ -800,34 +816,10 @@ export default function App() {
                     <button onClick={()=>{setTimeLeft(7200); setEndTime(Date.now() + 7200000); setIsTimerActive(true); setShowTimerMenu(false)}} className="p-2 bg-slate-50 hover:bg-emerald-50 rounded-xl text-[10px] font-black uppercase">2H Focus</button>
                     <button onClick={()=>{setTimeLeft(3600); setEndTime(Date.now() + 3600000); setIsTimerActive(true); setShowTimerMenu(false)}} className="p-2 bg-slate-50 hover:bg-emerald-50 rounded-xl text-[10px] font-black uppercase">1H Plan</button>
                   </div>
-                  
-                  {/* Temporizador Personalizado */}
                   <div className="pt-2 border-t border-slate-100 flex gap-2 items-center">
-                    <input 
-                      type="number" 
-                      placeholder="Min..." 
-                      className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-xs font-black outline-none focus:border-emerald-300"
-                      value={customMinutes}
-                      onChange={e => setCustomMinutes(e.target.value)}
-                    />
-                    <button 
-                      onClick={() => {
-                        const mins = parseInt(customMinutes);
-                        if(mins > 0) {
-                          const ms = mins * 60 * 1000;
-                          setTimeLeft(mins * 60);
-                          setEndTime(Date.now() + ms);
-                          setIsTimerActive(true);
-                          setShowTimerMenu(false);
-                          setCustomMinutes("");
-                        }
-                      }}
-                      className="bg-emerald-600 text-white px-3 py-1 rounded-lg text-[10px] font-black"
-                    >
-                      SET
-                    </button>
+                    <input type="number" placeholder="Min..." className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-xs font-black outline-none focus:border-emerald-300" value={customMinutes} onChange={e => setCustomMinutes(e.target.value)}/>
+                    <button onClick={() => { const mins = parseInt(customMinutes); if(mins > 0) { const ms = mins * 60 * 1000; setTimeLeft(mins * 60); setEndTime(Date.now() + ms); setIsTimerActive(true); setShowTimerMenu(false); setCustomMinutes(""); } }} className="bg-emerald-600 text-white px-3 py-1 rounded-lg text-[10px] font-black">SET</button>
                   </div>
-
                   <button onClick={()=>{setTimeLeft(0); setEndTime(null); setIsTimerActive(false); setShowTimerMenu(false)}} className="w-full p-2 bg-red-50 text-red-600 rounded-xl text-[10px] font-black uppercase tracking-widest mt-2">Reset Timer</button>
                 </div>
               )}
@@ -1014,12 +1006,8 @@ function ProgressMap({ points, level, xp, addPoints, streak, perfectWeeks, onVau
         </div>
       </div>
 
-      {/* WIDGET: FROM THE VAULT (REDUCIDO) */}
       <div className="flex justify-center">
-        <button 
-          onClick={onVaultOpen}
-          className="vault-pill py-2 px-5 rounded-full flex items-center gap-2 shadow-lg active:scale-95 transition-all border border-slate-700/50"
-        >
+        <button onClick={onVaultOpen} className="vault-pill py-2 px-5 rounded-full flex items-center gap-2 shadow-lg active:scale-95 transition-all border border-slate-700/50">
           <span className="text-sm">🗝️</span>
           <span className="text-[9px] font-black uppercase tracking-[0.2em] opacity-80">Vault</span>
         </button>
@@ -1084,15 +1072,12 @@ function SyllabusView({ topics, setTopics, addPoints, onOpenModal, actionLogs, o
 
   return (
     <div className="space-y-6 animate-in fade-in">
-      {/* HEADER TEMAS CON COUNTDOWN SWIFTIE */}
       <div className="bg-white/50 backdrop-blur p-6 rounded-3xl border border-white/50 shadow-sm flex flex-col gap-4">
         <div className="flex justify-between items-start">
            <div className="flex items-center gap-3"><Icon name="BookOpen" className="text-amber-600" /><h2 className="text-2xl font-black text-slate-950">Temas</h2></div>
            <div className="text-right cursor-pointer relative" onClick={() => setShowDate(!showDate)}>
               <p className="text-3xl font-black text-slate-800 tabular-nums leading-none">{days}</p>
-              {/* --- SWIFTIE REFERENCE START --- */}
               <p className="text-[8px] font-black uppercase text-amber-600 tracking-widest mt-1">Days to End Game 🖤</p>
-              {/* --- SWIFTIE REFERENCE END --- */}
               {showDate && <input type="date" value={examDate} onChange={e=>{setExamDate(e.target.value); setShowDate(false);}} className="absolute top-0 right-0 bg-white shadow-xl rounded-lg p-2 text-xs border z-50" />}
            </div>
         </div>
@@ -1218,13 +1203,21 @@ function PlanningHub({ planning, setPlanning, units, setUnits, addPoints, submis
   return (
     <div className="space-y-8 text-left animate-in slide-in-from-right-4">
       <div className="flex flex-col sm:flex-row justify-between items-center gap-4 bg-white/50 backdrop-blur p-4 rounded-3xl border border-white/50 shadow-sm">
-        <div className="flex items-center gap-3"><Icon name="FileText" className="text-teal-600" /><h2 className="text-2xl font-black text-slate-950">Programación</h2></div>
+        <div className="flex flex-col gap-1">
+            <div className="flex items-center gap-3">
+                <Icon name="FileText" className="text-teal-600" />
+                <h2 className="text-2xl font-black text-slate-950">Programación</h2>
+                <div className="flex items-center gap-1 group relative cursor-help">
+                    <Icon name="ChessPawn" size={14} className="text-slate-400 group-hover:text-teal-600 transition-colors" />
+                    <span className="absolute left-full ml-2 hidden group-hover:block bg-slate-800 text-white text-[10px] px-2 py-1 rounded whitespace-nowrap z-50">If you fail to plan, you plan to fail ♟️</span>
+                </div>
+            </div>
+        </div>
         <div className="flex items-center gap-4 w-full sm:w-auto justify-between">
-          <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-2xl border-2 border-blue-50 shadow-sm cursor-pointer relative" onClick={() => setShowSubDate(!showSubDate)}>
-            <Icon name="Calendar" size={16} className="text-blue-500" />
-            <span className="text-xl font-black text-blue-600 tabular-nums leading-none">{days}</span>
-            <span className="text-[10px] font-black uppercase text-slate-400">Días</span>
-            {showSubDate && <input type="date" value={submissionDate} onChange={e=>{setSubmissionDate(e.target.value); setShowSubDate(false);}} onClick={e=>e.stopPropagation()} className="absolute top-full right-0 mt-2 bg-white text-blue-900 rounded-xl p-2 text-xs font-black outline-none shadow-xl z-50 border-2 border-blue-100" />}
+          <div className="flex flex-col items-end cursor-pointer relative" onClick={() => setShowSubDate(!showSubDate)}>
+              <p className="text-3xl font-black text-slate-800 tabular-nums leading-none">{days}</p>
+              <p className="text-[8px] font-black uppercase text-amber-600 tracking-widest mt-1">Days to End Game 🖤</p>
+              {showSubDate && <input type="date" value={submissionDate} onChange={e=>{setSubmissionDate(e.target.value); setShowSubDate(false);}} onClick={e=>e.stopPropagation()} className="absolute top-full right-0 mt-2 bg-white text-blue-900 rounded-xl p-2 text-xs font-black outline-none shadow-xl z-50 border-2 border-blue-100" />}
           </div>
           <button onClick={onReset} className="px-3 py-2 bg-red-50 text-red-600 font-black text-[10px] rounded-xl hover:bg-red-100 transition-all shrink-0 uppercase tracking-widest">Reset</button>
         </div>
@@ -1363,6 +1356,7 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam }) {
   const [editingId, setEditingId] = useState(null);
 
   const [showDailyModal, setShowDailyModal] = useState(false);
+  const [showSettingsMenu, setShowSettingsMenu] = useState(false);
   const [dailyCats, setDailyCats] = useState(DECK_CATEGORIES);
 
   const startExamMode = () => { 
@@ -1384,8 +1378,20 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam }) {
         });
       }
     });
-    if (dueCards.length === 0) return alert("¡No hay tarjetas urgentes en estas categorías hoy!");
-    dueCards = dueCards.sort(() => Math.random() - 0.5).slice(0, 50);
+
+    if (dueCards.length === 0) {
+        // LÓGICA FALLBACK 50 RANDOM
+        decks.forEach(d => {
+           if (dailyCats.includes(d.category || "General")) {
+               d.cards.forEach(c => dueCards.push({...c, deckId: d.id, deckName: d.name}));
+           }
+        });
+        if (dueCards.length === 0) return alert("¡No hay tarjetas en estas categorías!");
+        dueCards = dueCards.sort(() => Math.random() - 0.5).slice(0, 50);
+    } else {
+        dueCards = dueCards.sort(() => Math.random() - 0.5).slice(0, 50);
+    }
+
     onExam({ id: 'daily-challenge', name: 'DAILY CHALLENGE', isChallenge: true, cards: dueCards });
     setShowDailyModal(false);
   };
@@ -1412,26 +1418,20 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam }) {
   const exportDecks = () => {
     const json = JSON.stringify(decks);
     navigator.clipboard.writeText(json).then(() => {
-      alert("¡Mazos copiados al portapapeles! Pégalos en un bloc de notas para guardarlos.");
-    }).catch(err => {
-      prompt("Tu navegador bloqueó el copiado automático. Copia este texto manualmente:", json);
+      alert("¡Mazos copiados al portapapeles!");
     });
   };
 
   const importDecks = () => {
-    const input = prompt("Pega aquí el código de tus mazos exportados:");
+    const input = prompt("Pega aquí el código de tus mazos:");
     if (input) {
       try {
         const imported = JSON.parse(input);
         if (Array.isArray(imported)) {
           setDecks(prev => [...prev, ...imported]);
-          alert("¡Mazos importados con éxito!");
-        } else {
-          alert("El formato de los datos no es válido.");
+          alert("¡Importados!");
         }
-      } catch (e) {
-        alert("Error al importar. Asegúrate de haber pegado el código completo.");
-      }
+      } catch (e) {}
     }
   };
 
@@ -1442,33 +1442,37 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam }) {
       {showDailyModal && (
         <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[200] flex items-center justify-center p-4" onClick={()=>setShowDailyModal(false)}>
           <div className="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl animate-in zoom-in-95" onClick={e=>e.stopPropagation()}>
-            <h3 className="text-xl font-black text-rose-950 mb-4 flex items-center gap-2"><Icon name="Zap" className="text-amber-500"/> Reto Diario SRS</h3>
-            <p className="text-xs font-bold text-slate-500 mb-4">Selecciona las categorías que quieres incluir hoy. Solo se mostrarán las tarjetas que tu cerebro está a punto de olvidar (Máx. 50).</p>
+            <h3 className="text-xl font-black text-rose-950 mb-4 flex items-center gap-2"><Icon name="Zap" className="text-rose-500"/> Reto Diario SRS</h3>
+            <div className="flex justify-between items-center mb-4">
+                <p className="text-xs font-bold text-slate-500">Selecciona categorías</p>
+                <button onClick={() => setDailyCats(DECK_CATEGORIES)} className="text-[10px] font-black text-rose-600 uppercase">TODAS</button>
+            </div>
             <div className="flex flex-wrap gap-2 mb-6">
               {DECK_CATEGORIES.map(c => (
-                <button 
-                  key={c} 
-                  onClick={() => setDailyCats(prev => prev.includes(c) ? prev.filter(x=>x!==c) : [...prev, c])}
-                  className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all ${dailyCats.includes(c) ? 'bg-rose-100 text-rose-700 border border-rose-300' : 'bg-slate-100 text-slate-400'}`}
-                >
+                <button key={c} onClick={() => setDailyCats(prev => prev.includes(c) ? prev.filter(x=>x!==c) : [...prev, c])} className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all ${dailyCats.includes(c) ? 'bg-rose-100 text-rose-700 border border-rose-300' : 'bg-slate-100 text-slate-400'}`}>
                   {c}
                 </button>
               ))}
             </div>
-            {/* --- SWIFTIE REFERENCE START --- */}
             <button onClick={startDailyChallenge} className="w-full p-4 bg-rose-600 text-white rounded-xl font-black shadow-lg hover:bg-rose-700 active:scale-95 transition-all uppercase">…Ready For It? 🐍</button>
-            {/* --- SWIFTIE REFERENCE END --- */}
           </div>
         </div>
       )}
 
       <div className="flex flex-col sm:flex-row justify-between items-center bg-white/50 backdrop-blur px-4 py-2 rounded-2xl shadow-sm border border-white/50 gap-4">
         <h2 className="text-2xl font-black text-rose-950">Library</h2>
-        <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto custom-scrollbar pb-1 sm:pb-0">
-          <button onClick={exportDecks} className="px-3 py-2 bg-slate-100 text-slate-600 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-200 transition-colors shrink-0">Exportar</button>
-          <button onClick={importDecks} className="px-3 py-2 bg-slate-100 text-slate-600 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-200 transition-colors shrink-0">Importar</button>
+        <div className="flex items-center gap-2 w-full sm:w-auto">
           <button onClick={()=>setShowDailyModal(true)} className="px-3 py-2 bg-amber-100 text-amber-700 rounded-xl font-black text-[10px] flex items-center gap-2 border border-amber-200 active:scale-95 transition-all shadow-sm shrink-0"><Icon name="Flame" size={14} className="fill-amber-700"/> RETO DIARIO</button>
           <button onClick={startExamMode} className="px-3 py-2 bg-rose-100 text-rose-700 rounded-xl font-black text-[10px] flex items-center gap-2 border border-rose-200 active:scale-95 transition-all shadow-sm shrink-0"><Icon name="Dices" size={14}/> EXAM MODE</button>
+          <div className="relative">
+              <button onClick={() => setShowSettingsMenu(!showSettingsMenu)} className="p-2 bg-slate-100 text-slate-500 rounded-xl hover:bg-slate-200 transition-colors"><Icon name="Settings" size={18}/></button>
+              {showSettingsMenu && (
+                  <div className="absolute top-full right-0 mt-2 bg-white rounded-xl shadow-xl border border-slate-100 z-50 p-2 w-32 animate-in zoom-in-95">
+                      <button onClick={() => {exportDecks(); setShowSettingsMenu(false);}} className="w-full text-left px-3 py-2 text-[10px] font-black uppercase text-slate-600 hover:bg-slate-50 rounded">Exportar</button>
+                      <button onClick={() => {importDecks(); setShowSettingsMenu(false);}} className="w-full text-left px-3 py-2 text-[10px] font-black uppercase text-slate-600 hover:bg-slate-50 rounded">Importar</button>
+                  </div>
+              )}
+          </div>
         </div>
       </div>
       
@@ -1489,17 +1493,17 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam }) {
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {sortedDecks.map(d=>(
-          <div key={d.id} onClick={()=>onSelect(d.id.toString())} className="bento-card bg-white p-5 flex justify-between items-center cursor-pointer hover:border-rose-300 transition-all shadow-sm group">
+          <div key={d.id} onClick={()=>onSelect(d.id.toString())} className={`bento-card p-5 flex justify-between items-center cursor-pointer border-2 transition-all shadow-sm group ${getCategoryColor(d.category)}`}>
             <div>
               <p className="font-black text-left text-slate-800 leading-tight">{d.name}</p>
               <div className="flex gap-2 items-center mt-1">
-                <span className="text-[8px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded uppercase font-black">{d.category || "General"}</span>
-                <p className="text-[9px] text-rose-400 font-black uppercase tracking-widest">{d.cards.length} cards</p>
+                <span className="text-[8px] bg-white/50 px-2 py-0.5 rounded uppercase font-black">{d.category || "General"}</span>
+                <p className="text-[9px] font-black uppercase tracking-widest opacity-60">{d.cards.length} cards</p>
               </div>
             </div>
             <div className="flex gap-2">
-              <button onClick={(e)=>{e.stopPropagation(); loadForEdit(d)}} className="text-slate-300 hover:text-emerald-500 p-1"><Icon name="Edit" size={18}/></button>
-              <button onClick={(e)=>{e.stopPropagation(); setDecks(decks.filter(x=>x.id.toString()!==d.id.toString()))}} className="text-slate-300 hover:text-red-500 p-1"><Icon name="Trash2" size={18}/></button>
+              <button onClick={(e)=>{e.stopPropagation(); loadForEdit(d)}} className="text-slate-400 hover:text-emerald-500 p-1"><Icon name="Edit" size={18}/></button>
+              <button onClick={(e)=>{e.stopPropagation(); setDecks(decks.filter(x=>x.id.toString()!==d.id.toString()))}} className="text-slate-400 hover:text-red-500 p-1"><Icon name="Trash2" size={18}/></button>
             </div>
           </div>
         ))}
@@ -1523,31 +1527,21 @@ function DeckStudyView({ deck, onBack, addPoints, onUpdateCard, onFinishChalleng
     return [...deck.cards].sort(() => Math.random() - 0.5);
   }, [deck.cards, isShuffled, challengeQueue, isChallenge]);
 
-  // --- SWIFTIE REFERENCE START --- (Portada All Too Well)
   if (isChallenge && !challengeStarted) {
     return (
       <div className="max-w-xl mx-auto py-20 text-center space-y-8 animate-in zoom-in-95">
-        <div className="w-24 h-24 bg-slate-900 rounded-3xl flex items-center justify-center mx-auto text-4xl">🧣</div>
-        <h2 className="text-2xl font-black text-slate-800 leading-tight">Do you have 10 minutes to spare?</h2>
-        <button 
-          onClick={() => setChallengeStarted(true)} 
-          className="px-12 py-5 bg-slate-900 text-white rounded-2xl font-black shadow-xl active:scale-95 transition-all uppercase tracking-widest"
-        >
-          Yes
-        </button>
+        <div className="w-24 h-24 bg-slate-900 rounded-3xl flex items-center justify-center mx-auto text-4xl shadow-2xl">🧣</div>
+        <h2 className="text-3xl font-black text-slate-800 leading-tight">Do you have 10 minutes to spare?</h2>
+        <button onClick={() => setChallengeStarted(true)} className="px-12 py-5 bg-slate-900 text-white rounded-2xl font-black shadow-xl active:scale-95 transition-all uppercase tracking-widest">Yes</button>
       </div>
     );
   }
-  // --- SWIFTIE REFERENCE END ---
 
-  // Pantalla de finalización de Reto
   if (isChallenge && idx >= cardsToStudy.length) {
     return (
       <div className="max-w-xl mx-auto py-20 text-center space-y-6 animate-in zoom-in-95">
         <Icon name="Award" size={80} className="mx-auto text-amber-500" />
-        {/* --- SWIFTIE REFERENCE START --- */}
         <h2 className="text-3xl font-black text-rose-950">You're out of the woods! 🌲</h2>
-        {/* --- SWIFTIE REFERENCE END --- */}
         <p className="text-sm font-bold text-slate-500">Has repasado tus tarjetas pendientes con éxito.</p>
         <button onClick={onFinishChallenge} className="px-8 py-4 bg-rose-600 text-white rounded-2xl font-black shadow-xl shadow-rose-200 hover:bg-rose-700 active:scale-95 transition-all tracking-widest uppercase">Reclamar Recompensa</button>
       </div>
@@ -1564,25 +1558,15 @@ function DeckStudyView({ deck, onBack, addPoints, onUpdateCard, onFinishChalleng
     let newInterval = interval;
     let newEase = ease;
 
-    if (rating === 'repeat') {
-      newInterval = 0;
-    } else if (rating === 'hard') {
-      newInterval = Math.max(1, interval * 1.2);
-      newEase = Math.max(1.3, ease - 0.15);
-    } else if (rating === 'good') {
-      newInterval = interval === 0 ? 1 : interval * 2.5;
-    } else if (rating === 'easy') {
-      newInterval = interval === 0 ? 4 : interval * ease * 1.3;
-      newEase += 0.15;
-    }
+    if (rating === 'repeat') { newInterval = 0; } 
+    else if (rating === 'hard') { newInterval = Math.max(1, interval * 1.2); newEase = Math.max(1.3, ease - 0.15); } 
+    else if (rating === 'good') { newInterval = interval === 0 ? 1 : interval * 2.5; } 
+    else if (rating === 'easy') { newInterval = interval === 0 ? 4 : interval * ease * 1.3; newEase += 0.15; }
 
     const newNextDate = rating === 'repeat' ? 0 : Date.now() + (newInterval * 86400000);
     onUpdateCard(card.deckId, card.id, { interval: newInterval, ease: newEase, nextDate: newNextDate });
 
-    if (rating === 'repeat') {
-      setChallengeQueue(prev => [...prev, {...card, interval: newInterval, ease: newEase, nextDate: newNextDate}]);
-    }
-
+    if (rating === 'repeat') { setChallengeQueue(prev => [...prev, {...card, interval: newInterval, ease: newEase, nextDate: newNextDate}]); }
     setIdx(p => p + 1);
     setFlipped(false);
   };
@@ -1590,16 +1574,9 @@ function DeckStudyView({ deck, onBack, addPoints, onUpdateCard, onFinishChalleng
   return (
     <div className="max-w-xl mx-auto py-10 space-y-8 text-left">
       <div className="flex justify-between items-center">
-        <button onClick={onBack} className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-rose-600 transition-all">
-          <Icon name="ChevronRight" className="rotate-180" size={16}/> Back
-        </button>
+        <button onClick={onBack} className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-rose-600 transition-all"><Icon name="ChevronRight" className="rotate-180" size={16}/> Back</button>
         {!isChallenge && (
-          <button 
-            onClick={() => { setIsShuffled(!isShuffled); setIdx(0); setFlipped(false); }}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-xl font-black text-[10px] uppercase transition-all ${isShuffled ? 'bg-rose-600 text-white shadow-lg' : 'bg-slate-100 text-slate-400 hover:bg-slate-200'}`}
-          >
-            <Icon name="Shuffle" size={14}/> {isShuffled ? 'Shuffled' : 'Normal'}
-          </button>
+          <button onClick={() => { setIsShuffled(!isShuffled); setIdx(0); setFlipped(false); }} className={`flex items-center gap-2 px-3 py-1.5 rounded-xl font-black text-[10px] uppercase transition-all ${isShuffled ? 'bg-rose-600 text-white shadow-lg' : 'bg-slate-100 text-slate-400 hover:bg-slate-200'}`}><Icon name="Shuffle" size={14}/> {isShuffled ? 'Shuffled' : 'Normal'}</button>
         )}
       </div>
 
@@ -1615,7 +1592,7 @@ function DeckStudyView({ deck, onBack, addPoints, onUpdateCard, onFinishChalleng
         </div>
       </div>
       
-      {isChallenge && flipped ? (
+      {flipped ? (
         <div className="grid grid-cols-4 gap-2">
           <button onClick={(e)=>{e.stopPropagation(); handleAnki('repeat')}} className="py-4 bg-slate-100 text-slate-600 rounded-2xl font-black text-[10px] uppercase shadow-sm active:scale-95 transition-all">Repetir<br/><span className="text-[8px] opacity-60">Ahora</span></button>
           <button onClick={(e)=>{e.stopPropagation(); handleAnki('hard')}} className="py-4 bg-orange-100 text-orange-700 rounded-2xl font-black text-[10px] uppercase shadow-sm active:scale-95 transition-all">Difícil<br/><span className="text-[8px] opacity-60">Mañana</span></button>
@@ -1639,40 +1616,30 @@ function BadgesView({ points, streak, maxStreak, topics, planning, units, skills
   const writtenTopics = topics.filter(t=>t.redactado).length;
   const planningDone = planning.filter(p=>p.status===10).length;
   const unitsDone = units.filter(u=>u.status===10).length;
-  const allSkills = skills.reduce((a, s) => a + s.level, 0);
   const totalMocks = topics.reduce((a, t) => a + (t.mocks || 0), 0);
 
-  /* --- SWIFTIE REFERENCE START --- */
   const BADGES = [
     { icon: '🥚', title: 'Hatching', desc: '500 pts', cond: points >= 500 },
     { icon: '🐾', title: 'Walker', desc: '2,500 pts', cond: points >= 2500 },
     { icon: '🥋', title: 'Black Belt', desc: '10k pts', cond: points >= 10000 },
     { icon: '🌌', title: 'Cosmic', desc: '50k pts', cond: points >= 50000 },
-
     { icon: '🔥', title: 'Spark', desc: '3 Day Streak', cond: maxStreak >= 3 },
     { icon: '🏕️', title: 'Camper', desc: '7 Day Streak', cond: maxStreak >= 7 },
     { icon: '🕰️', title: 'Meet me at midnight', desc: '13 Day Streak', cond: maxStreak >= 13 },
     { icon: '🏔️', title: 'Mountain', desc: '60 Day Streak', cond: maxStreak >= 60 },
-
     { icon: '✍️', title: 'Writer', desc: '1 Topic Written', cond: writtenTopics >= 1 },
     { icon: '📚', title: 'Author', desc: '10 Topics Written', cond: writtenTopics >= 10 },
-    
     { icon: '🎓', title: 'Professor', desc: '30 Topics Studied', cond: studiedTopics >= 30 },
-
     { icon: '🎧', title: 'YOYOK', desc: '5 Simulacros', cond: totalMocks >= 5 },
     { icon: '🏰', title: 'Long Live', desc: '69 Mastered', cond: doneTopics === 69 },
-
     { icon: '🏗️', title: 'Foundation', desc: '1 Prog Part', cond: planningDone >= 1 },
     { icon: '🏛️', title: 'Architect', desc: 'All Prog Final', cond: planningDone === planning.length && planning.length > 0 },
     { icon: '🧩', title: 'Mastermind', desc: 'All Units Final', cond: unitsDone === units.length && units.length > 0 },
-
     { icon: '🎯', title: 'Sharp', desc: '1 Skill Maxed', cond: skills.some(s=>s.level===10) },
-
     { icon: '🫶', title: 'Fearless', desc: '10 Sem. Perfectas', cond: perfectWeeks >= 10 },
     { icon: '✨', title: 'Bejeweled', desc: '30 Sem. Perfectas', cond: perfectWeeks >= 30 },
     { icon: '🧠', title: 'Leyenda Repaso', desc: '50 Retos Diarios', cond: totalDailyChallenges >= 50 },
   ];
-  /* --- SWIFTIE REFERENCE END --- */
 
   return (
     <div className="space-y-8 text-left animate-in fade-in slide-in-from-bottom-6">
@@ -1698,15 +1665,8 @@ function VaultCarousel({ items, setItems, onClose }) {
   const handleImport = () => {
     try {
       const parsed = JSON.parse(importTxt);
-      if (Array.isArray(parsed)) {
-        setItems(parsed);
-        setImportOpen(false);
-        setImportTxt("");
-        alert("Vault updated successfully!");
-      }
-    } catch(e) {
-      alert("Invalid JSON format. Check your input.");
-    }
+      if (Array.isArray(parsed)) { setItems(parsed); setImportOpen(false); setImportTxt(""); alert("Vault updated!"); }
+    } catch(e) { alert("Invalid JSON."); }
   };
 
   const handleShuffle = () => {
@@ -1719,10 +1679,7 @@ function VaultCarousel({ items, setItems, onClose }) {
     return (
       <div className="fixed inset-0 z-[600] bg-slate-900 flex items-center justify-center p-8">
         <button onClick={onClose} className="absolute top-6 right-6 text-white/50 hover:text-white"><Icon name="X" size={32}/></button>
-        <div className="text-center space-y-6">
-           <p className="text-white font-black text-xl italic uppercase tracking-widest">Vault is empty</p>
-           <button onClick={() => setImportOpen(true)} className="px-6 py-3 bg-white text-slate-900 rounded-xl font-black">Import Citations</button>
-        </div>
+        <button onClick={() => setImportOpen(true)} className="px-6 py-3 bg-white text-slate-900 rounded-xl font-black">Import Citations</button>
       </div>
     );
   }
@@ -1731,22 +1688,16 @@ function VaultCarousel({ items, setItems, onClose }) {
 
   return (
     <div className="fixed inset-0 z-[600] bg-slate-900 flex flex-col items-center justify-center p-6 sm:p-12 animate-in fade-in">
-       <div className="absolute top-6 right-6 flex gap-4">
-          <button onClick={handleShuffle} title="Shuffle Vault" className="text-white/30 hover:text-amber-500 transition-colors"><Icon name="Shuffle" size={24}/></button>
-          <button onClick={() => setImportOpen(!importOpen)} title="Settings" className="text-white/30 hover:text-white transition-colors"><Icon name="Settings" size={24}/></button>
+       <div className="absolute top-6 right-6 flex gap-6">
+          <button onClick={handleShuffle} className="text-white/30 hover:text-amber-500 transition-colors"><Icon name="Shuffle" size={24}/></button>
+          <button onClick={() => setImportOpen(!importOpen)} className="text-white/30 hover:text-white transition-colors"><Icon name="Settings" size={24}/></button>
           <button onClick={onClose} className="text-white/30 hover:text-red-500 transition-colors"><Icon name="X" size={28}/></button>
        </div>
 
        {importOpen ? (
          <div className="w-full max-w-md space-y-4 animate-in zoom-in-95">
-           <p className="text-white text-center font-black uppercase text-xs tracking-widest">Import citations (JSON)</p>
-           <textarea 
-             className="w-full h-64 bg-slate-800 border-2 border-slate-700 rounded-2xl p-4 text-white font-mono text-xs outline-none focus:border-amber-500"
-             placeholder='[{"category": "...", "reference": "...", "text": "..."}]'
-             value={importTxt}
-             onChange={e => setImportTxt(e.target.value)}
-           />
-           <button onClick={handleImport} className="w-full py-4 bg-amber-500 text-slate-950 font-black rounded-2xl uppercase shadow-xl">Apply Updates</button>
+           <textarea className="w-full h-64 bg-slate-800 border-2 border-slate-700 rounded-2xl p-4 text-white font-mono text-xs outline-none focus:border-amber-500" placeholder='[{"category": "...", "reference": "...", "text": "..."}]' value={importTxt} onChange={e => setImportTxt(e.target.value)}/>
+           <button onClick={handleImport} className="w-full py-4 bg-amber-500 text-slate-950 font-black rounded-2xl uppercase shadow-xl">Apply</button>
          </div>
        ) : (
          <div className="w-full max-w-2xl flex flex-col items-center gap-12">
@@ -1768,45 +1719,21 @@ function VaultCarousel({ items, setItems, onClose }) {
 }
 
 function StatsView({ actionLogs, undoAction, topics, planning, units, levelDates }) {
-  const [tab, setTab] = useState('hist');
   const [statsView, setStatsView] = useState('syllabus');
 
   const exportData = () => {
-    const exportObj = {
-      levelHistory: {}, // <-- HISTORIAL DE NIVELES INCLUIDO
-      topics: {},
-      planning: {},
-      practico: []
-    };
-
-    if (levelDates) {
-      Object.entries(levelDates).forEach(([level, date]) => {
-        exportObj.levelHistory[`Level ${level}`] = date;
-      });
-    }
-
+    const exportObj = { levelHistory: levelDates || {}, topics: {}, planning: {}, practico: [] };
     actionLogs.forEach(log => {
       if (log.actionData) {
         const { entity, id, field } = log.actionData;
         const date = new Date(log.timestamp).toLocaleString();
-        if (entity === 'topic') {
-          if (!exportObj.topics[id]) exportObj.topics[id] = [];
-          exportObj.topics[id].push({ date, action: field || log.description, points: log.amount });
-        } else if (entity === 'planning' || entity === 'unit') {
-          if (!exportObj.planning[id]) exportObj.planning[id] = [];
-          exportObj.planning[id].push({ date, action: field || log.description, points: log.amount });
-        } else {
-          exportObj.practico.push({ date, entity, action: log.description, points: log.amount });
-        }
+        if (entity === 'topic') { if (!exportObj.topics[id]) exportObj.topics[id] = []; exportObj.topics[id].push({ date, action: field || log.description, points: log.amount }); } 
+        else if (entity === 'planning' || entity === 'unit') { if (!exportObj.planning[id]) exportObj.planning[id] = []; exportObj.planning[id].push({ date, action: field || log.description, points: log.amount }); } 
+        else { exportObj.practico.push({ date, entity, action: log.description, points: log.amount }); }
       }
     });
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportObj, null, 2));
-    const downloadAnchorNode = document.createElement('a');
-    downloadAnchorNode.setAttribute("href", dataStr);
-    downloadAnchorNode.setAttribute("download", "study_logs_export.json");
-    document.body.appendChild(downloadAnchorNode);
-    downloadAnchorNode.click();
-    downloadAnchorNode.remove();
+    const dl = document.createElement('a'); dl.setAttribute("href", dataStr); dl.setAttribute("download", "study_logs_export.json"); dl.click();
   };
 
   const syllabusStats = useMemo(() => {
@@ -1828,7 +1755,6 @@ function StatsView({ actionLogs, undoAction, topics, planning, units, levelDates
   }, [planning, units]);
 
   const currentStats = statsView === 'syllabus' ? syllabusStats : planningStats;
-  const groupLogs = (mode) => { const groups = {}; actionLogs.forEach(l => { const d = new Date(l.timestamp); const key = mode === 'week' ? `Week ${Math.ceil(d.getDate()/7)} - ${d.toLocaleString('en-US',{month:'short'})}` : d.toLocaleString('en-US',{month:'long',year:'numeric'}); if(!groups[key]) groups[key] = { pts: 0, count: 0 }; groups[key].pts += l.amount; groups[key].count += 1; }); return Object.entries(groups).reverse(); };
   
   return (
     <div className="space-y-6 text-left animate-in zoom-in-95">
@@ -1840,53 +1766,29 @@ function StatsView({ actionLogs, undoAction, topics, planning, units, levelDates
         <div className="flex flex-col md:flex-row items-center justify-center gap-12">
           <div className="relative w-48 h-48 rounded-full shadow-inner border-8 border-slate-50 flex items-center justify-center" style={{ background: `conic-gradient(#10b981 ${currentStats.donePct}%, #8b5cf6 ${currentStats.donePct}% ${currentStats.donePct + currentStats.startedPct}%, #f1f5f9 ${currentStats.donePct + currentStats.startedPct}% 100%)` }}><div className="w-32 h-32 bg-white rounded-full shadow-2xl flex flex-col items-center justify-center"><span className="text-3xl font-black text-slate-900">{currentStats.donePct}%</span><span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mt-1">Mastered</span></div></div>
           <div className="grid grid-cols-1 gap-4">
-            <div className="flex items-center gap-3"><div className="w-4 h-4 rounded-full bg-emerald-500 shadow-sm" /><div className="text-left leading-none"><p className="text-xs font-black text-slate-800">{currentStats.done} Finished</p></div></div>
-            <div className="flex items-center gap-3"><div className="w-4 h-4 rounded-full bg-violet-500 shadow-sm" /><div className="text-left leading-none"><p className="text-xs font-black text-slate-800">{currentStats.started} In Progress</p></div></div>
-            <div className="flex items-center gap-3"><div className="w-4 h-4 rounded-full bg-slate-200 shadow-sm" /><div className="text-left leading-none"><p className="text-xs font-black text-slate-800">{currentStats.pending} Pending</p></div></div>
+            <div className="flex items-center gap-3"><div className="w-4 h-4 rounded-full bg-emerald-500 shadow-sm" /><p className="text-xs font-black text-slate-800">{currentStats.done} Finished</p></div>
+            <div className="flex items-center gap-3"><div className="w-4 h-4 rounded-full bg-violet-500 shadow-sm" /><p className="text-xs font-black text-slate-800">{currentStats.started} In Progress</p></div>
+            <div className="flex items-center gap-3"><div className="w-4 h-4 rounded-full bg-slate-200 shadow-sm" /><p className="text-xs font-black text-slate-800">{currentStats.pending} Pending</p></div>
           </div>
         </div>
       </div>
-      <div id="activity-log" className="flex flex-col sm:flex-row justify-between items-center bg-white/50 backdrop-blur px-4 py-2 rounded-2xl shadow-sm border border-white/50 gap-4">
-        <div className="flex items-center gap-4 w-full sm:w-auto">
+      <div className="flex flex-col sm:flex-row justify-between items-center bg-white/50 backdrop-blur px-4 py-2 rounded-2xl shadow-sm border border-white/50 gap-4">
           <h2 className="text-xl font-black text-violet-950">Activity Log</h2>
-          <button onClick={exportData} className="px-3 py-1.5 bg-violet-100 text-violet-700 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-violet-200 transition-colors shadow-sm whitespace-nowrap">Export Logs</button>
-        </div>
-        <div className="flex bg-slate-200 p-1 rounded-xl shrink-0 w-full sm:w-auto overflow-x-auto">
-          {['hist','week','month'].map(t=>(<button key={t} onClick={()=>setTab(t)} className={`px-3 py-1 text-[10px] font-black rounded-lg uppercase transition-all flex-1 sm:flex-none ${tab===t?'bg-white shadow-md text-violet-600':'text-slate-500'}`}>{t==='hist'?'History':t==='week'?'Weeks':'Months'}</button>))}
-        </div>
+          <button onClick={exportData} className="px-3 py-1.5 bg-violet-100 text-violet-700 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-violet-200 transition-colors shadow-sm">Export Logs</button>
       </div>
-      <div className="min-h-[400px]">
-        {tab === 'hist' ? (
-          <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
-            {actionLogs.length === 0 ? <p className="italic text-slate-300 font-bold">No records found.</p> : actionLogs.slice(0,50).map(l=>(
+      <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
+          {actionLogs.length === 0 ? <p className="italic text-slate-300 font-bold">No records found.</p> : actionLogs.slice(0,50).map(l=>(
               <div key={l.id} className="bento-card bg-white p-4 flex justify-between items-center border-violet-50 hover:border-violet-200 transition-all">
                 <div className="text-left leading-tight">
                   <p className="text-sm font-black text-slate-800 line-clamp-1">{l.description}</p>
                   <p className="text-[9px] font-bold text-slate-400 uppercase mt-1">{new Date(l.timestamp).toLocaleString()}</p>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className={`text-xs font-black px-2 py-1 rounded-lg shadow-inner ${l.amount > 0 ? 'text-violet-700 bg-violet-50' : l.amount < 0 ? 'text-red-700 bg-red-50' : 'text-slate-500 bg-slate-100'}`}>{l.amount > 0 ? '+'+l.amount : l.amount}</span>
-                  <button onClick={()=>undoAction(l.id)} className="text-slate-300 hover:text-red-500 transition-colors active:scale-90" title="Undo"><Icon name="Undo2" size={16}/></button>
+                  <span className={`text-xs font-black px-2 py-1 rounded-lg shadow-inner ${l.amount > 0 ? 'text-violet-700 bg-violet-50' : 'text-red-700 bg-red-50'}`}>{l.amount > 0 ? '+'+l.amount : l.amount}</span>
+                  <button onClick={()=>undoAction(l.id)} className="text-slate-300 hover:text-red-500 transition-colors active:scale-90"><Icon name="Undo2" size={16}/></button>
                 </div>
               </div>
-            ))}
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {groupLogs(tab).map(([key, data]) => (
-              <div key={key} className="bento-card bg-white p-6 border-violet-100 flex justify-between items-center shadow-md">
-                <div className="text-left leading-tight">
-                  <p className="text-xs font-black text-violet-900 uppercase tracking-tighter">{key}</p>
-                  <p className="text-[10px] font-bold text-slate-400">{data.count} actions</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-2xl font-black text-violet-600">{data.pts > 0 ? '+'+data.pts : data.pts}</p>
-                  <p className="text-[8px] font-black opacity-40 uppercase tracking-widest">Points</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+          ))}
       </div>
     </div>
   );
@@ -1902,19 +1804,17 @@ function TodoView({ todos, setTodos, addPoints }) {
         <button onClick={()=>setType('review')} className={`flex-1 py-3 rounded-xl text-xs font-black transition-all ${type==='review'?'bg-white text-orange-600 shadow-md':'text-slate-400'}`}>REVIEWS</button>
       </div>
       <form onSubmit={e=>{e.preventDefault(); if(inp.trim()){setTodos([{id:Date.now().toString(),text:inp,completed:false,type}, ...todos]); setInp("");}}} className="flex gap-2">
-        {/* --- SWIFTIE REFERENCE START --- */}
-        <input placeholder="Got a blank space, baby... ¡añade una tarea!" value={inp} onChange={e=>setInp(e.target.value)} className="flex-1 bento-card bg-white px-4 py-3 text-sm font-black outline-none border-orange-50 focus:border-orange-200 shadow-sm" />
-        {/* --- SWIFTIE REFERENCE END --- */}
-        <button type="submit" className="p-3 bg-orange-600 text-white rounded-xl shadow-lg shadow-orange-100 active:scale-95 transition-all"><Icon name="Plus" size={24}/></button>
+        <input placeholder="Got a blank space, baby..." value={inp} onChange={e=>setInp(e.target.value)} className="flex-1 bento-card bg-white px-4 py-3 text-sm font-black outline-none border-orange-50 focus:border-orange-200 shadow-sm" />
+        <button type="submit" className="p-3 bg-orange-600 text-white rounded-xl shadow-lg active:scale-95 transition-all"><Icon name="Plus" size={24}/></button>
       </form>
       <div className="space-y-3">
         {todos.filter(t=>t.type===type).map(t=>(
-          <div key={t.id} className="bento-card bg-white p-4 flex items-center justify-between shadow-sm hover:shadow-md transition-all">
+          <div key={t.id} className="bento-card bg-white p-4 flex items-center justify-between shadow-sm">
             <div className="flex items-center gap-3">
-              <button onClick={()=>{const isDone = !t.completed; setTodos(todos.map(pt=>pt.id===t.id?{...pt,completed:isDone}:pt)); addPoints(isDone ? 5 : -5, t.text, { entity: 'todo', id: t.id, prevValue: t.completed });}} className={`w-8 h-8 rounded-lg border-2 flex items-center justify-center transition-all ${t.completed?'bg-emerald-500 border-emerald-500 text-white shadow-sm':'border-orange-100 hover:border-orange-300'}`}>{t.completed && <Icon name="Check" size={16}/>}</button>
-              <span className={`text-sm font-black text-left transition-all ${t.completed?'line-through text-slate-300':'text-slate-700'}`}>{t.text}</span>
+              <button onClick={()=>{const isDone = !t.completed; setTodos(todos.map(pt=>pt.id===t.id?{...pt,completed:isDone}:pt)); addPoints(isDone ? 5 : -5, t.text, { entity: 'todo', id: t.id, prevValue: t.completed });}} className={`w-8 h-8 rounded-lg border-2 flex items-center justify-center transition-all ${t.completed?'bg-emerald-500 border-emerald-500 text-white':'border-orange-100'}`}>{t.completed && <Icon name="Check" size={16}/>}</button>
+              <span className={`text-sm font-black text-left ${t.completed?'line-through text-slate-300':'text-slate-700'}`}>{t.text}</span>
             </div>
-            <button onClick={()=>setTodos(todos.filter(x=>x.id!==t.id))} className="text-slate-200 hover:text-red-500 transition-colors active:scale-90"><Icon name="Trash2" size={18}/></button>
+            <button onClick={()=>setTodos(todos.filter(x=>x.id!==t.id))} className="text-slate-200 hover:text-red-500 transition-colors"><Icon name="Trash2" size={18}/></button>
           </div>
         ))}
       </div>
@@ -1924,11 +1824,11 @@ function TodoView({ todos, setTodos, addPoints }) {
 
 function HeaderToolBtn({ active, icon, label, color, onClick }) {
   const c = active ? `bg-${color}-50 text-${color}-600 shadow-md` : `bg-white text-slate-600 border border-slate-100 hover:bg-slate-50`;
-  return <button onClick={onClick} className={`flex flex-col items-center gap-1.5 p-2 rounded-xl transition-all active:scale-95 ${c}`}><Icon name={icon} size={16} /><span className="text-[7px] font-black uppercase tracking-widest leading-none mt-0.5">{label}</span></button>;
+  return <button onClick={onClick} className={`flex flex-col items-center gap-1.5 p-2 rounded-xl transition-all active:scale-95 ${c}`}><Icon name={icon} size={16} /><span className="text-[7px] font-black uppercase tracking-widest mt-0.5">{label}</span></button>;
 }
 
 function NavBtn({ active, icon, label, color, onClick }) {
-  const c = active ? `text-${color}-600 bg-${color}-50 shadow-inner` : 'text-slate-400 opacity-60 hover:opacity-100';
+  const c = active ? `text-${color}-600 bg-${color}-50 shadow-inner` : 'text-slate-400 opacity-60';
   return <button onClick={onClick} className={`flex flex-col items-center gap-1 p-2 transition-all ${active?'scale-110':''}`}><div className={`p-2.5 rounded-xl ${c} transition-all shadow-sm`}><Icon name={icon} size={24} strokeWidth={active?3:2}/></div><span className={`text-[9px] font-black tracking-widest mt-1 ${active?`text-${color}-600`:'text-slate-400'}`}>{label}</span></button>;
 }
 
@@ -1938,10 +1838,10 @@ function LoginScreen({ onLogin }) {
     <div className="min-h-screen flex items-center justify-center bg-emerald-50 p-6 text-center animate-in fade-in">
       <div className="bg-white p-10 rounded-[40px] shadow-2xl w-full max-w-sm border-4 border-emerald-100">
         <Icon name="Turtle" size={80} className="text-emerald-500 mx-auto mb-6" />
-        <h1 className="text-3xl font-black mb-2 tracking-tighter text-emerald-950 leading-none">TurtleStudy</h1>
+        <h1 className="text-3xl font-black mb-2 tracking-tighter text-emerald-950">TurtleStudy</h1>
         <p className="text-slate-400 text-xs font-bold uppercase mb-6 tracking-widest">Master Syllabus Manager</p>
         <input placeholder="Sync Code" value={c} onChange={e=>setC(e.target.value)} className="w-full p-4 bg-slate-50 rounded-2xl mb-4 text-center font-black outline-none border-2 border-transparent focus:border-emerald-300 transition-all shadow-inner" />
-        <button onClick={()=>onLogin(c)} className="w-full py-5 bg-emerald-600 text-white rounded-[24px] font-black shadow-lg hover:bg-emerald-700 active:scale-95 transition-all shadow-emerald-100 uppercase tracking-tighter">Enter App</button>
+        <button onClick={()=>onLogin(c)} className="w-full py-5 bg-emerald-600 text-white rounded-[24px] font-black shadow-lg hover:bg-emerald-700 active:scale-95 transition-all uppercase">Enter App</button>
       </div>
     </div>
   );
