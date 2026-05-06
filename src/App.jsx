@@ -1412,6 +1412,26 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam }) {
   );
 }
 
+function FlashcardUI({ card, deckName, addPoints, isFlipped, setIsFlipped }) {
+  return (
+    <div className="h-80 w-full relative" style={{ perspective: '1000px' }} onClick={() => { if(!isFlipped) { addPoints(2, "Flashcard Mastery"); setIsFlipped(true); } }}>
+      <div className={`relative w-full h-full transition-transform duration-500 rounded-[40px] shadow-2xl cursor-pointer ${isFlipped ? '[transform:rotateY(180deg)]' : ''}`} style={{ transformStyle: 'preserve-3d' }}>
+        {/* CARA A: PREGUNTA */}
+        <div className="absolute inset-0 bg-white border-8 border-rose-50 rounded-[40px] flex flex-col items-center justify-center p-10 text-center [backface-visibility:hidden] shadow-inner">
+          <span className={`absolute top-6 px-3 py-1 text-[8px] font-black rounded-full uppercase border ${getCategoryBadge(card.category)}`}>
+            {card.deckName || deckName}
+          </span>
+          <p className="text-2xl font-black text-slate-800">{card.q}</p>
+        </div>
+        {/* CARA B: RESPUESTA */}
+        <div className="absolute inset-0 bg-rose-600 text-white rounded-[40px] flex items-center justify-center p-10 text-center [transform:rotateY(180deg)] [backface-visibility:hidden] shadow-xl shadow-rose-200">
+          <p className="text-xl font-medium italic">{card.a}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function DeckStudyView({ deck, onBack, addPoints, onUpdateCard, onFinishChallenge }) {
   const [idx, setIdx] = useState(0);
   const [flipped, setFlipped] = useState(false);
@@ -1420,8 +1440,6 @@ function DeckStudyView({ deck, onBack, addPoints, onUpdateCard, onFinishChalleng
   
   const isChallenge = deck.isChallenge;
   const [challengeQueue, setChallengeQueue] = useState(isChallenge ? deck.cards : []);
-
-  // Se ha eliminado el useEffect que causaba el spoiler visual.
 
   const cardsToStudy = useMemo(() => {
     if (isChallenge) return challengeQueue;
@@ -1434,12 +1452,7 @@ function DeckStudyView({ deck, onBack, addPoints, onUpdateCard, onFinishChalleng
       <div className="max-w-xl mx-auto py-20 text-center space-y-8 animate-in zoom-in-95">
         <div className="w-24 h-24 bg-slate-900 rounded-3xl flex items-center justify-center mx-auto text-4xl">🧣</div>
         <h2 className="text-2xl font-black text-slate-800 leading-tight">Do you have 10 minutes to spare?</h2>
-        <button 
-          onClick={() => setChallengeStarted(true)} 
-          className="px-12 py-5 bg-slate-900 text-white rounded-2xl font-black shadow-xl active:scale-95 transition-all uppercase tracking-widest"
-        >
-          Yes
-        </button>
+        <button onClick={() => setChallengeStarted(true)} className="px-12 py-5 bg-slate-900 text-white rounded-2xl font-black shadow-xl active:scale-95 transition-all uppercase">Yes</button>
       </div>
     );
   }
@@ -1449,7 +1462,6 @@ function DeckStudyView({ deck, onBack, addPoints, onUpdateCard, onFinishChalleng
       <div className="max-w-xl mx-auto py-20 text-center space-y-6 animate-in zoom-in-95">
         <Icon name="Award" size={80} className="mx-auto text-amber-500" />
         <h2 className="text-3xl font-black text-rose-950">You're out of the woods! 🌲</h2>
-        <p className="text-sm font-bold text-slate-500">Sesión de repaso completada.</p>
         <button onClick={onFinishChallenge || onBack} className="px-8 py-4 bg-rose-600 text-white rounded-2xl font-black shadow-xl hover:bg-rose-700 active:scale-95 transition-all uppercase">Volver</button>
       </div>
     );
@@ -1458,10 +1470,8 @@ function DeckStudyView({ deck, onBack, addPoints, onUpdateCard, onFinishChalleng
   const card = cardsToStudy[idx];
 
   const handleAnki = (rating) => {
-    if (!onUpdateCard) return;
-
     const targetDeckId = (card.deckId || deck.id)?.toString();
-    if (!targetDeckId) return;
+    if (!targetDeckId || !onUpdateCard) return;
 
     let { interval = 0, ease = 2.5 } = card;
     let newInterval = interval, newEase = ease;
@@ -1471,16 +1481,13 @@ function DeckStudyView({ deck, onBack, addPoints, onUpdateCard, onFinishChalleng
     else if (rating === 'good') newInterval = interval === 0 ? 1 : interval * 2.5;
     else if (rating === 'easy') { newInterval = interval === 0 ? 4 : interval * ease * 1.3; newEase += 0.15; }
 
-    const newNextDate = rating === 'repeat' ? 0 : Date.now() + (newInterval * 86400000);
-    onUpdateCard(targetDeckId, card.id, { interval: newInterval, ease: newEase, nextDate: newNextDate });
+    onUpdateCard(targetDeckId, card.id, { interval: newInterval, ease: newEase, nextDate: rating === 'repeat' ? 0 : Date.now() + (newInterval * 86400000) });
 
     if (rating === 'repeat' && isChallenge) {
-      setChallengeQueue(prev => [...prev, {...card, interval: newInterval, ease: newEase, nextDate: newNextDate}]);
+      setChallengeQueue(prev => [...prev, {...card, interval: newInterval, ease: newEase, nextDate: 0}]);
     }
-
-    // Actualización atómica de estado
-    setIdx(p => p + 1);
     setFlipped(false);
+    setIdx(p => p + 1);
   };
 
   return (
@@ -1499,40 +1506,27 @@ function DeckStudyView({ deck, onBack, addPoints, onUpdateCard, onFinishChalleng
         )}
       </div>
 
-      <div className="h-80 w-full relative" style={{ perspective: '1000px' }} onClick={()=>{if(!flipped) addPoints(2,"Flashcard Mastery"); setFlipped(!flipped);}}>
-        <div className={`relative w-full h-full transition-transform duration-500 rounded-[40px] shadow-2xl cursor-pointer ${flipped ? '[transform:rotateY(180deg)]' : ''}`} style={{ transformStyle: 'preserve-3d' }}>
-          <div className="absolute inset-0 bg-white border-8 border-rose-50 rounded-[40px] flex flex-col items-center justify-center p-10 text-center [backface-visibility:hidden] shadow-inner">
-            {(card?.deckName || deck.name) && <span className="absolute top-6 px-3 py-1 bg-rose-50 text-rose-500 text-[8px] font-black rounded-full uppercase border border-rose-100">{card.deckName || deck.name}</span>}
-            <p className="text-2xl font-black text-slate-800">{card?.q}</p>
-          </div>
-          <div className="absolute inset-0 bg-rose-600 text-white rounded-[40px] flex items-center justify-center p-10 text-center [transform:rotateY(180deg)] [backface-visibility:hidden] shadow-xl shadow-rose-200">
-            <p className="text-xl font-medium italic">{card?.a}</p>
-          </div>
-        </div>
-      </div>
+      {/* key={card.id} fuerza a React a recrear el componente, eliminando cualquier rastro de la rotación anterior */}
+      <FlashcardUI 
+        key={card.id + idx} 
+        card={card} 
+        deckName={deck.name} 
+        addPoints={addPoints} 
+        isFlipped={flipped} 
+        setIsFlipped={setFlipped} 
+      />
       
       {flipped ? (
         <div className="grid grid-cols-4 gap-2 animate-in fade-in slide-in-from-bottom-2">
-          <button onClick={(e)=>{e.stopPropagation(); handleAnki('repeat')}} className="py-4 bg-slate-100 text-slate-600 rounded-2xl font-black text-[10px] uppercase shadow-sm active:scale-95 transition-all">Repetir</button>
-          <button onClick={(e)=>{e.stopPropagation(); handleAnki('hard')}} className="py-4 bg-orange-100 text-orange-700 rounded-2xl font-black text-[10px] uppercase shadow-sm active:scale-95 transition-all">Difícil</button>
-          <button onClick={(e)=>{e.stopPropagation(); handleAnki('good')}} className="py-4 bg-emerald-100 text-emerald-700 rounded-2xl font-black text-[10px] uppercase shadow-sm active:scale-95 transition-all">Bien</button>
-          <button onClick={(e)=>{e.stopPropagation(); handleAnki('easy')}} className="py-4 bg-blue-100 text-blue-700 rounded-2xl font-black text-[10px] uppercase shadow-sm active:scale-95 transition-all">Fácil</button>
+          <button onClick={(e)=>{e.stopPropagation(); handleAnki('repeat')}} className="py-4 bg-slate-100 text-slate-600 rounded-2xl font-black text-[10px] uppercase active:scale-95 transition-all">Repeat</button>
+          <button onClick={(e)=>{e.stopPropagation(); handleAnki('hard')}} className="py-4 bg-orange-100 text-orange-700 rounded-2xl font-black text-[10px] uppercase active:scale-95 transition-all">Hard</button>
+          <button onClick={(e)=>{e.stopPropagation(); handleAnki('good')}} className="py-4 bg-emerald-100 text-emerald-700 rounded-2xl font-black text-[10px] uppercase active:scale-95 transition-all">Good</button>
+          <button onClick={(e)=>{e.stopPropagation(); handleAnki('easy')}} className="py-4 bg-blue-100 text-blue-700 rounded-2xl font-black text-[10px] uppercase active:scale-95 transition-all">Easy</button>
         </div>
       ) : (
         <div className="flex gap-4">
-          <button 
-            onClick={(e)=>{e.stopPropagation(); setIdx(p=>Math.max(0,p-1)); setFlipped(false);}} 
-            className="flex-1 py-4 bg-white border-2 border-rose-100 rounded-2xl font-black text-rose-600 shadow-sm active:scale-95 transition-all" 
-            disabled={idx===0}
-          >
-            PREVIOUS
-          </button>
-          <button 
-            onClick={(e)=>{e.stopPropagation(); setIdx(p=>p+1); setFlipped(false);}} 
-            className="flex-1 py-4 bg-rose-600 text-white rounded-2xl font-black shadow-xl shadow-rose-100 active:scale-95 transition-all"
-          >
-            NEXT
-          </button>
+          <button onClick={(e)=>{e.stopPropagation(); setIdx(p=>Math.max(0,p-1)); setFlipped(false);}} className="flex-1 py-4 bg-white border-2 border-rose-100 rounded-2xl font-black text-rose-600 shadow-sm active:scale-95 transition-all" disabled={idx===0}>PREVIOUS</button>
+          <button onClick={(e)=>{e.stopPropagation(); setIdx(p=>p+1); setFlipped(false);}} className="flex-1 py-4 bg-rose-600 text-white rounded-2xl font-black shadow-xl active:scale-95 transition-all">NEXT</button>
         </div>
       )}
       <p className="text-center text-[10px] font-black text-slate-300 uppercase tracking-widest">{idx + 1} / {cardsToStudy.length}</p>
