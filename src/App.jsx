@@ -60,31 +60,37 @@ const getWeekId = () => {
   const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
   return `${d.getUTCFullYear()}-W${weekNo}`;
 };
+const DECK_CATEGORIES = ["General", "Meth.", "Comm.", "Phon.", "Gram.", "Disc.", "Brit Lit", "Amer Lit", "Cult."];
+
 const getCategoryBadge = (cat) => {
   const mapping = {
-    "Methodology": "bg-orange-100 text-orange-700 border-orange-200",
-    "Communication": "bg-purple-100 text-purple-700 border-purple-200",
-    "Phonetics": "bg-slate-200 text-slate-800 border-slate-300",
-    "Grammar": "bg-sky-100 text-sky-700 border-sky-200",
-    "Discourse": "bg-pink-100 text-pink-700 border-pink-200",
-    "British Literature": "bg-green-100 text-green-700 border-green-200",
-    "American Literature": "bg-yellow-100 text-yellow-700 border-yellow-200",
-    "Culture": "bg-indigo-100 text-indigo-700 border-indigo-200",
+    "Meth.": "bg-orange-100 text-orange-700 border-orange-200",
+    "Comm.": "bg-purple-100 text-purple-700 border-purple-200",
+    "Phon.": "bg-slate-200 text-slate-800 border-slate-300",
+    "Gram.": "bg-sky-100 text-sky-700 border-sky-200",
+    "Disc.": "bg-pink-100 text-pink-700 border-pink-200",
+    "Brit Lit": "bg-green-100 text-green-700 border-green-200",
+    "Amer Lit": "bg-yellow-100 text-yellow-700 border-yellow-200",
+    "Cult.": "bg-indigo-100 text-indigo-700 border-indigo-200",
     "General": "bg-gray-100 text-gray-700 border-gray-200"
   };
   return mapping[cat] || mapping["General"];
 };
-const DECK_CATEGORIES = [
-  "General", 
-  "Methodology", 
-  "Communication", 
-  "Phonetics", 
-  "Grammar", 
-  "Discourse", 
-  "British Literature", 
-  "American Literature", 
-  "Culture"
-];
+
+const getTopicBlock = (id) => {
+  if (typeof id === 'string' && id.startsWith('ud')) return { name: 'Unit', badge: 'bg-teal-100 text-teal-700 border-teal-200', color: '!bg-teal-500' };
+  if (typeof id === 'string' && id.startsWith('p')) return { name: 'Planning', badge: 'bg-blue-100 text-blue-700 border-blue-200', color: '!bg-blue-500' };
+  
+  if ([1, 2].includes(id)) return { name: 'Meth.', badge: 'bg-orange-100 text-orange-700 border-orange-200', color: '!bg-orange-500' };
+  if ([3, 4, 5, 6, 28, 40].includes(id)) return { name: 'Comm.', badge: 'bg-purple-100 text-purple-700 border-purple-200', color: '!bg-purple-500' };
+  if ([7, 8, 9].includes(id)) return { name: 'Phon.', badge: 'bg-slate-200 text-slate-800 border-slate-300', color: '!bg-slate-500' };
+  if (id >= 10 && id <= 27) return { name: 'Gram.', badge: 'bg-sky-100 text-sky-700 border-sky-200', color: '!bg-sky-500' };
+  if (id >= 29 && id <= 39) return { name: 'Disc.', badge: 'bg-pink-100 text-pink-700 border-pink-200', color: '!bg-pink-500' };
+  if ([41, 42, 43, 44, 45, 47, 48, 49, 50, 51, 56, 57, 58, 62].includes(id)) return { name: 'Brit Lit', badge: 'bg-green-100 text-green-700 border-green-200', color: '!bg-green-500' };
+  if ([46, 52, 53, 54, 55, 59, 60].includes(id)) return { name: 'Amer Lit', badge: 'bg-yellow-100 text-yellow-700 border-yellow-200', color: '!bg-yellow-500' };
+  if ([61, 63, 64, 65, 66, 67, 68, 69].includes(id)) return { name: 'Cult.', badge: 'bg-indigo-100 text-indigo-700 border-indigo-200', color: '!bg-indigo-500' };
+  return { name: 'General', badge: 'bg-gray-100 text-gray-700 border-gray-200', color: '!bg-slate-600' };
+};
 const INITIAL_TOPICS = [];
 const INITIAL_PLANNING = [
   { id: 'p1', title: 'Introduction and Justification', status: 0, indexNotes: "", priority: null, leg: "LOMLOE" },
@@ -113,20 +119,7 @@ const INITIAL_SKILLS = [
   { id: 's4', label: 'Phonetics', level: 0 }
 ];
 
-const getTopicBlock = (id) => {
-  if (typeof id === 'string' && id.startsWith('ud')) return { name: 'Unit', badge: 'bg-teal-100 text-teal-700 border-teal-200', color: '!bg-teal-500' };
-  if (typeof id === 'string' && id.startsWith('p')) return { name: 'Planning', badge: 'bg-blue-100 text-blue-700 border-blue-200', color: '!bg-blue-500' };
-  
-  if ([1, 2].includes(id)) return { name: 'Methodology', badge: 'bg-orange-100 text-orange-700 border-orange-200', color: '!bg-orange-500' };
-  if ([3, 4, 5, 6, 28, 40].includes(id)) return { name: 'Communication', badge: 'bg-purple-100 text-purple-700 border-purple-200', color: '!bg-purple-500' };
-  if ([7, 8, 9].includes(id)) return { name: 'Phonetics', badge: 'bg-slate-200 text-slate-800 border-slate-300', color: '!bg-slate-500' };
-  if (id >= 10 && id <= 27) return { name: 'Grammar', badge: 'bg-sky-100 text-sky-700 border-sky-200', color: '!bg-sky-500' };
-  if (id >= 29 && id <= 39) return { name: 'Discourse', badge: 'bg-pink-100 text-pink-700 border-pink-200', color: '!bg-pink-500' };
-  if ([41, 42, 43, 44, 45, 47, 48, 49, 50, 51, 56, 57, 58, 62].includes(id)) return { name: 'British Literature', badge: 'bg-green-100 text-green-700 border-green-200', color: '!bg-green-500' };
-  if ([46, 52, 53, 54, 55, 59, 60].includes(id)) return { name: 'American Literature', badge: 'bg-yellow-100 text-yellow-700 border-yellow-200', color: '!bg-yellow-500' };
-  if ([61, 63, 64, 65, 66, 67, 68, 69].includes(id)) return { name: 'Culture', badge: 'bg-indigo-100 text-indigo-700 border-indigo-200', color: '!bg-indigo-500' };
-  return { name: 'General', badge: 'bg-gray-100 text-gray-700 border-gray-200', color: '!bg-slate-600' };
-};
+
 
 const getPlanningStatusLabel = (status) => {
   if (status === 0) return 'NONE';
