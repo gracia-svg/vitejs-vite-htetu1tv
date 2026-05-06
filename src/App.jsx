@@ -1140,7 +1140,7 @@ function SyllabusView({ topics, setTopics, addPoints, onOpenModal, actionLogs, o
 
               <div className="grid grid-cols-3 gap-2 pl-4">
                 <CounterPill label="REVIEWS" count={t.reviews} onAdd={()=>updateField(t.id,'reviews',Number(t.reviews||0)+1,10)} onSub={()=>updateField(t.id,'reviews',Math.max(0,Number(t.reviews||0)-1),-10)} />
-                <CounterPill label="MOCKS" count={t.mocks} onAdd={()=>updateField(t.id,'mocks',Number(t.mocks||0)+1,40)} onSub={()=>updateField(t.id,'mocks',Math.max(0,Number(t.reviews||0)-1),-40)} />
+                <CounterPill label="MOCKS" count={t.mocks} onAdd={()=>updateField(t.id,'mocks',Number(t.mocks||0)+1,40)} onSub={()=>updateField(t.id,'mocks',Math.max(0,Number(t.mocks||0)-1),-40)} />
                 <CounterPill label="MINI" count={t.miniMocks} onAdd={()=>updateField(t.id,'miniMocks',Number(t.miniMocks||0)+1,20)} onSub={()=>updateField(t.id,'miniMocks',Math.max(0,Number(t.miniMocks||0)-1),-20)} />
               </div>
             </div>
@@ -1709,6 +1709,12 @@ function VaultCarousel({ items, setItems, onClose }) {
     }
   };
 
+  const handleShuffle = () => {
+    const shuffled = [...items].sort(() => Math.random() - 0.5);
+    setItems(shuffled);
+    setIdx(0);
+  };
+
   if (items.length === 0 && !importOpen) {
     return (
       <div className="fixed inset-0 z-[600] bg-slate-900 flex items-center justify-center p-8">
@@ -1726,8 +1732,9 @@ function VaultCarousel({ items, setItems, onClose }) {
   return (
     <div className="fixed inset-0 z-[600] bg-slate-900 flex flex-col items-center justify-center p-6 sm:p-12 animate-in fade-in">
        <div className="absolute top-6 right-6 flex gap-4">
-          <button onClick={() => setImportOpen(!importOpen)} className="text-white/30 hover:text-white"><Icon name="Settings" size={24}/></button>
-          <button onClick={onClose} className="text-white/30 hover:text-red-500"><Icon name="X" size={28}/></button>
+          <button onClick={handleShuffle} title="Shuffle Vault" className="text-white/30 hover:text-amber-500 transition-colors"><Icon name="Shuffle" size={24}/></button>
+          <button onClick={() => setImportOpen(!importOpen)} title="Settings" className="text-white/30 hover:text-white transition-colors"><Icon name="Settings" size={24}/></button>
+          <button onClick={onClose} className="text-white/30 hover:text-red-500 transition-colors"><Icon name="X" size={28}/></button>
        </div>
 
        {importOpen ? (
