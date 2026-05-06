@@ -40,7 +40,8 @@ const ICON_PATHS = {
   Maximize: '<path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/>',
   Minimize: '<path d="M8 3v3a2 2 0 0 1-2 2H3"/><path d="M21 8h-3a2 2 0 0 1-2-2V3"/><path d="M3 16h3a2 2 0 0 1 2 2v3"/><path d="M16 21v-3a2 2 0 0 1 2-2h3"/>',
   Calendar: '<rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',
-  AlertTriangle: '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>'
+  AlertTriangle: '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>',
+  Settings: '<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.72V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.17a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/>'
 };
 
 const Icon = ({ name, size = 24, strokeWidth = 2, className = "" }) => {
@@ -332,6 +333,11 @@ export default function App() {
     weekId: getWeekId(), points: 0, topicsTouched: false, progTouched: false, practicoTouched: false, dailyChallengesDone: 0, claimed1: false, claimed2: false 
   });
 
+  // ESTADOS DEL VAULT
+  const [vaultItems, setVaultItems] = useState([]);
+  const [showVaultModal, setShowVaultModal] = useState(false);
+  const [showVaultCarousel, setShowVaultCarousel] = useState(false);
+
   const [timeLeft, setTimeLeft] = useState(0);
   const [isTimerActive, setIsTimerActive] = useState(false);
   const [endTime, setEndTime] = useState(null);
@@ -412,6 +418,9 @@ export default function App() {
         setTotalDailyChallenges(d.totalDailyChallenges || 0);
         setLastChallengeDate(d.lastChallengeDate || null);
         setWeeklyData(d.weeklyData || { weekId: getWeekId(), points: 0, topicsTouched: false, progTouched: false, practicoTouched: false, dailyChallengesDone: 0, claimed1: false, claimed2: false });
+        
+        // Cargar Vault
+        setVaultItems(d.vaultItems || []);
       }
       setIsDataLoaded(true);
     });
@@ -421,10 +430,10 @@ export default function App() {
     if (!isDataLoaded || !isLogged) return;
     const save = async () => {
       const docRef = doc(db, 'artifacts', APP_ID_PATH, 'public', 'data', 'turtle_users', syncCode);
-      await setDoc(docRef, { points, topics, planning, units, skills, decks, todos, notes, actionLogs, examDate, submissionDate, streak, maxStreak, practicoSessions, levelDates, lastActiveDate, perfectWeeks, totalDailyChallenges, lastChallengeDate, weeklyData });
+      await setDoc(docRef, { points, topics, planning, units, skills, decks, todos, notes, actionLogs, examDate, submissionDate, streak, maxStreak, practicoSessions, levelDates, lastActiveDate, perfectWeeks, totalDailyChallenges, lastChallengeDate, weeklyData, vaultItems });
     };
     const t = setTimeout(save, 1500); return () => clearTimeout(t);
-  }, [points, topics, planning, units, skills, decks, todos, notes, actionLogs, examDate, submissionDate, streak, maxStreak, practicoSessions, levelDates, lastActiveDate, perfectWeeks, totalDailyChallenges, lastChallengeDate, weeklyData, isDataLoaded]);
+  }, [points, topics, planning, units, skills, decks, todos, notes, actionLogs, examDate, submissionDate, streak, maxStreak, practicoSessions, levelDates, lastActiveDate, perfectWeeks, totalDailyChallenges, lastChallengeDate, weeklyData, vaultItems, isDataLoaded]);
 
   const addPoints = (amount, desc, actionData = null) => {
     let finalLogs = [...actionLogs];
@@ -488,7 +497,9 @@ export default function App() {
       const next = {...prev, [`claimed${num}`]: true};
       if (next.claimed1 && next.claimed2 && (!prev.claimed1 || !prev.claimed2)) {
         setPerfectWeeks(pw => pw + 1);
-        setTimeout(() => alert("¡ENHORABUENA! ¡Has conseguido una Semana Perfecta y tu Corona ha subido!"), 500);
+        /* --- SWIFTIE REFERENCE START --- */
+        setTimeout(() => alert("Perfect week! That's a real fucking legacy to leave. 🍷"), 500);
+        /* --- SWIFTIE REFERENCE END --- */
       }
       return next;
     });
@@ -609,7 +620,31 @@ export default function App() {
         .modal-fullscreen { max-width: 100vw !important; max-height: 100vh !important; height: 100vh !important; border-radius: 0 !important; }
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+        .vault-pill { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); color: #cbd5e1; border: 1px solid #334155; }
       `}</style>
+
+      {/* MODALES DEL VAULT */}
+      {showVaultModal && (
+        <div className="modal-overlay animate-in fade-in" onClick={() => { setShowVaultModal(false); setShowVaultCarousel(true); }}>
+          <div className="bg-white rounded-[40px] p-8 max-w-sm w-full text-center shadow-2xl relative animate-in zoom-in-95" onClick={e => e.stopPropagation()}>
+             <button onClick={() => { setShowVaultModal(false); setShowVaultCarousel(true); }} className="absolute top-4 right-4 text-slate-300 hover:text-red-500"><Icon name="X" size={24}/></button>
+             <p className="text-[10px] font-black uppercase text-amber-500 tracking-[0.3em] mb-4">Daily Wisdom From The Vault 🗝️</p>
+             {vaultItems.length > 0 ? (
+               <div className="space-y-4">
+                 <p className="text-xl font-black text-slate-800 leading-tight italic">"{vaultItems[Math.floor(Math.random() * vaultItems.length)].text}"</p>
+                 <p className="text-xs font-bold text-slate-400">— {vaultItems[Math.floor(Math.random() * vaultItems.length)].reference}</p>
+               </div>
+             ) : (
+               <p className="text-sm font-bold text-slate-400 italic">Vault is empty. Import citations in settings.</p>
+             )}
+             <p className="mt-8 text-[8px] font-black text-slate-300 uppercase animate-pulse">Touch to enter full carousel</p>
+          </div>
+        </div>
+      )}
+
+      {showVaultCarousel && (
+        <VaultCarousel items={vaultItems} setItems={setVaultItems} onClose={() => setShowVaultCarousel(false)} />
+      )}
 
       {/* MODAL GLOBAL */}
       {selectedTopicModal && (
@@ -866,8 +901,30 @@ export default function App() {
 
       {/* MAIN CONTAINER */}
       <main className="max-w-5xl mx-auto p-4 md:p-8">
-        {activeTab === 'map' && <ProgressMap points={points} level={Math.floor(points/200)+1} xp={points%200} examDate={examDate} setExamDate={setExamDate} addPoints={addPoints} levelDates={levelDates} />}
-        {activeTab === 'syllabus' && <SyllabusView topics={topics} setTopics={setTopics} addPoints={addPoints} onOpenModal={setSelectedTopicModal} actionLogs={actionLogs} onReset={handleResetTopics} touchWeekly={touchWeekly} />}
+        {activeTab === 'map' && (
+          <ProgressMap 
+            points={points} 
+            level={Math.floor(points/200)+1} 
+            xp={points%200} 
+            addPoints={addPoints} 
+            streak={streak} 
+            perfectWeeks={perfectWeeks} 
+            onVaultOpen={() => setShowVaultModal(true)} 
+          />
+        )}
+        {activeTab === 'syllabus' && (
+          <SyllabusView 
+            topics={topics} 
+            setTopics={setTopics} 
+            addPoints={addPoints} 
+            onOpenModal={setSelectedTopicModal} 
+            actionLogs={actionLogs} 
+            onReset={handleResetTopics} 
+            touchWeekly={touchWeekly} 
+            examDate={examDate}
+            setExamDate={setExamDate}
+          />
+        )}
         {activeTab === 'planning' && <PlanningHub planning={planning} setPlanning={setPlanning} units={units} setUnits={setUnits} addPoints={addPoints} submissionDate={submissionDate} setSubmissionDate={setSubmissionDate} actionLogs={actionLogs} onOpenModal={setSelectedTopicModal} onReset={handleResetPlanning} touchWeekly={touchWeekly} />}
         {activeTab === 'practico' && <PracticoView skills={skills} setSkills={setSkills} addPoints={addPoints} sessions={practicoSessions} setSessions={setPracticoSessions} onReset={handleResetPractico} touchWeekly={touchWeekly} />}
         {activeTab === 'flashcards' && !activeDeckId && !examDeck && <FlashcardsManager decks={decks} setDecks={setDecks} onSelect={setActiveDeckId} onExam={setExamDeck} />}
@@ -895,23 +952,14 @@ export default function App() {
 // 5. COMPONENTES DE VISTA (COMPLETOS)
 // ==========================================
 
-function ProgressMap({ points, level, xp, examDate, setExamDate, addPoints, levelDates }) {
-  const diff = new Date(examDate) - new Date();
-  const days = Math.ceil(diff / 864e5);
-  const [showDate, setShowDate] = useState(false);
+function ProgressMap({ points, level, xp, addPoints, streak, perfectWeeks, onVaultOpen }) {
   const [ptsMenu, setPtsMenu] = useState('closed');
 
   return (
-    <div className="space-y-12 max-w-xl mx-auto py-8 text-center animate-in fade-in">
+    <div className="space-y-8 max-w-xl mx-auto py-8 text-center animate-in fade-in">
       <div className="grid grid-cols-2 gap-4">
         
-        <div className="bento-card p-6 border-emerald-100 shadow-md relative overflow-hidden">
-          <Icon name="Calendar" className="absolute -right-4 -bottom-4 text-emerald-50 opacity-50" size={100} />
-          <p className="text-4xl font-black text-emerald-950 tabular-nums cursor-pointer relative z-10" onClick={() => setShowDate(!showDate)}>{days}</p>
-          <p className="text-[8px] font-black uppercase text-slate-400 mt-1 relative z-10">Days to D-Day</p>
-          {showDate && <input type="date" value={examDate} onChange={e=>{setExamDate(e.target.value); setShowDate(false);}} className="absolute top-2 left-2 bg-white text-[8px] font-black text-emerald-600 outline-none rounded p-1 shadow z-50" />}
-        </div>
-        
+        {/* CARD 1: NIVEL Y XP */}
         <div className="relative">
           <div onClick={() => setPtsMenu(ptsMenu === 'closed' ? 'main' : 'closed')} className="bento-card p-6 border-emerald-100 shadow-md cursor-pointer h-full flex flex-col items-center justify-center hover:border-emerald-300">
             <div className="flex justify-between items-end w-full mb-1">
@@ -951,9 +999,32 @@ function ProgressMap({ points, level, xp, examDate, setExamDate, addPoints, leve
           )}
         </div>
 
+        {/* CARD 2: RACHA Y SEMANAS */}
+        <div className="bento-card p-4 border-orange-100 shadow-md flex items-center justify-between">
+           <div className="flex-1 flex flex-col items-center border-r border-slate-100">
+              <Icon name="Flame" size={24} className="fill-orange-500 text-orange-500" />
+              <p className="text-lg font-black text-slate-800 leading-none mt-1">{streak}</p>
+              <p className="text-[7px] font-black uppercase text-slate-400">Days</p>
+           </div>
+           <div className="flex-1 flex flex-col items-center">
+              <span className="text-2xl leading-none">👑</span>
+              <p className="text-lg font-black text-amber-600 leading-none mt-1">{perfectWeeks}</p>
+              <p className="text-[7px] font-black uppercase text-slate-400">Weeks</p>
+           </div>
+        </div>
       </div>
 
-      <div className="flex flex-col items-center gap-16 relative mt-10">
+      {/* WIDGET: FROM THE VAULT */}
+      <button 
+        onClick={onVaultOpen}
+        className="w-full vault-pill py-3 px-6 rounded-2xl flex items-center justify-center gap-3 shadow-lg active:scale-95 transition-all"
+      >
+        <span className="text-lg">🗝️</span>
+        <span className="text-xs font-black uppercase tracking-[0.2em]">From The Vault</span>
+      </button>
+
+      {/* MAPA DE NIVELES */}
+      <div className="flex flex-col items-center gap-16 relative mt-16">
         <div className="absolute top-0 bottom-0 w-2 bg-emerald-50 rounded-full -z-10" />
         {[level+1, level, level-1, level-2].filter(l=>l>0).map(l => (
           <div key={l} className={`w-20 h-20 rounded-full border-4 flex flex-col items-center justify-center transition-all relative ${l === level ? 'bg-white border-emerald-500 scale-125 shadow-xl ring-8 ring-emerald-50' : 'bg-slate-50 border-slate-200 text-slate-300 opacity-60'}`}>
@@ -966,8 +1037,12 @@ function ProgressMap({ points, level, xp, examDate, setExamDate, addPoints, leve
   );
 }
 
-function SyllabusView({ topics, setTopics, addPoints, onOpenModal, actionLogs, onReset, touchWeekly }) {
+function SyllabusView({ topics, setTopics, addPoints, onOpenModal, actionLogs, onReset, touchWeekly, examDate, setExamDate }) {
   const [search, setSearch] = useState("");
+  const [showDate, setShowDate] = useState(false);
+
+  const diff = new Date(examDate) - new Date();
+  const days = Math.ceil(diff / 864e5);
   
   const updateField = (id, field, value, pts) => {
     touchWeekly('topics');
@@ -1007,10 +1082,20 @@ function SyllabusView({ topics, setTopics, addPoints, onOpenModal, actionLogs, o
 
   return (
     <div className="space-y-6 animate-in fade-in">
-      <div className="flex flex-col sm:flex-row justify-between items-center gap-4 bg-white/50 backdrop-blur p-4 rounded-3xl border border-white/50 shadow-sm">
-        <div className="flex items-center gap-3"><Icon name="BookOpen" className="text-amber-600" /><h2 className="text-2xl font-black text-slate-950">Temas</h2></div>
-        <div className="flex items-center gap-3 w-full sm:w-auto">
-          <div className="relative flex-1 sm:w-64"><Icon name="Search" size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" /><input placeholder="Buscar por título o número..." value={search} onChange={e=>setSearch(e.target.value)} className="w-full bg-white border-2 border-slate-100 rounded-2xl pl-10 pr-4 py-2 text-sm font-black outline-none focus:border-emerald-200 transition-all" /></div>
+      {/* HEADER TEMAS CON COUNTDOWN SWIFTIE */}
+      <div className="bg-white/50 backdrop-blur p-6 rounded-3xl border border-white/50 shadow-sm flex flex-col gap-4">
+        <div className="flex justify-between items-start">
+           <div className="flex items-center gap-3"><Icon name="BookOpen" className="text-amber-600" /><h2 className="text-2xl font-black text-slate-950">Temas</h2></div>
+           <div className="text-right cursor-pointer relative" onClick={() => setShowDate(!showDate)}>
+              <p className="text-3xl font-black text-slate-800 tabular-nums leading-none">{days}</p>
+              {/* --- SWIFTIE REFERENCE START --- */}
+              <p className="text-[8px] font-black uppercase text-amber-600 tracking-widest mt-1">Days to End Game 🖤</p>
+              {/* --- SWIFTIE REFERENCE END --- */}
+              {showDate && <input type="date" value={examDate} onChange={e=>{setExamDate(e.target.value); setShowDate(false);}} className="absolute top-0 right-0 bg-white shadow-xl rounded-lg p-2 text-xs border z-50" />}
+           </div>
+        </div>
+        <div className="flex items-center gap-3 w-full">
+          <div className="relative flex-1"><Icon name="Search" size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" /><input placeholder="Buscar temas..." value={search} onChange={e=>setSearch(e.target.value)} className="w-full bg-white border-2 border-slate-100 rounded-2xl pl-10 pr-4 py-2 text-sm font-black outline-none focus:border-emerald-200 transition-all" /></div>
           <button onClick={onReset} className="px-3 py-2 bg-red-50 text-red-600 font-black text-[10px] rounded-xl hover:bg-red-100 transition-all shrink-0 uppercase tracking-widest">Reset</button>
         </div>
       </div>
@@ -1368,7 +1453,9 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam }) {
                 </button>
               ))}
             </div>
-            <button onClick={startDailyChallenge} className="w-full p-4 bg-rose-600 text-white rounded-xl font-black shadow-lg hover:bg-rose-700 active:scale-95 transition-all">INICIAR RETO</button>
+            {/* --- SWIFTIE REFERENCE START --- */}
+            <button onClick={startDailyChallenge} className="w-full p-4 bg-rose-600 text-white rounded-xl font-black shadow-lg hover:bg-rose-700 active:scale-95 transition-all uppercase">…Ready For It? 🐍</button>
+            {/* --- SWIFTIE REFERENCE END --- */}
           </div>
         </div>
       )}
@@ -1423,6 +1510,7 @@ function DeckStudyView({ deck, onBack, addPoints, onUpdateCard, onFinishChalleng
   const [idx, setIdx] = useState(0);
   const [flipped, setFlipped] = useState(false);
   const [isShuffled, setIsShuffled] = useState(false);
+  const [challengeStarted, setChallengeStarted] = useState(false);
   
   const isChallenge = deck.isChallenge;
   const [challengeQueue, setChallengeQueue] = useState(isChallenge ? deck.cards : []);
@@ -1433,12 +1521,31 @@ function DeckStudyView({ deck, onBack, addPoints, onUpdateCard, onFinishChalleng
     return [...deck.cards].sort(() => Math.random() - 0.5);
   }, [deck.cards, isShuffled, challengeQueue, isChallenge]);
 
+  // --- SWIFTIE REFERENCE START --- (Portada All Too Well)
+  if (isChallenge && !challengeStarted) {
+    return (
+      <div className="max-w-xl mx-auto py-20 text-center space-y-8 animate-in zoom-in-95">
+        <div className="w-24 h-24 bg-slate-900 rounded-3xl flex items-center justify-center mx-auto text-4xl">🧣</div>
+        <h2 className="text-2xl font-black text-slate-800 leading-tight">Do you have 10 minutes to spare?</h2>
+        <button 
+          onClick={() => setChallengeStarted(true)} 
+          className="px-12 py-5 bg-slate-900 text-white rounded-2xl font-black shadow-xl active:scale-95 transition-all uppercase tracking-widest"
+        >
+          Yes
+        </button>
+      </div>
+    );
+  }
+  // --- SWIFTIE REFERENCE END ---
+
   // Pantalla de finalización de Reto
   if (isChallenge && idx >= cardsToStudy.length) {
     return (
       <div className="max-w-xl mx-auto py-20 text-center space-y-6 animate-in zoom-in-95">
         <Icon name="Award" size={80} className="mx-auto text-amber-500" />
-        <h2 className="text-3xl font-black text-rose-950">¡Reto Completado!</h2>
+        {/* --- SWIFTIE REFERENCE START --- */}
+        <h2 className="text-3xl font-black text-rose-950">You're out of the woods! 🌲</h2>
+        {/* --- SWIFTIE REFERENCE END --- */}
         <p className="text-sm font-bold text-slate-500">Has repasado tus tarjetas pendientes con éxito.</p>
         <button onClick={onFinishChallenge} className="px-8 py-4 bg-rose-600 text-white rounded-2xl font-black shadow-xl shadow-rose-200 hover:bg-rose-700 active:scale-95 transition-all tracking-widest uppercase">Reclamar Recompensa</button>
       </div>
@@ -1531,52 +1638,39 @@ function BadgesView({ points, streak, maxStreak, topics, planning, units, skills
   const planningDone = planning.filter(p=>p.status===10).length;
   const unitsDone = units.filter(u=>u.status===10).length;
   const allSkills = skills.reduce((a, s) => a + s.level, 0);
+  const totalMocks = topics.reduce((a, t) => a + (t.mocks || 0), 0);
 
+  /* --- SWIFTIE REFERENCE START --- */
   const BADGES = [
     { icon: '🥚', title: 'Hatching', desc: '500 pts', cond: points >= 500 },
-    { icon: '🐢', title: 'Explorer', desc: '1,000 pts', cond: points >= 1000 },
     { icon: '🐾', title: 'Walker', desc: '2,500 pts', cond: points >= 2500 },
-    { icon: '🥷', title: 'Ninja', desc: '5,000 pts', cond: points >= 5000 },
     { icon: '🥋', title: 'Black Belt', desc: '10k pts', cond: points >= 10000 },
-    { icon: '🐉', title: 'Dragon', desc: '25k pts', cond: points >= 25000 },
     { icon: '🌌', title: 'Cosmic', desc: '50k pts', cond: points >= 50000 },
-    { icon: '⚡', title: 'God Mode', desc: '100k pts', cond: points >= 100000 },
 
     { icon: '🔥', title: 'Spark', desc: '3 Day Streak', cond: maxStreak >= 3 },
     { icon: '🏕️', title: 'Camper', desc: '7 Day Streak', cond: maxStreak >= 7 },
-    { icon: '⚒️', title: 'Forged', desc: '15 Day Streak', cond: maxStreak >= 15 },
-    { icon: '🧘', title: 'Monk', desc: '30 Day Streak', cond: maxStreak >= 30 },
+    { icon: '🕰️', title: 'Meet me at midnight', desc: '13 Day Streak', cond: maxStreak >= 13 },
     { icon: '🏔️', title: 'Mountain', desc: '60 Day Streak', cond: maxStreak >= 60 },
-    { icon: '👑', title: 'Unstoppable', desc: '100 Day Streak', cond: maxStreak >= 100 },
 
     { icon: '✍️', title: 'Writer', desc: '1 Topic Written', cond: writtenTopics >= 1 },
-    { icon: '📝', title: 'Author', desc: '10 Topics Written', cond: writtenTopics >= 10 },
-    { icon: '📚', title: 'Novelist', desc: '30 Topics Written', cond: writtenTopics >= 30 },
-
-    { icon: '👁️', title: 'Reader', desc: '1 Topic Studied', cond: studiedTopics >= 1 },
-    { icon: '🧠', title: 'Scholar', desc: '10 Topics Studied', cond: studiedTopics >= 10 },
+    { icon: '📚', title: 'Author', desc: '10 Topics Written', cond: writtenTopics >= 10 },
+    
     { icon: '🎓', title: 'Professor', desc: '30 Topics Studied', cond: studiedTopics >= 30 },
 
-    { icon: '🔒', title: 'Secured', desc: '1 Mastered', cond: doneTopics >= 1 },
-    { icon: '🛡️', title: 'Fortress', desc: '10 Mastered', cond: doneTopics >= 10 },
-    { icon: '🏰', title: 'Citadel', desc: '30 Mastered', cond: doneTopics >= 30 },
-    { icon: '🏆', title: 'Legend', desc: '69 Mastered', cond: doneTopics === 69 },
+    { icon: '🎧', title: 'YOYOK', desc: '5 Simulacros', cond: totalMocks >= 5 },
+    { icon: '🏰', title: 'Long Live', desc: '69 Mastered', cond: doneTopics === 69 },
 
     { icon: '🏗️', title: 'Foundation', desc: '1 Prog Part', cond: planningDone >= 1 },
     { icon: '🏛️', title: 'Architect', desc: 'All Prog Final', cond: planningDone === planning.length && planning.length > 0 },
-    { icon: '🎨', title: 'Designer', desc: '1 Unit Final', cond: unitsDone >= 1 },
     { icon: '🧩', title: 'Mastermind', desc: 'All Units Final', cond: unitsDone === units.length && units.length > 0 },
 
     { icon: '🎯', title: 'Sharp', desc: '1 Skill Maxed', cond: skills.some(s=>s.level===10) },
-    { icon: '👁️‍🗨️', title: 'Flawless', desc: 'All Skills Maxed', cond: allSkills === (skills.length * 10) && skills.length > 0 },
 
-    // NUEVAS MEDALLAS DE CONSTANCIA
-    { icon: '📅', title: 'Guerrero', desc: '1 Sem. Perfecta', cond: perfectWeeks >= 1 },
-    { icon: '🦾', title: 'Imparable', desc: '5 Sem. Perfectas', cond: perfectWeeks >= 5 },
-    { icon: '⚙️', title: 'Máquina', desc: '15 Sem. Perfectas', cond: perfectWeeks >= 15 },
-    { icon: '💎', title: 'Diamante', desc: '30 Sem. Perfectas', cond: perfectWeeks >= 30 },
+    { icon: '🫶', title: 'Fearless', desc: '10 Sem. Perfectas', cond: perfectWeeks >= 10 },
+    { icon: '✨', title: 'Bejeweled', desc: '30 Sem. Perfectas', cond: perfectWeeks >= 30 },
     { icon: '🧠', title: 'Leyenda Repaso', desc: '50 Retos Diarios', cond: totalDailyChallenges >= 50 },
   ];
+  /* --- SWIFTIE REFERENCE END --- */
 
   return (
     <div className="space-y-8 text-left animate-in fade-in slide-in-from-bottom-6">
@@ -1594,13 +1688,83 @@ function BadgesView({ points, streak, maxStreak, topics, planning, units, skills
   );
 }
 
+function VaultCarousel({ items, setItems, onClose }) {
+  const [idx, setIdx] = useState(0);
+  const [importOpen, setImportOpen] = useState(false);
+  const [importTxt, setImportTxt] = useState("");
+
+  const handleImport = () => {
+    try {
+      const parsed = JSON.parse(importTxt);
+      if (Array.isArray(parsed)) {
+        setItems(parsed);
+        setImportOpen(false);
+        setImportTxt("");
+        alert("Vault updated successfully!");
+      }
+    } catch(e) {
+      alert("Invalid JSON format. Check your input.");
+    }
+  };
+
+  if (items.length === 0 && !importOpen) {
+    return (
+      <div className="fixed inset-0 z-[600] bg-slate-900 flex items-center justify-center p-8">
+        <button onClick={onClose} className="absolute top-6 right-6 text-white/50 hover:text-white"><Icon name="X" size={32}/></button>
+        <div className="text-center space-y-6">
+           <p className="text-white font-black text-xl italic uppercase tracking-widest">Vault is empty</p>
+           <button onClick={() => setImportOpen(true)} className="px-6 py-3 bg-white text-slate-900 rounded-xl font-black">Import Citations</button>
+        </div>
+      </div>
+    );
+  }
+
+  const current = items[idx];
+
+  return (
+    <div className="fixed inset-0 z-[600] bg-slate-900 flex flex-col items-center justify-center p-6 sm:p-12 animate-in fade-in">
+       <div className="absolute top-6 right-6 flex gap-4">
+          <button onClick={() => setImportOpen(!importOpen)} className="text-white/30 hover:text-white"><Icon name="Settings" size={24}/></button>
+          <button onClick={onClose} className="text-white/30 hover:text-red-500"><Icon name="X" size={28}/></button>
+       </div>
+
+       {importOpen ? (
+         <div className="w-full max-w-md space-y-4 animate-in zoom-in-95">
+           <p className="text-white text-center font-black uppercase text-xs tracking-widest">Import citations (JSON)</p>
+           <textarea 
+             className="w-full h-64 bg-slate-800 border-2 border-slate-700 rounded-2xl p-4 text-white font-mono text-xs outline-none focus:border-amber-500"
+             placeholder='[{"category": "...", "reference": "...", "text": "..."}]'
+             value={importTxt}
+             onChange={e => setImportTxt(e.target.value)}
+           />
+           <button onClick={handleImport} className="w-full py-4 bg-amber-500 text-slate-950 font-black rounded-2xl uppercase shadow-xl">Apply Updates</button>
+         </div>
+       ) : (
+         <div className="w-full max-w-2xl flex flex-col items-center gap-12">
+            <div className="text-center space-y-4 animate-in slide-in-from-bottom-4">
+               <span className="px-3 py-1 bg-amber-500/10 text-amber-500 border border-amber-500/20 rounded-full text-[10px] font-black uppercase tracking-[0.2em]">{current.category}</span>
+               <p className="text-white text-2xl sm:text-4xl font-black leading-tight">"{current.text}"</p>
+               <p className="text-slate-400 font-bold italic">— {current.reference}</p>
+            </div>
+            
+            <div className="flex gap-8 items-center">
+              <button onClick={() => setIdx(p => Math.max(0, p-1))} className={`p-4 rounded-full border-2 border-white/10 text-white transition-all ${idx === 0 ? 'opacity-20' : 'hover:bg-white/5 active:scale-90'}`} disabled={idx===0}><Icon name="ChevronRight" className="rotate-180" size={32}/></button>
+              <p className="text-white/20 font-black tabular-nums">{idx + 1} / {items.length}</p>
+              <button onClick={() => setIdx(p => Math.min(items.length-1, p+1))} className={`p-4 rounded-full border-2 border-white/10 text-white transition-all ${idx === items.length-1 ? 'opacity-20' : 'hover:bg-white/5 active:scale-90'}`} disabled={idx===items.length-1}><Icon name="ChevronRight" size={32}/></button>
+            </div>
+         </div>
+       )}
+    </div>
+  );
+}
+
 function StatsView({ actionLogs, undoAction, topics, planning, units, levelDates }) {
   const [tab, setTab] = useState('hist');
   const [statsView, setStatsView] = useState('syllabus');
 
   const exportData = () => {
     const exportObj = {
-      levelHistory: {},
+      levelHistory: {}, // <-- HISTORIAL DE NIVELES INCLUIDO
       topics: {},
       planning: {},
       practico: []
@@ -1729,7 +1893,9 @@ function TodoView({ todos, setTodos, addPoints }) {
         <button onClick={()=>setType('review')} className={`flex-1 py-3 rounded-xl text-xs font-black transition-all ${type==='review'?'bg-white text-orange-600 shadow-md':'text-slate-400'}`}>REVIEWS</button>
       </div>
       <form onSubmit={e=>{e.preventDefault(); if(inp.trim()){setTodos([{id:Date.now().toString(),text:inp,completed:false,type}, ...todos]); setInp("");}}} className="flex gap-2">
-        <input placeholder="Add task..." value={inp} onChange={e=>setInp(e.target.value)} className="flex-1 bento-card bg-white px-4 py-3 text-sm font-black outline-none border-orange-50 focus:border-orange-200 shadow-sm" />
+        {/* --- SWIFTIE REFERENCE START --- */}
+        <input placeholder="Got a blank space, baby... ¡añade una tarea!" value={inp} onChange={e=>setInp(e.target.value)} className="flex-1 bento-card bg-white px-4 py-3 text-sm font-black outline-none border-orange-50 focus:border-orange-200 shadow-sm" />
+        {/* --- SWIFTIE REFERENCE END --- */}
         <button type="submit" className="p-3 bg-orange-600 text-white rounded-xl shadow-lg shadow-orange-100 active:scale-95 transition-all"><Icon name="Plus" size={24}/></button>
       </form>
       <div className="space-y-3">
