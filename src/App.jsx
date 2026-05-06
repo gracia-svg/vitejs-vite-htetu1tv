@@ -875,7 +875,7 @@ export default function App() {
         {activeTab === 'todo' && <TodoView todos={todos} setTodos={setTodos} addPoints={addPoints} />}
         {activeTab === 'notes' && <NotesView notes={notes} setNotes={setNotes} />}
         {activeTab === 'badges' && <BadgesView points={points} streak={streak} maxStreak={maxStreak} topics={topics} planning={planning} units={units} skills={skills} perfectWeeks={perfectWeeks} totalDailyChallenges={totalDailyChallenges} />}
-        {activeTab === 'stats' && <StatsView actionLogs={actionLogs} undoAction={undoAction} topics={topics} planning={planning} units={units} />}
+        {activeTab === 'stats' && <StatsView actionLogs={actionLogs} undoAction={undoAction} topics={topics} planning={planning} units={units} levelDates={levelDates} />}
       </main>
 
       {/* NAV FOOTER FIXED */}
@@ -958,7 +958,6 @@ function ProgressMap({ points, level, xp, examDate, setExamDate, addPoints, leve
         {[level+1, level, level-1, level-2].filter(l=>l>0).map(l => (
           <div key={l} className={`w-20 h-20 rounded-full border-4 flex flex-col items-center justify-center transition-all relative ${l === level ? 'bg-white border-emerald-500 scale-125 shadow-xl ring-8 ring-emerald-50' : 'bg-slate-50 border-slate-200 text-slate-300 opacity-60'}`}>
             <span className="text-2xl font-black tabular-nums">{l}</span>
-            {levelDates && levelDates[l] && <span className={`absolute -bottom-5 text-[7px] font-black uppercase tracking-widest whitespace-nowrap ${l === level ? 'text-emerald-500' : 'text-slate-400'}`}>{levelDates[l]}</span>}
             {l === level && <Icon name="Turtle" size={24} className="absolute -top-8 text-emerald-600 animate-bounce" />}
           </div>
         ))}
@@ -1595,16 +1594,24 @@ function BadgesView({ points, streak, maxStreak, topics, planning, units, skills
   );
 }
 
-function StatsView({ actionLogs, undoAction, topics, planning, units }) {
+function StatsView({ actionLogs, undoAction, topics, planning, units, levelDates }) {
   const [tab, setTab] = useState('hist');
   const [statsView, setStatsView] = useState('syllabus');
 
   const exportData = () => {
     const exportObj = {
+      levelHistory: {},
       topics: {},
       planning: {},
       practico: []
     };
+
+    if (levelDates) {
+      Object.entries(levelDates).forEach(([level, date]) => {
+        exportObj.levelHistory[`Level ${level}`] = date;
+      });
+    }
+
     actionLogs.forEach(log => {
       if (log.actionData) {
         const { entity, id, field } = log.actionData;
