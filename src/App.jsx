@@ -56,36 +56,33 @@ const Icon = ({ name, size = 24, strokeWidth = 2, className = "" }) => {
 // ==========================================
 const getCurricularMapping = (id) => {
   let ce = "1, 2, 3, 4, 5, 6";
-  let sb = "Block B";
-  let leg = "LOMLOE + Decreto 107/2022 (CV)";
+  let doVal = "CCL1, CP1, CP2, CP3, CD2, CPSAA4, CE1";
+  let sb = "Block B. Plurilingualism";
+  let cr = "1.1, 1.2, 2.1, 2.2";
+  let leg = "LOMLOE (LO 3/2020) + RD 217/2022 & Decree 107/2022 (ESO Curriculum CV) + RD 243/2022 & Decree 108/2022 (Bachillerato Curriculum CV) + Order 19/2023 (Evaluation CV)";
 
-  if (id === 1 || id === 2) { ce = "1, 2, 3, 4"; sb = "Block A"; leg += " + Ley 1/2024"; }
-  else if (id === 3) { ce = "1, 3"; sb = "Block A"; }
-  else if (id === 4) { ce = "1, 2"; sb = "Block A"; }
-  else if (id === 5) { ce = "1, 2, 3"; sb = "Block A"; }
-  else if (id === 6) { ce = "5"; sb = "Block A & B"; }
-  else if (id === 7) { ce = "1, 2"; sb = "Block A & B"; }
-  else if (id === 8 || id === 9) { ce = "1, 2"; sb = "Block A"; }
-  else if (id === 10) { ce = "1, 2, 3"; sb = "Block A"; }
-  else if (id === 11) { ce = "1, 2"; sb = "Block A"; }
-  else if (id >= 12 && id <= 23) { ce = "6"; sb = "Block C"; }
-  else if (id >= 24 && id <= 27) { ce = "1, 6"; sb = "Block A & C"; }
-  else if (id >= 28 && id <= 34) { ce = "1, 6"; sb = "Block A & C"; }
-  else if (id >= 35 && id <= 39) { ce = "1, 6"; sb = "Block A & C"; }
-  else if (id >= 40 && id <= 44) { ce = "1, 3, 6"; sb = "Block A & C"; }
-  else if (id >= 45 && id <= 54) { ce = "6"; sb = "Block C"; }
-  else if (id === 55) { leg += " + Ley 1/2024"; }
-  else if (id === 57) { ce = "1, 3"; sb = "Block A"; }
-  else if (id === 58) { ce = "1"; sb = "Block A"; }
-  else if (id === 59) { ce = "2"; sb = "Block A"; }
-  else if (id === 60) { ce = "1, 2, 5"; sb = "Block A & B"; }
-  else if (id === 61) { ce = "1, 6"; sb = "Block A & C"; }
-  else if (id === 62) { ce = "1, 3, 6"; sb = "Block C"; }
-  else if (id === 65 || id === 66) { leg += " + Ley 1/2024"; }
-  else if (id === 68) { leg += " + Decreto 104/2018 (Inclusión)"; }
-  else if (id === 69) { sb = "Block B & C"; }
-
-  return { ce, sb, leg };
+  if ([1, 2, 39, 40].includes(id)) { 
+    ce = "1, 2, 3, 4"; 
+    sb = "Block A. Communication"; 
+    leg += " + Decree 104/2018 & Order 20/2019 (Inclusión Educativa CV)"; 
+  }
+  else if ([62, 65, 66].includes(id)) { 
+    ce = "1, 6"; 
+    sb = "Block C. Interculturality"; 
+    leg += " + Law 1/2024 (Libertad Educativa CV)"; 
+  }
+  else if (id >= 3 && id <= 6) { ce = "1, 2, 3"; sb = "Block A. Communication"; }
+  else if (id >= 7 && id <= 9) { ce = "1, 2"; sb = "Block A. Communication (Phonetics)"; }
+  else if (id >= 10 && id <= 27) { ce = "1, 2"; sb = "Block A. Communication (Grammar & Lexis)"; }
+  else if (id >= 28 && id <= 36) { ce = "1, 2, 3"; sb = "Block A. Communication (Discourse)"; }
+  else if ((id >= 37 && id <= 61) || (id >= 67 && id <= 69) || id === 63 || id === 64) { 
+    ce = "6"; 
+    sb = "Block C. Interculturality"; 
+    doVal = "CCL1, CP3, CC1, CC2, CC3"; 
+    cr = "6.1, 6.2, 6.3"; 
+  }
+  
+  return { ce, do: doVal, sb, cr, leg };
 };
 
 const RAW_TITLES = [
@@ -162,15 +159,23 @@ const RAW_TITLES = [
 
 const getEnhancedSchema = (id, title) => {
   const map = getCurricularMapping(id);
-  return `Introduction\n\n${title.split('. ').join('\n')}\n\nTopic ${id} in the classroom\n\nCURRICULAR MAPPING (LOMLOE - CV):\n• Specific Competences: ${map.ce}\n• Basic Knowledge: ${map.sb}\n• Key Legislation: ${map.leg}\n\nBibliography\nConclusion\n\nBIBLIOGRAPHY`;
+  const legislationList = map.leg.split(' + ').map(l => `• ${l}`).join('\n');
+  return `Introduction\n\n${title.split('. ').join('\n')}\n\nTopic ${id} in the classroom\n\nConclusion\n\nBibliography\n\nAPPLICABLE LEGISLATION:\n${legislationList}`;
 };
 
 const INITIAL_TOPICS = Array.from({ length: 69 }, (_, i) => {
+  const id = i + 1;
   const t = RAW_TITLES[i];
+  const mapping = getCurricularMapping(id);
   return { 
-    id: i + 1, title: t, redactado: false, estudiado: 0, reviews: 0, mocks: 0, miniMocks: 0, finished: false, discarded: false, stars: 0,
-    indexNotes: getEnhancedSchema(i + 1, t),
-    priority: null
+    id, title: t, redactado: false, estudiado: 0, reviews: 0, mocks: 0, miniMocks: 0, finished: false, discarded: false, stars: 0,
+    indexNotes: getEnhancedSchema(id, t),
+    priority: null,
+    ce: mapping.ce,
+    do: mapping.do,
+    sb: mapping.sb,
+    cr: mapping.cr,
+    leg: mapping.leg
   };
 });
 
@@ -298,7 +303,6 @@ export default function App() {
   const [isTimerActive, setIsTimerActive] = useState(false);
   const [endTime, setEndTime] = useState(null);
   const [showTimerMenu, setShowTimerMenu] = useState(false);
-  const [customMinutes, setCustomMinutes] = useState("");
 
   const [luckyNumbers, setLuckyNumbers] = useState([0,0,0,0]);
   const [activeDeckId, setActiveDeckId] = useState(null);
@@ -325,7 +329,18 @@ export default function App() {
         const mergedTopics = INITIAL_TOPICS.map(tInitial => {
           const tSaved = d.topics?.find(ts => ts.id === tInitial.id);
           if (!tSaved) return tInitial;
-          return { ...tSaved, title: tSaved.title || tInitial.title, indexNotes: tSaved.indexNotes || tInitial.indexNotes, priority: tSaved.priority ?? null, ce: tSaved.ce || tInitial.ce, sb: tSaved.sb || tInitial.sb, leg: tSaved.leg || tInitial.leg, estudiado: tSaved.estudiado ?? 0 };
+          return { 
+            ...tSaved, 
+            title: tSaved.title || tInitial.title, 
+            indexNotes: tSaved.indexNotes || tInitial.indexNotes, 
+            priority: tSaved.priority ?? null, 
+            ce: tSaved.ce || tInitial.ce, 
+            do: tSaved.do || tInitial.do,
+            sb: tSaved.sb || tInitial.sb, 
+            cr: tSaved.cr || tInitial.cr,
+            leg: tSaved.leg || tInitial.leg, 
+            estudiado: tSaved.estudiado ?? 0 
+          };
         });
         setTopics(mergedTopics);
 
@@ -374,7 +389,6 @@ export default function App() {
   const addPoints = (amount, desc, actionData = null) => {
     let finalLogs = [...actionLogs];
 
-    // Payload Cleanup 24h
     const twentyFourHoursAgo = Date.now() - 86400000;
     finalLogs = finalLogs.map(log => {
       if (log.actionData && log.timestamp < twentyFourHoursAgo) {
@@ -566,39 +580,25 @@ export default function App() {
                 </div>
               ) : (
                 <div className="flex flex-wrap justify-center gap-2 px-4 border-b border-slate-50 pb-6">
-                  <div className="flex flex-col items-center">
-                    <span className="text-[7px] font-black uppercase text-slate-400 mb-1">CE</span>
-                    <EditableText 
-                      value={selectedTopicModal.ce} 
-                      onSave={(nv) => { 
-                        setTopics(prev => prev.map(t => t.id === selectedTopicModal.id ? { ...t, ce: nv } : t)); 
-                        setSelectedTopicModal({...selectedTopicModal, ce: nv}); 
-                      }} 
-                      className="px-2 py-1 bg-emerald-50 text-emerald-600 rounded-lg text-[9px] font-black border border-emerald-100" 
-                    />
-                  </div>
-                  <div className="flex flex-col items-center">
-                    <span className="text-[7px] font-black uppercase text-slate-400 mb-1">SB</span>
-                    <EditableText 
-                      value={selectedTopicModal.sb} 
-                      onSave={(nv) => { 
-                        setTopics(prev => prev.map(t => t.id === selectedTopicModal.id ? { ...t, sb: nv } : t)); 
-                        setSelectedTopicModal({...selectedTopicModal, sb: nv}); 
-                      }} 
-                      className="px-2 py-1 bg-violet-50 text-violet-600 rounded-lg text-[9px] font-black border border-violet-100" 
-                    />
-                  </div>
-                  <div className="flex flex-col items-center">
-                    <span className="text-[7px] font-black uppercase text-slate-400 mb-1">Leg</span>
-                    <EditableText 
-                      value={selectedTopicModal.leg} 
-                      onSave={(nv) => { 
-                        setTopics(prev => prev.map(t => t.id === selectedTopicModal.id ? { ...t, leg: nv } : t)); 
-                        setSelectedTopicModal({...selectedTopicModal, leg: nv}); 
-                      }} 
-                      className="px-2 py-1 bg-amber-50 text-amber-600 rounded-lg text-[9px] font-black border border-amber-100" 
-                    />
-                  </div>
+                  {['ce', 'do', 'sb', 'cr', 'leg'].map(key => (
+                    <div key={key} className="flex flex-col items-center">
+                      <span className="text-[7px] font-black uppercase text-slate-400 mb-1">{key}</span>
+                      <EditableText 
+                        value={selectedTopicModal[key]} 
+                        onSave={(nv) => { 
+                          setTopics(prev => prev.map(t => t.id === selectedTopicModal.id ? { ...t, [key]: nv } : t)); 
+                          setSelectedTopicModal({...selectedTopicModal, [key]: nv}); 
+                        }} 
+                        className={`px-2 py-1 rounded-lg text-[9px] font-black border ${
+                          key==='ce' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
+                          key==='do' ? 'bg-blue-50 text-blue-600 border-blue-100' :
+                          key==='sb' ? 'bg-violet-50 text-violet-600 border-violet-100' :
+                          key==='cr' ? 'bg-pink-50 text-pink-600 border-pink-100' :
+                          'bg-amber-50 text-amber-600 border-amber-100'
+                        }`} 
+                      />
+                    </div>
+                  ))}
                 </div>
               )}
 
@@ -668,35 +668,7 @@ export default function App() {
                     <button onClick={()=>{setTimeLeft(7200); setEndTime(Date.now() + 7200000); setIsTimerActive(true); setShowTimerMenu(false)}} className="p-2 bg-slate-50 hover:bg-emerald-50 rounded-xl text-[10px] font-black uppercase">2H Focus</button>
                     <button onClick={()=>{setTimeLeft(3600); setEndTime(Date.now() + 3600000); setIsTimerActive(true); setShowTimerMenu(false)}} className="p-2 bg-slate-50 hover:bg-emerald-50 rounded-xl text-[10px] font-black uppercase">1H Plan</button>
                   </div>
-                  
-                  {/* Temporizador Personalizado */}
-                  <div className="pt-2 border-t border-slate-100 flex gap-2 items-center">
-                    <input 
-                      type="number" 
-                      placeholder="Min..." 
-                      className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-xs font-black outline-none focus:border-emerald-300"
-                      value={customMinutes}
-                      onChange={e => setCustomMinutes(e.target.value)}
-                    />
-                    <button 
-                      onClick={() => {
-                        const mins = parseInt(customMinutes);
-                        if(mins > 0) {
-                          const ms = mins * 60 * 1000;
-                          setTimeLeft(mins * 60);
-                          setEndTime(Date.now() + ms);
-                          setIsTimerActive(true);
-                          setShowTimerMenu(false);
-                          setCustomMinutes("");
-                        }
-                      }}
-                      className="bg-emerald-600 text-white px-3 py-1 rounded-lg text-[10px] font-black"
-                    >
-                      SET
-                    </button>
-                  </div>
-
-                  <button onClick={()=>{setTimeLeft(0); setEndTime(null); setIsTimerActive(false); setShowTimerMenu(false)}} className="w-full p-2 bg-red-50 text-red-600 rounded-xl text-[10px] font-black uppercase tracking-widest mt-2">Reset Timer</button>
+                  <button onClick={()=>{setTimeLeft(0); setEndTime(null); setIsTimerActive(false); setShowTimerMenu(false)}} className="w-full p-2 bg-red-50 text-red-600 rounded-xl text-[10px] font-black uppercase tracking-widest">Reset Timer</button>
                 </div>
               )}
             </div>
@@ -1125,49 +1097,16 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam }) {
   const [name, setName] = useState("");
   const [editingId, setEditingId] = useState(null);
 
-  const startExamMode = () => { 
-    const allCards = decks.flatMap(d => d.cards.map(c => ({...c, deckName: d.name}))); 
-    if (allCards.length === 0) return alert("Empty library!"); 
-    onExam({ id: 'exam-mode', name: 'TOTAL EXAM', cards: allCards.sort(() => Math.random() - 0.5) }); 
-  };
-
-  const saveDeck = () => { 
-    if(txt.includes(':') && name){ 
-      const cards = txt.split('\n').filter(l=>l.includes(':')).map(l=>{const [q,a]=l.split(':'); return {q:q.trim(),a:a.trim(),id:Math.random().toString(36)};}); 
-      if(editingId) setDecks(decks.map(d=>d.id===editingId?{...d,name,cards}:d)); 
-      else setDecks([{id:Date.now().toString(),name,cards}, ...decks]); 
-      setOpen(false); setName(""); setTxt(""); setEditingId(null); 
-    } 
-  };
-
-  const loadForEdit = (deck) => { 
-    setName(deck.name); 
-    setTxt(deck.cards.map(c => `${c.q} : ${c.a}`).join('\n')); 
-    setEditingId(deck.id); setOpen(true); 
-  };
-
-  // Ordenar mazos alfabéticamente automáticamente
-  const sortedDecks = useMemo(() => [...decks].sort((a, b) => a.name.localeCompare(b.name)), [decks]);
+  const startExamMode = () => { const allCards = decks.flatMap(d => d.cards.map(c => ({...c, deckName: d.name}))); if (allCards.length === 0) return alert("Empty library!"); onExam({ id: 'exam-mode', name: 'TOTAL EXAM', cards: allCards.sort(() => Math.random() - 0.5) }); };
+  const saveDeck = () => { if(txt.includes(':') && name){ const cards = txt.split('\n').filter(l=>l.includes(':')).map(l=>{const [q,a]=l.split(':'); return {q:q.trim(),a:a.trim(),id:Math.random().toString(36)};}); if(editingId) setDecks(decks.map(d=>d.id===editingId?{...d,name,cards}:d)); else setDecks([{id:Date.now().toString(),name,cards}, ...decks]); setOpen(false); setName(""); setTxt(""); setEditingId(null); } };
+  const loadForEdit = (deck) => { setName(deck.name); setTxt(deck.cards.map(c => `${c.q} : ${c.a}`).join('\n')); setEditingId(deck.id); setOpen(true); };
 
   return (
     <div className="space-y-6 text-left">
       <div className="flex justify-between items-center bg-white/50 backdrop-blur px-4 py-2 rounded-2xl shadow-sm border border-white/50"><h2 className="text-2xl font-black text-rose-950">Library</h2><button onClick={startExamMode} className="p-3 bg-rose-100 text-rose-700 rounded-xl font-black text-[10px] flex items-center gap-2 border border-rose-200 active:scale-95 transition-all shadow-sm"><Icon name="Zap" size={14} className="fill-rose-700"/> EXAM MODE</button></div>
       <button onClick={()=>{setOpen(!open); setEditingId(null); setName(""); setTxt("");}} className="w-full p-4 bg-rose-600 text-white rounded-2xl font-black shadow-lg shadow-rose-100 active:scale-95 transition-all">{editingId ? 'EDITING DECK' : 'NEW DECK'}</button>
       {open && (<div className="bento-card p-6 border-rose-100 space-y-4 shadow-xl animate-in zoom-in-95 bg-white"><input placeholder="Deck name..." value={name} onChange={e=>setName(e.target.value)} className="w-full bg-slate-50 p-3 rounded-xl font-black outline-none border-2 border-transparent focus:border-rose-200 shadow-inner" /><textarea placeholder="Question : Answer (One per line)" value={txt} onChange={e=>setTxt(e.target.value)} className="w-full h-32 bg-slate-50 p-3 rounded-xl font-black outline-none resize-none border-2 border-transparent focus:border-rose-200 shadow-inner" /><button onClick={saveDeck} className="w-full p-3 bg-rose-600 text-white rounded-xl font-black shadow-md uppercase">{editingId ? 'Save Changes' : 'Create Deck'}</button></div>)}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {sortedDecks.map(d=>(
-          <div key={d.id} onClick={()=>onSelect(d.id.toString())} className="bento-card bg-white p-5 flex justify-between items-center cursor-pointer hover:border-rose-300 transition-all shadow-sm group">
-            <div>
-              <p className="font-black text-left text-slate-800 leading-tight">{d.name}</p>
-              <p className="text-[9px] text-rose-400 font-black uppercase tracking-widest mt-1 flex items-center gap-2">{d.cards.length} cards</p>
-            </div>
-            <div className="flex gap-2">
-              <button onClick={(e)=>{e.stopPropagation(); loadForEdit(d)}} className="text-slate-300 hover:text-emerald-500 p-1"><Icon name="Edit" size={18}/></button>
-              <button onClick={(e)=>{e.stopPropagation(); setDecks(decks.filter(x=>x.id.toString()!==d.id.toString()))}} className="text-slate-300 hover:text-red-500 p-1"><Icon name="Trash2" size={18}/></button>
-            </div>
-          </div>
-        ))}
-      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">{decks.map(d=>(<div key={d.id} onClick={()=>onSelect(d.id.toString())} className="bento-card bg-white p-5 flex justify-between items-center cursor-pointer hover:border-rose-300 transition-all shadow-sm group"><div><p className="font-black text-left text-slate-800 leading-tight">{d.name}</p><p className="text-[9px] text-rose-400 font-black uppercase tracking-widest mt-1 flex items-center gap-2">{d.cards.length} cards</p></div><div className="flex gap-2"><button onClick={(e)=>{e.stopPropagation(); loadForEdit(d)}} className="text-slate-300 hover:text-emerald-500 p-1"><Icon name="Edit" size={18}/></button><button onClick={(e)=>{e.stopPropagation(); setDecks(decks.filter(x=>x.id.toString()!==d.id.toString()))}} className="text-slate-300 hover:text-red-500 p-1"><Icon name="Trash2" size={18}/></button></div></div>))}</div>
     </div>
   );
 }
@@ -1175,51 +1114,10 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam }) {
 function DeckStudyView({ deck, onBack, addPoints }) {
   const [idx, setIdx] = useState(0);
   const [flipped, setFlipped] = useState(false);
-  const [isShuffled, setIsShuffled] = useState(false);
-
-  // Generar lista de tarjetas (normal o mezclada)
-  const cardsToStudy = useMemo(() => {
-    if (!isShuffled) return deck.cards;
-    return [...deck.cards].sort(() => Math.random() - 0.5);
-  }, [deck.cards, isShuffled]);
-
-  const card = cardsToStudy[idx];
+  const card = deck?.cards[idx];
   if(!card) return null;
-
   return (
-    <div className="max-w-xl mx-auto py-10 space-y-8 text-left">
-      <div className="flex justify-between items-center">
-        <button onClick={onBack} className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-rose-600 transition-all">
-          <Icon name="ChevronRight" className="rotate-180" size={16}/> Back to Library
-        </button>
-        
-        {/* Botón Shuffle / Unshuffle */}
-        <button 
-          onClick={() => { setIsShuffled(!isShuffled); setIdx(0); setFlipped(false); }}
-          className={`flex items-center gap-2 px-3 py-1.5 rounded-xl font-black text-[10px] uppercase transition-all ${isShuffled ? 'bg-rose-600 text-white shadow-lg' : 'bg-slate-100 text-slate-400 hover:bg-slate-200'}`}
-        >
-          <Icon name="Shuffle" size={14}/> {isShuffled ? 'Shuffled' : 'Normal'}
-        </button>
-      </div>
-
-      <div className="h-80 w-full relative" style={{ perspective: '1000px' }} onClick={()=>{if(!flipped) addPoints(2,"Flashcard Mastery"); setFlipped(!flipped);}}>
-        <div className={`relative w-full h-full transition-transform duration-500 rounded-[40px] shadow-2xl cursor-pointer ${flipped ? '[transform:rotateY(180deg)]' : ''}`} style={{ transformStyle: 'preserve-3d' }}>
-          <div className="absolute inset-0 bg-white border-8 border-rose-50 rounded-[40px] flex flex-col items-center justify-center p-10 text-center [backface-visibility:hidden] shadow-inner">
-            {card?.deckName && <span className="absolute top-6 px-3 py-1 bg-rose-50 text-rose-500 text-[8px] font-black rounded-full uppercase border border-rose-100">{card.deckName}</span>}
-            <p className="text-2xl font-black text-slate-800">{card?.q}</p>
-          </div>
-          <div className="absolute inset-0 bg-rose-600 text-white rounded-[40px] flex items-center justify-center p-10 text-center [transform:rotateY(180deg)] [backface-visibility:hidden] shadow-xl shadow-rose-200">
-            <p className="text-xl font-medium italic">{card?.a}</p>
-          </div>
-        </div>
-      </div>
-      
-      <div className="flex gap-4">
-        <button onClick={()=>{setIdx(p=>Math.max(0,p-1)); setFlipped(false);}} className="flex-1 py-4 bg-white border-2 border-rose-100 rounded-2xl font-black text-rose-600 shadow-sm active:scale-95 transition-all" disabled={idx===0}>PREVIOUS</button>
-        <button onClick={()=>{setIdx(p=>Math.min(cardsToStudy.length-1,p+1)); setFlipped(false);}} className="flex-1 py-4 bg-rose-600 text-white rounded-2xl font-black shadow-xl shadow-rose-100 active:scale-95 transition-all" disabled={idx===cardsToStudy.length-1}>NEXT</button>
-      </div>
-      <p className="text-center text-[10px] font-black text-slate-300 uppercase tracking-widest">{idx + 1} / {cardsToStudy.length}</p>
-    </div>
+    <div className="max-w-xl mx-auto py-10 space-y-8 text-left"><button onClick={onBack} className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-rose-600 transition-all"><Icon name="ChevronRight" className="rotate-180" size={16}/> Back to Library</button><div className="h-80 w-full relative" style={{ perspective: '1000px' }} onClick={()=>{if(!flipped) addPoints(2,"Flashcard Mastery"); setFlipped(!flipped);}}><div className={`relative w-full h-full transition-transform duration-500 rounded-[40px] shadow-2xl cursor-pointer ${flipped ? '[transform:rotateY(180deg)]' : ''}`} style={{ transformStyle: 'preserve-3d' }}><div className="absolute inset-0 bg-white border-8 border-rose-50 rounded-[40px] flex flex-col items-center justify-center p-10 text-center [backface-visibility:hidden] shadow-inner">{card?.deckName && <span className="absolute top-6 px-3 py-1 bg-rose-50 text-rose-500 text-[8px] font-black rounded-full uppercase border border-rose-100">{card.deckName}</span>}<p className="text-2xl font-black text-slate-800">{card?.q}</p></div><div className="absolute inset-0 bg-rose-600 text-white rounded-[40px] flex items-center justify-center p-10 text-center [transform:rotateY(180deg)] [backface-visibility:hidden] shadow-xl shadow-rose-200"><p className="text-xl font-medium italic">{card?.a}</p></div></div></div><div className="flex gap-4"><button onClick={()=>{setIdx(p=>Math.max(0,p-1)); setFlipped(false);}} className="flex-1 py-4 bg-white border-2 border-rose-100 rounded-2xl font-black text-rose-600 shadow-sm active:scale-95 transition-all" disabled={idx===0}>PREVIOUS</button><button onClick={()=>{setIdx(p=>Math.min(deck.cards.length-1,p+1)); setFlipped(false);}} className="flex-1 py-4 bg-rose-600 text-white rounded-2xl font-black shadow-xl shadow-rose-100 active:scale-95 transition-all" disabled={idx===deck.cards.length-1}>NEXT</button></div></div>
   );
 }
 
