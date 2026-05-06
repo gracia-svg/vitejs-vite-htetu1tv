@@ -1230,6 +1230,10 @@ function NotesView({ notes, setNotes }) {
   );
 }
 
+// ==========================================
+// COMPONENTES DE FLASHCARDS ACTUALIZADOS
+// ==========================================
+
 function FlashcardsManager({ decks, setDecks, onSelect, onExam }) {
   const [open, setOpen] = useState(false);
   const [txt, setTxt] = useState("");
@@ -1241,7 +1245,7 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam }) {
   const [dailyCats, setDailyCats] = useState(DECK_CATEGORIES);
 
   const startExamMode = () => { 
-    const allCards = decks.flatMap(d => d.cards.map(c => ({...c, deckName: d.name}))); 
+    const allCards = decks.flatMap(d => d.cards.map(c => ({...c, deckName: d.name, deckId: d.id}))); 
     if (allCards.length === 0) return alert("Empty library!"); 
     onExam({ id: 'exam-mode', name: 'TOTAL EXAM', cards: allCards.sort(() => Math.random() - 0.5) }); 
   };
@@ -1287,26 +1291,20 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam }) {
   const exportDecks = () => {
     const json = JSON.stringify(decks);
     navigator.clipboard.writeText(json).then(() => {
-      alert("¡Mazos copiados al portapapeles! Pégalos en un bloc de notas para guardarlos.");
-    }).catch(err => {
-      prompt("Tu navegador bloqueó el copiado automático. Copia este texto manualmente:", json);
+      alert("¡Mazos copiados al portapapeles!");
     });
   };
 
   const importDecks = () => {
-    const input = prompt("Pega aquí el código de tus mazos exportados:");
+    const input = prompt("Pega aquí el código de tus mazos:");
     if (input) {
       try {
         const imported = JSON.parse(input);
         if (Array.isArray(imported)) {
           setDecks(prev => [...prev, ...imported]);
-          alert("¡Mazos importados con éxito!");
-        } else {
-          alert("El formato de los datos no es válido.");
+          alert("¡Mazos importados!");
         }
-      } catch (e) {
-        alert("Error al importar. Asegúrate de haber pegado el código completo.");
-      }
+      } catch (e) { alert("Error al importar."); }
     }
   };
 
@@ -1318,7 +1316,17 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam }) {
         <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[200] flex items-center justify-center p-4" onClick={()=>setShowDailyModal(false)}>
           <div className="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl animate-in zoom-in-95" onClick={e=>e.stopPropagation()}>
             <h3 className="text-xl font-black text-rose-950 mb-4 flex items-center gap-2"><Icon name="Zap" className="text-amber-500"/> Reto Diario SRS</h3>
-            <p className="text-xs font-bold text-slate-500 mb-4">Selecciona las categorías que quieres incluir hoy. Solo se mostrarán las tarjetas que tu cerebro está a punto de olvidar (Máx. 50).</p>
+            
+            <div className="flex justify-between items-center mb-4">
+               <p className="text-xs font-bold text-slate-500">Selecciona categorías:</p>
+               <button 
+                onClick={() => setDailyCats(DECK_CATEGORIES)}
+                className="text-[10px] font-black text-rose-600 uppercase hover:underline"
+               >
+                 Seleccionar Todas
+               </button>
+            </div>
+
             <div className="flex flex-wrap gap-2 mb-6">
               {DECK_CATEGORIES.map(c => (
                 <button 
@@ -1330,9 +1338,7 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam }) {
                 </button>
               ))}
             </div>
-            {/* --- SWIFTIE REFERENCE START --- */}
             <button onClick={startDailyChallenge} className="w-full p-4 bg-rose-600 text-white rounded-xl font-black shadow-lg hover:bg-rose-700 active:scale-95 transition-all uppercase">…Ready For It? 🐍</button>
-            {/* --- SWIFTIE REFERENCE END --- */}
           </div>
         </div>
       )}
@@ -1392,13 +1398,17 @@ function DeckStudyView({ deck, onBack, addPoints, onUpdateCard, onFinishChalleng
   const isChallenge = deck.isChallenge;
   const [challengeQueue, setChallengeQueue] = useState(isChallenge ? deck.cards : []);
 
+  // Reset de la vuelta al cambiar de tarjeta para evitar el "spoiler" de la respuesta
+  useEffect(() => {
+    setFlipped(false);
+  }, [idx]);
+
   const cardsToStudy = useMemo(() => {
     if (isChallenge) return challengeQueue;
     if (!isShuffled) return deck.cards;
     return [...deck.cards].sort(() => Math.random() - 0.5);
   }, [deck.cards, isShuffled, challengeQueue, isChallenge]);
 
-  // --- SWIFTIE REFERENCE START --- (Portada All Too Well)
   if (isChallenge && !challengeStarted) {
     return (
       <div className="max-w-xl mx-auto py-20 text-center space-y-8 animate-in zoom-in-95">
@@ -1413,27 +1423,29 @@ function DeckStudyView({ deck, onBack, addPoints, onUpdateCard, onFinishChalleng
       </div>
     );
   }
-  // --- SWIFTIE REFERENCE END ---
 
-  // Pantalla de finalización de Reto
-  if (isChallenge && idx >= cardsToStudy.length) {
+  if (idx >= cardsToStudy.length) {
     return (
       <div className="max-w-xl mx-auto py-20 text-center space-y-6 animate-in zoom-in-95">
         <Icon name="Award" size={80} className="mx-auto text-amber-500" />
-        {/* --- SWIFTIE REFERENCE START --- */}
         <h2 className="text-3xl font-black text-rose-950">You're out of the woods! 🌲</h2>
-        {/* --- SWIFTIE REFERENCE END --- */}
-        <p className="text-sm font-bold text-slate-500">Has repasado tus tarjetas pendientes con éxito.</p>
-        <button onClick={onFinishChallenge} className="px-8 py-4 bg-rose-600 text-white rounded-2xl font-black shadow-xl shadow-rose-200 hover:bg-rose-700 active:scale-95 transition-all tracking-widest uppercase">Reclamar Recompensa</button>
+        <p className="text-sm font-bold text-slate-500">Sesión de repaso completada.</p>
+        <button onClick={onFinishChallenge || onBack} className="px-8 py-4 bg-rose-600 text-white rounded-2xl font-black shadow-xl hover:bg-rose-700 active:scale-95 transition-all uppercase">Volver</button>
       </div>
     );
   }
 
   const card = cardsToStudy[idx];
-  if(!card) return null;
 
   const handleAnki = (rating) => {
     if (!onUpdateCard) return;
+
+    // Fix del cuelgue: Aseguramos que deckId sea un string válido
+    const targetDeckId = (card.deckId || deck.id)?.toString();
+    if (!targetDeckId) {
+        console.error("Error: No se pudo encontrar el ID del mazo para esta tarjeta.");
+        return;
+    }
 
     let { interval = 0, ease = 2.5 } = card;
     let newInterval = interval;
@@ -1452,14 +1464,15 @@ function DeckStudyView({ deck, onBack, addPoints, onUpdateCard, onFinishChalleng
     }
 
     const newNextDate = rating === 'repeat' ? 0 : Date.now() + (newInterval * 86400000);
-    onUpdateCard(card.deckId, card.id, { interval: newInterval, ease: newEase, nextDate: newNextDate });
+    
+    // Llamada segura
+    onUpdateCard(targetDeckId, card.id, { interval: newInterval, ease: newEase, nextDate: newNextDate });
 
-    if (rating === 'repeat') {
+    if (rating === 'repeat' && isChallenge) {
       setChallengeQueue(prev => [...prev, {...card, interval: newInterval, ease: newEase, nextDate: newNextDate}]);
     }
 
     setIdx(p => p + 1);
-    setFlipped(false);
   };
 
   return (
@@ -1470,7 +1483,7 @@ function DeckStudyView({ deck, onBack, addPoints, onUpdateCard, onFinishChalleng
         </button>
         {!isChallenge && (
           <button 
-            onClick={() => { setIsShuffled(!isShuffled); setIdx(0); setFlipped(false); }}
+            onClick={() => { setIsShuffled(!isShuffled); setIdx(0); }}
             className={`flex items-center gap-2 px-3 py-1.5 rounded-xl font-black text-[10px] uppercase transition-all ${isShuffled ? 'bg-rose-600 text-white shadow-lg' : 'bg-slate-100 text-slate-400 hover:bg-slate-200'}`}
           >
             <Icon name="Shuffle" size={14}/> {isShuffled ? 'Shuffled' : 'Normal'}
@@ -1481,7 +1494,7 @@ function DeckStudyView({ deck, onBack, addPoints, onUpdateCard, onFinishChalleng
       <div className="h-80 w-full relative" style={{ perspective: '1000px' }} onClick={()=>{if(!flipped) addPoints(2,"Flashcard Mastery"); setFlipped(!flipped);}}>
         <div className={`relative w-full h-full transition-transform duration-500 rounded-[40px] shadow-2xl cursor-pointer ${flipped ? '[transform:rotateY(180deg)]' : ''}`} style={{ transformStyle: 'preserve-3d' }}>
           <div className="absolute inset-0 bg-white border-8 border-rose-50 rounded-[40px] flex flex-col items-center justify-center p-10 text-center [backface-visibility:hidden] shadow-inner">
-            {card?.deckName && <span className="absolute top-6 px-3 py-1 bg-rose-50 text-rose-500 text-[8px] font-black rounded-full uppercase border border-rose-100">{card.deckName}</span>}
+            {(card?.deckName || deck.name) && <span className="absolute top-6 px-3 py-1 bg-rose-50 text-rose-500 text-[8px] font-black rounded-full uppercase border border-rose-100">{card.deckName || deck.name}</span>}
             <p className="text-2xl font-black text-slate-800">{card?.q}</p>
           </div>
           <div className="absolute inset-0 bg-rose-600 text-white rounded-[40px] flex items-center justify-center p-10 text-center [transform:rotateY(180deg)] [backface-visibility:hidden] shadow-xl shadow-rose-200">
@@ -1490,8 +1503,8 @@ function DeckStudyView({ deck, onBack, addPoints, onUpdateCard, onFinishChalleng
         </div>
       </div>
       
-      {isChallenge && flipped ? (
-        <div className="grid grid-cols-4 gap-2">
+      {flipped ? (
+        <div className="grid grid-cols-4 gap-2 animate-in fade-in slide-in-from-bottom-2">
           <button onClick={(e)=>{e.stopPropagation(); handleAnki('repeat')}} className="py-4 bg-slate-100 text-slate-600 rounded-2xl font-black text-[10px] uppercase shadow-sm active:scale-95 transition-all">Repetir<br/><span className="text-[8px] opacity-60">Ahora</span></button>
           <button onClick={(e)=>{e.stopPropagation(); handleAnki('hard')}} className="py-4 bg-orange-100 text-orange-700 rounded-2xl font-black text-[10px] uppercase shadow-sm active:scale-95 transition-all">Difícil<br/><span className="text-[8px] opacity-60">Mañana</span></button>
           <button onClick={(e)=>{e.stopPropagation(); handleAnki('good')}} className="py-4 bg-emerald-100 text-emerald-700 rounded-2xl font-black text-[10px] uppercase shadow-sm active:scale-95 transition-all">Bien<br/><span className="text-[8px] opacity-60">Días</span></button>
@@ -1499,15 +1512,14 @@ function DeckStudyView({ deck, onBack, addPoints, onUpdateCard, onFinishChalleng
         </div>
       ) : (
         <div className="flex gap-4">
-          <button onClick={()=>{setIdx(p=>Math.max(0,p-1)); setFlipped(false);}} className="flex-1 py-4 bg-white border-2 border-rose-100 rounded-2xl font-black text-rose-600 shadow-sm active:scale-95 transition-all" disabled={idx===0 || isChallenge}>PREVIOUS</button>
-          <button onClick={()=>{if(!isChallenge) {setIdx(p=>Math.min(cardsToStudy.length-1,p+1)); setFlipped(false);}}} className={`flex-1 py-4 rounded-2xl font-black shadow-xl active:scale-95 transition-all ${isChallenge ? 'bg-slate-200 text-slate-400 opacity-50 cursor-not-allowed' : 'bg-rose-600 text-white shadow-rose-100'}`} disabled={idx===cardsToStudy.length-1 || isChallenge}>NEXT</button>
+          <button onClick={(e)=>{e.stopPropagation(); setIdx(p=>Math.max(0,p-1))}} className="flex-1 py-4 bg-white border-2 border-rose-100 rounded-2xl font-black text-rose-600 shadow-sm active:scale-95 transition-all" disabled={idx===0}>PREVIOUS</button>
+          <button onClick={(e)=>{e.stopPropagation(); setIdx(p=>p+1)}} className="flex-1 py-4 bg-rose-600 text-white rounded-2xl font-black shadow-xl shadow-rose-100 active:scale-95 transition-all">NEXT</button>
         </div>
       )}
       <p className="text-center text-[10px] font-black text-slate-300 uppercase tracking-widest">{idx + 1} / {cardsToStudy.length}</p>
     </div>
   );
 }
-
 function BadgesView({ points, streak, maxStreak, topics, planning, units, skills, perfectWeeks, totalDailyChallenges }) {
   const doneTopics = topics.filter(t=>t.finished).length;
   const studiedTopics = topics.filter(t=>t.estudiado > 0).length;
