@@ -1111,34 +1111,57 @@ function PlanningHub({ planning, setPlanning, units, setUnits, addPoints, submis
 
   return (
     <div className="space-y-8 text-left animate-in slide-in-from-right-4">
-      {/* HEADER ACTUALIZADO: Estilo idéntico a SyllabusView para cohesión */}
-      <div className="bg-white/50 backdrop-blur p-6 rounded-3xl border border-white/50 shadow-sm flex flex-col gap-4">
+      {/* HEADER REDISEÑADO: Más compacto y amigable para móvil */}
+      <div className="bg-white/50 backdrop-blur p-6 rounded-[32px] border border-white/50 shadow-sm flex flex-col gap-6">
         <div className="flex justify-between items-start">
            <div className="flex items-center gap-3">
              <Icon name="FileText" className="text-teal-600" />
-             <h2 className="text-2xl font-black text-slate-950">Programación</h2>
+             <h2 className="text-xl sm:text-2xl font-black text-slate-950">Programación</h2>
            </div>
-           <div className="text-right cursor-pointer relative" onClick={() => setShowSubDate(!showSubDate)}>
-              <p className="text-3xl font-black text-slate-800 tabular-nums leading-none">{days}</p>
-              <p className="text-[8px] font-black uppercase text-teal-600 tracking-widest mt-1">Days to Deadline 📑</p>
-              {showSubDate && (
-                <input 
-                  type="date" 
-                  value={submissionDate} 
-                  onChange={e => { setSubmissionDate(e.target.value); setShowSubDate(false); }} 
-                  onClick={e => e.stopPropagation()} 
-                  className="absolute top-0 right-0 bg-white shadow-xl rounded-lg p-2 text-xs border z-50" 
-                />
-              )}
+           
+           <div className="flex items-start gap-4">
+              {/* Botón Reset movido aquí para ahorrar espacio horizontal */}
+              <button 
+                onClick={onReset} 
+                className="px-2.5 py-1.5 bg-red-50 text-red-600 font-black text-[9px] rounded-xl hover:bg-red-100 transition-all uppercase tracking-widest mt-0.5 border border-red-100 shadow-sm active:scale-90"
+              >
+                Reset
+              </button>
+
+              <div className="text-right cursor-pointer relative" onClick={() => setShowSubDate(!showSubDate)}>
+                <p className="text-3xl font-black text-slate-800 tabular-nums leading-none">{days}</p>
+                <p className="text-[8px] font-black uppercase text-teal-600 tracking-widest mt-1">Days to Deadline 📑</p>
+                {showSubDate && (
+                  <input 
+                    type="date" 
+                    value={submissionDate} 
+                    onChange={e => { setSubmissionDate(e.target.value); setShowSubDate(false); }} 
+                    onClick={e => e.stopPropagation()} 
+                    className="absolute top-0 right-0 bg-white shadow-xl rounded-lg p-2 text-xs border z-50" 
+                  />
+                )}
+              </div>
            </div>
         </div>
-        <div className="flex items-center gap-3 w-full">
-          <form onSubmit={e => { e.preventDefault(); if(newPlan.trim()){ setPlanning([...planning, {id: 'p'+(planning.length+1), title: newPlan.trim(), status: 0, indexNotes: "", priority: null, leg: "LOMLOE"}]); setNewPlan(""); } }} className="flex-1 flex gap-2">
-            <input placeholder="Nueva sección de programación..." value={newPlan} onChange={e=>setNewPlan(e.target.value)} className="flex-1 bg-white border-2 border-slate-100 rounded-2xl px-4 py-2 text-sm font-black outline-none focus:border-teal-200 transition-all shadow-sm" />
-            <button type="submit" className="bg-teal-600 text-white p-3 rounded-xl shadow-md active:scale-95 transition-transform"><Icon name="Plus" size={20}/></button>
-          </form>
-          <button onClick={onReset} className="px-3 py-2 bg-red-50 text-red-600 font-black text-[10px] rounded-xl hover:bg-red-100 transition-all shrink-0 uppercase tracking-widest">Reset</button>
-        </div>
+
+        {/* Fila dedicada al formulario: Ocupa el ancho completo sin apretarse */}
+        <form 
+          onSubmit={e => { e.preventDefault(); if(newPlan.trim()){ setPlanning([...planning, {id: 'p'+(planning.length+1), title: newPlan.trim(), status: 0, indexNotes: "", priority: null, leg: "LOMLOE"}]); setNewPlan(""); } }} 
+          className="flex gap-2"
+        >
+          <input 
+            placeholder="Añadir sección..." 
+            value={newPlan} 
+            onChange={e => setNewPlan(e.target.value)} 
+            className="flex-1 bg-white border-2 border-slate-100 rounded-2xl px-4 py-3 text-sm font-black outline-none focus:border-teal-200 transition-all shadow-inner" 
+          />
+          <button 
+            type="submit" 
+            className="bg-teal-600 text-white p-3.5 rounded-2xl shadow-lg shadow-teal-100 active:scale-95 transition-transform"
+          >
+            <Icon name="Plus" size={20}/>
+          </button>
+        </form>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
