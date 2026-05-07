@@ -518,34 +518,20 @@ export default function App() {
       `}</style>
 
       {/* MODALES DEL VAULT */}
-      {showVault && (
-        <div className="modal-overlay" onClick={() => setShowVault(false)}>
-          <div className="bg-white rounded-[40px] p-10 w-full max-w-sm shadow-2xl animate-in zoom-in-95 relative overflow-hidden" onClick={e => e.stopPropagation()}>
-            {/* El botón X ahora solo cierra el modal y te deja donde estabas (el mapa) */}
-            <button 
-              onClick={() => setShowVault(false)} 
-              className="absolute top-6 right-6 text-slate-300 hover:text-rose-500 transition-colors z-20"
-            >
-              <Icon name="X" size={24}/>
-            </button>
-
-            <div className="relative z-10 flex flex-col items-center">
-              <div className="w-20 h-20 bg-rose-50 rounded-3xl flex items-center justify-center mb-6">
-                <Icon name="Quote" className="text-rose-500" size={40}/>
-              </div>
-              <p className="text-sm font-black text-slate-800 leading-relaxed italic mb-2">"{dailyQuote.q}"</p>
-              <p className="text-[10px] font-black uppercase text-rose-500 tracking-widest">— {dailyQuote.a}</p>
-            </div>
-
-            {/* Al tocar la parte baja, ahora sí te lleva al carrusel completo */}
-            <div 
-              onClick={() => { setView('vault'); setShowVault(false); }} 
-              className="mt-8 pt-4 border-t border-slate-50 cursor-pointer group"
-            >
-              <p className="text-[10px] font-black uppercase text-slate-300 tracking-[0.2em] group-hover:text-rose-500 transition-colors">
-                Touch to Enter The Vault
-              </p>
-            </div>
+      {showVaultModal && (
+        <div className="modal-overlay animate-in fade-in" onClick={() => { setShowVaultModal(false); setShowVaultCarousel(true); }}>
+          <div className="bg-white rounded-[40px] p-8 max-w-sm w-full text-center shadow-2xl relative animate-in zoom-in-95" onClick={e => e.stopPropagation()}>
+             <button onClick={() => { setShowVaultModal(false); setShowVaultCarousel(true); }} className="absolute top-4 right-4 text-slate-300 hover:text-red-500"><Icon name="X" size={24}/></button>
+             <p className="text-[10px] font-black uppercase text-amber-500 tracking-[0.3em] mb-4">Daily Wisdom From The Vault 🗝️</p>
+             {vaultItems.length > 0 ? (
+               <div className="space-y-4">
+                 <p className="text-xl font-black text-slate-800 leading-tight italic">"{vaultItems[Math.floor(Math.random() * vaultItems.length)].text}"</p>
+                 <p className="text-xs font-bold text-slate-400">— {vaultItems[Math.floor(Math.random() * vaultItems.length)].reference}</p>
+               </div>
+             ) : (
+               <p className="text-sm font-bold text-slate-400 italic">Vault is empty. Import citations in settings.</p>
+             )}
+             <p className="mt-8 text-[8px] font-black text-slate-300 uppercase animate-pulse">Touch to enter full carousel</p>
           </div>
         </div>
       )}
