@@ -519,10 +519,15 @@ export default function App() {
 
       {/* MODALES DEL VAULT */}
       {showVaultModal && (
-        <div className="modal-overlay animate-in fade-in" onClick={() => { setShowVaultModal(false); setShowVaultCarousel(true); }}>
+        <div className="modal-overlay animate-in fade-in" onClick={() => setShowVaultModal(false)}>
           <div className="bg-white rounded-[40px] p-8 max-w-sm w-full text-center shadow-2xl relative animate-in zoom-in-95" onClick={e => e.stopPropagation()}>
-             <button onClick={() => { setShowVaultModal(false); setShowVaultCarousel(true); }} className="absolute top-4 right-4 text-slate-300 hover:text-red-500"><Icon name="X" size={24}/></button>
+             {/* La X ahora SOLO cierra el modal y te deja en el mapa */}
+             <button onClick={() => setShowVaultModal(false)} className="absolute top-4 right-4 text-slate-300 hover:text-red-500 transition-colors">
+               <Icon name="X" size={24}/>
+             </button>
+
              <p className="text-[10px] font-black uppercase text-amber-500 tracking-[0.3em] mb-4">Daily Wisdom From The Vault 🗝️</p>
+             
              {vaultItems.length > 0 ? (
                <div className="space-y-4">
                  <p className="text-xl font-black text-slate-800 leading-tight italic">"{vaultItems[Math.floor(Math.random() * vaultItems.length)].text}"</p>
@@ -531,7 +536,16 @@ export default function App() {
              ) : (
                <p className="text-sm font-bold text-slate-400 italic">Vault is empty. Import citations in settings.</p>
              )}
-             <p className="mt-8 text-[8px] font-black text-slate-300 uppercase animate-pulse">Touch to enter full carousel</p>
+
+             {/* Tocar esta sección ahora CERRARÁ el modal y ABRIRÁ el carrusel */}
+             <div 
+               onClick={() => { setShowVaultModal(false); setShowVaultCarousel(true); }} 
+               className="mt-8 pt-4 border-t border-slate-50 cursor-pointer group"
+             >
+               <p className="text-[8px] font-black text-slate-300 uppercase animate-pulse group-hover:text-amber-500 transition-colors">
+                 Touch to enter full carousel
+               </p>
+             </div>
           </div>
         </div>
       )}
