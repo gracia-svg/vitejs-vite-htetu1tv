@@ -1260,33 +1260,31 @@ function NotesView({ notes, setNotes }) {
 }
 
 // ==========================================
-// COMPONENTES DE FLASHCARDS ACTUALIZADOS
+// COMPONENTES DE FLASHCARDS ACTUALIZADOS (MANAGER + UI + STUDY)
 // ==========================================
 
-// ==========================================
-// 1. COMPONENTE: GESTOR DE MAZOS (BIBLIOTECA)
-// ==========================================
 function FlashcardsManager({ decks, setDecks, onSelect, onExam }) {
   const [open, setOpen] = useState(false);
   const [txt, setTxt] = useState("");
   const [name, setName] = useState("");
   const [deckCat, setDeckCat] = useState("General");
   const [editingId, setEditingId] = useState(null);
-  const [showDailyModal, setShowDailyModal] = useState(false);
-  const [dailyCats, setDailyCats] = useState(DECK_CATEGORIES);
 
-  const startExamMode = () => { 
-    const allCards = decks.flatMap(d => d.cards.map(c => ({...c, deckName: d.name, deckId: d.id, category: d.category}))); 
-    if (allCards.length === 0) return alert("Library is empty!"); 
-    onExam({ id: 'exam-mode', name: 'TOTAL EXAM', cards: allCards.sort(() => Math.random() - 0.5) }); 
-  };
+  // Estados de control de Modales
+  const [showDailyModal, setShowDailyModal] = useState(false);
+  const [showExamModal, setShowExamModal] = useState(false);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
+
+  // Estados de configuración de estudio
+  const [dailyCats, setDailyCats] = useState(DECK_CATEGORIES);
+  const [examCats, setExamCats] = useState(DECK_CATEGORIES);
+  const [examLimit, setExamCount] = useState(20); 
 
   const startDailyChallenge = () => {
     let dueCards = [];
     const now = Date.now();
     decks.forEach(d => {
-      const ctg = d.category || "General";
-      if (dailyCats.includes(ctg)) {
+      if (dailyCats.includes(d.category || "General")) {
         d.cards.forEach(c => {
           if (!c.nextDate || c.nextDate <= now) {
             dueCards.push({...c, deckId: d.id, deckName: d.name, category: d.category});
@@ -1294,10 +1292,45 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam }) {
         });
       }
     });
-    if (dueCards.length === 0) return alert("No cards due in selected categories.");
+    if (dueCards.length === 0) return alert("¡No hay tarjetas urgentes en estas categorías hoy!");
     dueCards = dueCards.sort(() => Math.random() - 0.5).slice(0, 50);
     onExam({ id: 'daily-challenge', name: 'DAILY CHALLENGE', isChallenge: true, cards: dueCards });
     setShowDailyModal(false);
+  };
+
+  const executeExam = () => {
+    let pool = [];
+    decks.forEach(d => {
+      if (examCats.includes(d.category || "General")) {
+        pool.push(...d.cards.map(c => ({...c, deckId: d.id, deckName: d.name, category: d.category})));
+      }
+    });
+    if (pool.length === 0) return alert("No hay tarjetas en las categorías seleccionadas.");
+    
+    let finalCards = pool.sort(() => Math.random() - 0.5);
+    if (examLimit > 0) finalCards = finalCards.slice(0, examLimit);
+
+    onExam({ id: 'exam-mode', name: 'CUSTOM EXAM', cards: finalCards });
+    setShowExamModal(false);
+  };
+
+  const exportDecks = () => {
+    const json = JSON.stringify(decks);
+    navigator.clipboard.writeText(json).then(() => alert("¡Mazos copiados al portapapeles!"));
+  };
+
+  const importDecks = () => {
+    const input = prompt("Pega el código de tus mazos exportados:");
+    if (input) {
+      try {
+        const imported = JSON.parse(input);
+        if (Array.isArray(imported)) { 
+          setDecks(prev => [...prev, ...imported]); 
+          alert("¡Mazos importados con éxito!"); 
+          setShowSettingsModal(false);
+        }
+      } catch (e) { alert("Error al importar el código."); }
+    }
   };
 
   const saveDeck = () => { 
@@ -1313,8 +1346,7 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam }) {
   };
 
   const loadForEdit = (deck) => { 
-    setName(deck.name); 
-    setDeckCat(deck.category || "General");
+    setName(deck.name); setDeckCat(deck.category || "General");
     setTxt(deck.cards.map(c => `${c.q} : ${c.a}`).join('\n')); 
     setEditingId(deck.id); setOpen(true); 
   };
@@ -1323,35 +1355,76 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam }) {
 
   return (
     <div className="space-y-6 text-left relative">
+      
+      {/* MODAL: AJUSTES (Import/Export) */}
+      {showSettingsModal && (
+        <div className="modal-overlay" onClick={()=>setShowSettingsModal(false)}>
+          <div className="bg-white rounded-[40px] p-8 w-full max-w-sm shadow-2xl animate-in zoom-in-95" onClick={e=>e.stopPropagation()}>
+            <h3 className="text-xl font-black text-slate-900 mb-6 flex items-center gap-2"><Icon name="Settings" className="text-slate-400"/> Deck Settings</h3>
+            <div className="space-y-3">
+              <button onClick={exportDecks} className="w-full p-4 bg-slate-100 text-slate-700 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-200 transition-all flex items-center justify-between">Export Library <Icon name="ChevronRight" size={16}/></button>
+              <button onClick={importDecks} className="w-full p-4 bg-slate-100 text-slate-700 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-200 transition-all flex items-center justify-between">Import Library <Icon name="Plus" size={16}/></button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: RETO DIARIO */}
       {showDailyModal && (
         <div className="modal-overlay" onClick={()=>setShowDailyModal(false)}>
           <div className="bg-white rounded-[40px] p-8 w-full max-w-md shadow-2xl animate-in zoom-in-95" onClick={e=>e.stopPropagation()}>
             <h3 className="text-xl font-black text-rose-950 mb-4 flex items-center gap-2"><Icon name="Zap" className="text-amber-500"/> Daily Challenge</h3>
             <div className="flex justify-between items-center mb-4">
-               <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Select categories</p>
-               <button onClick={() => setDailyCats([...DECK_CATEGORIES])} className="text-[10px] font-black text-rose-600 uppercase hover:bg-rose-50 px-2 py-1 rounded-lg transition-colors">Select All</button>
+               <p className="text-[10px] font-black uppercase text-slate-400">Categories</p>
+               <button onClick={() => setDailyCats([...DECK_CATEGORIES])} className="text-[10px] font-black text-rose-600 uppercase">Select All</button>
             </div>
             <div className="flex flex-wrap gap-2 mb-6">
               {DECK_CATEGORIES.map(c => (
-                <button 
-                  key={c} 
-                  onClick={() => setDailyCats(prev => prev.includes(c) ? prev.filter(x=>x!==c) : [...prev, c])}
-                  className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all border ${dailyCats.includes(c) ? getCategoryBadge(c) : 'bg-slate-50 text-slate-300 border-transparent'}`}
-                >
-                  {c}
-                </button>
+                <button key={c} onClick={() => setDailyCats(prev => prev.includes(c) ? prev.filter(x=>x!==c) : [...prev, c])} className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all border ${dailyCats.includes(c) ? getCategoryBadge(c) : 'bg-slate-50 text-slate-300 border-transparent'}`}>{c}</button>
               ))}
             </div>
-            <button onClick={startDailyChallenge} className="w-full p-4 bg-rose-600 text-white rounded-xl font-black shadow-lg hover:bg-rose-700 active:scale-95 transition-all uppercase">Ready For It? 🐍</button>
+            <button onClick={startDailyChallenge} className="w-full p-4 bg-rose-600 text-white rounded-2xl font-black shadow-lg uppercase tracking-widest animate-pulse">…Ready For It? 🐍</button>
           </div>
         </div>
       )}
 
+      {/* MODAL: CONFIGURACIÓN MODO EXAMEN */}
+      {showExamModal && (
+        <div className="modal-overlay" onClick={()=>setShowExamModal(false)}>
+          <div className="bg-white rounded-[40px] p-8 w-full max-w-md shadow-2xl animate-in zoom-in-95" onClick={e=>e.stopPropagation()}>
+            <h3 className="text-xl font-black text-rose-950 mb-4 flex items-center gap-2"><Icon name="Dices" className="text-rose-500"/> Exam Config</h3>
+            
+            <p className="text-[10px] font-black uppercase text-slate-400 mb-2">Number of Cards</p>
+            <div className="grid grid-cols-4 gap-2 mb-6">
+              {[10, 20, 50, 0].map(v => (
+                <button key={v} onClick={() => setExamCount(v)} className={`py-2 rounded-xl text-xs font-black border-2 transition-all ${examLimit === v ? 'border-rose-500 bg-rose-50 text-rose-600' : 'border-slate-100 text-slate-400'}`}>
+                  {v === 0 ? 'ALL' : v}
+                </button>
+              ))}
+            </div>
+
+            <div className="flex justify-between items-center mb-4">
+               <p className="text-[10px] font-black uppercase text-slate-400">Categories</p>
+               <button onClick={() => setExamCats([...DECK_CATEGORIES])} className="text-[10px] font-black text-rose-600 uppercase">Select All</button>
+            </div>
+            <div className="flex flex-wrap gap-2 mb-8">
+              {DECK_CATEGORIES.map(c => (
+                <button key={c} onClick={() => setExamCats(prev => prev.includes(c) ? prev.filter(x=>x!==c) : [...prev, c])} className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all border ${examCats.includes(c) ? getCategoryBadge(c) : 'bg-slate-50 text-slate-300 border-transparent'}`}>{c}</button>
+              ))}
+            </div>
+
+            <button onClick={executeExam} className="w-full p-4 bg-slate-900 text-white rounded-2xl font-black shadow-xl uppercase tracking-widest">Start Exam</button>
+          </div>
+        </div>
+      )}
+
+      {/* CABECERA DE LA LIBRERÍA */}
       <div className="flex flex-col sm:flex-row justify-between items-center bg-white/50 backdrop-blur px-4 py-2 rounded-2xl shadow-sm border border-white/50 gap-4">
         <h2 className="text-2xl font-black text-rose-950">Library</h2>
         <div className="flex items-center gap-2">
-          <button onClick={()=>setShowDailyModal(true)} className="px-3 py-2 bg-amber-100 text-amber-700 rounded-xl font-black text-[10px] flex items-center gap-2 border border-amber-200 active:scale-95 transition-all shadow-sm"><Icon name="Flame" size={14} className="fill-amber-700"/> DAILY CHALLENGE</button>
-          <button onClick={startExamMode} className="px-3 py-2 bg-rose-100 text-rose-700 rounded-xl font-black text-[10px] flex items-center gap-2 border border-rose-200 active:scale-95 transition-all shadow-sm"><Icon name="Dices" size={14}/> EXAM MODE</button>
+          <button onClick={()=>setShowDailyModal(true)} className="px-3 py-2 bg-amber-100 text-amber-700 rounded-xl font-black text-[10px] flex items-center gap-2 border border-amber-200 active:scale-95 transition-all shadow-sm"><Icon name="Flame" size={14} className="fill-amber-700"/> DAILY RETO</button>
+          <button onClick={()=>setShowExamModal(true)} className="px-3 py-2 bg-rose-100 text-rose-700 rounded-xl font-black text-[10px] flex items-center gap-2 border border-rose-200 active:scale-95 transition-all shadow-sm"><Icon name="Dices" size={14}/> EXAM MODE</button>
+          <button onClick={()=>setShowSettingsModal(true)} className="p-2 bg-slate-100 text-slate-500 rounded-xl hover:bg-slate-200 transition-all" title="Settings"><Icon name="Settings" size={18}/></button>
         </div>
       </div>
       
@@ -1375,12 +1448,10 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam }) {
           <div key={d.id} onClick={()=>onSelect(d.id.toString())} className="bento-card bg-white p-5 flex justify-between items-center cursor-pointer hover:border-rose-300 transition-all shadow-sm group">
             <div>
               <p className="font-black text-left text-slate-800 leading-tight">{d.name}</p>
-<div className="flex gap-2 items-center mt-1">
-  <span className={`text-[8px] px-2 py-0.5 rounded uppercase font-black border ${getCategoryBadge(d.category)}`}>
-    {d.category || "General"}
-  </span>
-  <p className="text-[9px] text-rose-400 font-black uppercase tracking-widest">{d.cards.length} cards</p>
-</div>
+              <div className="flex gap-2 items-center mt-1">
+                <span className={`text-[8px] px-2 py-0.5 rounded uppercase font-black border ${getCategoryBadge(d.category)}`}>{d.category || "General"}</span>
+                <p className="text-[9px] text-rose-400 font-black uppercase tracking-widest">{d.cards.length} cards</p>
+              </div>
             </div>
             <div className="flex gap-2">
               <button onClick={(e)=>{e.stopPropagation(); loadForEdit(d)}} className="text-slate-300 hover:text-emerald-500 p-1"><Icon name="Edit" size={18}/></button>
@@ -1394,22 +1465,13 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam }) {
 }
 
 function FlashcardUI({ card, deckName, addPoints, isFlipped, setIsFlipped }) {
-  // Obtenemos las clases de color de la categoría, pero solo usaremos el borde
-  const categoryColorClass = getCategoryBadge(card.category).split(' ')[1]; // Extrae el color de texto/borde
-
   return (
     <div className="h-80 w-full relative" style={{ perspective: '1000px' }} onClick={() => { if(!isFlipped) { addPoints(2, "Flashcard Mastery"); setIsFlipped(true); } }}>
       <div className={`relative w-full h-full transition-transform duration-500 rounded-[40px] shadow-2xl cursor-pointer ${isFlipped ? '[transform:rotateY(180deg)]' : ''}`} style={{ transformStyle: 'preserve-3d' }}>
-        
-        {/* CARA A: PREGUNTA (Sin texto que tape) */}
         <div className="absolute inset-0 bg-white border-8 border-rose-50 rounded-[40px] flex flex-col items-center justify-center p-10 text-center [backface-visibility:hidden] shadow-inner overflow-hidden">
-          {/* Indicador visual sutil: Borde superior con el color de la categoría */}
           <div className={`absolute top-0 left-0 right-0 h-4 ${getCategoryBadge(card.category).split(' ')[0]}`} title={card.category} />
-          
           <p className="text-2xl font-black text-slate-800 leading-tight">{card.q}</p>
         </div>
-
-        {/* CARA B: RESPUESTA */}
         <div className="absolute inset-0 bg-rose-600 text-white rounded-[40px] flex items-center justify-center p-10 text-center [transform:rotateY(180deg)] [backface-visibility:hidden] shadow-xl shadow-rose-200">
           <p className="text-xl font-medium italic leading-relaxed">{card.a}</p>
         </div>
@@ -1418,17 +1480,11 @@ function FlashcardUI({ card, deckName, addPoints, isFlipped, setIsFlipped }) {
   );
 }
 
-// ==========================================
-// 3. COMPONENTE: MODO ESTUDIO
-// ==========================================
-
 function DeckStudyView({ deck, onBack, addPoints, onUpdateCard, onFinishChallenge }) {
   const [idx, setIdx] = useState(0);
   const [flipped, setFlipped] = useState(false);
   const [isShuffled, setIsShuffled] = useState(false);
   const [challengeStarted, setChallengeStarted] = useState(false);
-  
-  // Nuevo estado para el resumen de la sesión
   const [sessionStats, setSessionStats] = useState({ repeat: 0, hard: 0, good: 0, easy: 0 });
   
   const isChallenge = deck.isChallenge;
@@ -1450,16 +1506,14 @@ function DeckStudyView({ deck, onBack, addPoints, onUpdateCard, onFinishChalleng
     );
   }
 
-  // Pantalla de finalización con RESUMEN DE SESIÓN
   if (idx >= cardsToStudy.length) {
     return (
       <div className="max-w-xl mx-auto py-10 text-center space-y-8 animate-in zoom-in-95">
         <div className="space-y-2">
           <Icon name="Award" size={60} className="mx-auto text-amber-500" />
-          <h2 className="text-3xl font-black text-rose-950">You're out of the woods! 🌲</h2>
+          <h2 className="text-3xl font-black text-rose-950">We're out of the woods! 🌲</h2>
           <p className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">Session Results</p>
         </div>
-
         <div className="grid grid-cols-2 gap-4">
           <div className="bg-white p-4 rounded-3xl border-2 border-slate-100 flex flex-col items-center">
             <span className="text-2xl font-black text-blue-600">{sessionStats.easy}</span>
@@ -1478,7 +1532,6 @@ function DeckStudyView({ deck, onBack, addPoints, onUpdateCard, onFinishChalleng
             <span className="text-[8px] font-black uppercase text-slate-400">Repeat</span>
           </div>
         </div>
-
         <button onClick={onFinishChallenge || onBack} className="w-full py-5 bg-rose-600 text-white rounded-[24px] font-black shadow-lg shadow-rose-100 active:scale-95 transition-all uppercase tracking-widest text-sm">Finish Review</button>
       </div>
     );
@@ -1489,8 +1542,6 @@ function DeckStudyView({ deck, onBack, addPoints, onUpdateCard, onFinishChalleng
   const handleAnki = (rating) => {
     const targetDeckId = (card.deckId || deck.id)?.toString();
     if (!targetDeckId || !onUpdateCard) return;
-
-    // Actualizamos estadísticas locales
     setSessionStats(prev => ({ ...prev, [rating]: prev[rating] + 1 }));
 
     let { interval = 0, ease = 2.5 } = card;
@@ -1525,16 +1576,7 @@ function DeckStudyView({ deck, onBack, addPoints, onUpdateCard, onFinishChalleng
           </button>
         )}
       </div>
-
-      <FlashcardUI 
-        key={card.id + idx} 
-        card={card} 
-        deckName={deck.name} 
-        addPoints={addPoints} 
-        isFlipped={flipped} 
-        setIsFlipped={setFlipped} 
-      />
-      
+      <FlashcardUI key={card.id + idx} card={card} deckName={deck.name} addPoints={addPoints} isFlipped={flipped} setIsFlipped={setFlipped} />
       {flipped ? (
         <div className="grid grid-cols-4 gap-2 animate-in fade-in slide-in-from-bottom-2">
           <button onClick={(e)=>{e.stopPropagation(); handleAnki('repeat')}} className="py-4 bg-slate-100 text-slate-600 rounded-2xl font-black text-[10px] uppercase active:scale-95 transition-all">Repeat</button>
