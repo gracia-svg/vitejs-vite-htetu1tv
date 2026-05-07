@@ -1118,7 +1118,7 @@ function PlanningHub({ planning, setPlanning, units, setUnits, addPoints, submis
 
               <div className="text-right cursor-pointer relative" onClick={() => setShowSubDate(!showSubDate)}>
                 <p className="text-3xl font-black text-slate-800 tabular-nums leading-none">{days}</p>
-                <p className="text-[8px] font-black uppercase text-teal-600 tracking-widest mt-1">days left</p>
+                <p className="text-[8px] font-black uppercase text-teal-600 tracking-widest mt-1">days</p>
                 {showSubDate && (
                   <input 
                     type="date" 
