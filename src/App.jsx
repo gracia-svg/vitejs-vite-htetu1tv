@@ -116,7 +116,7 @@ const INITIAL_UNITS = Array.from({ length: 6 }, (_, i) => ({
 }));
 
 const INITIAL_SKILLS = [
-  { id: 's1', label: 'Translation', level: 0 },
+  { id: 's1', label: 'Analysis', level: 0 },
   { id: 's2', label: 'Use of English', level: 0 },
   { id: 's3', label: 'Didactical Application', level: 0 },
   { id: 's4', label: 'Phonetics', level: 0 }
