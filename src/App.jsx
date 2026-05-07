@@ -42,6 +42,8 @@ const ICON_PATHS = {
   Calendar: '<rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',
   AlertTriangle: '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>',
   Settings: '<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.72V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.17a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/>'
+  /* --- SWIFTIE REFERENCE: Pawn icon for Mastermind quote & Strategic Planning --- */
+  Pawn: '<path d="M12 2a3 3 0 0 0-3 3 3 3 0 0 0 2 2.82V9h-2a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-1a1 1 0 0 0-1-1h-2V7.82A3 3 0 0 0 12 2zM9 14l-1 6h8l-1-6H9zm-1 8h8a1 1 0 0 1 1 1v1H7v-1a1 1 0 0 1 1-1z"/>'
 };
 
 const Icon = ({ name, size = 24, strokeWidth = 2, className = "" }) => {
@@ -121,8 +123,16 @@ const INITIAL_SKILLS = [
   { id: 's3', label: 'Didactical Application', level: 0 },
   { id: 's4', label: 'Phonetics', level: 0 }
 ];
-
-
+/* --- DATA REFERENCE: Probability table for exam success --- */
+const PROBABILITY_DATA = {
+  0: 0, 1: 5.797, 2: 11.338, 3: 16.632, 4: 21.684, 5: 26.504, 6: 31.097, 7: 35.472, 8: 39.635, 9: 43.593, 10: 47.354, 
+  11: 50.923, 12: 54.308, 13: 57.514, 14: 60.549, 15: 63.418, 16: 66.128, 17: 68.684, 18: 71.093, 19: 73.36, 20: 75.492,
+  21: 77.492, 22: 79.368, 23: 81.124, 24: 82.765, 25: 84.297, 26: 85.725, 27: 87.053, 28: 88.286, 29: 89.429, 30: 90.486,
+  31: 91.462, 32: 92.36, 33: 93.186, 34: 93.943, 35: 94.636, 36: 95.267, 37: 95.84, 38: 96.36, 39: 96.83, 40: 97.253,
+  41: 97.632, 42: 97.97, 43: 98.271, 44: 98.537, 45: 98.771, 46: 98.976, 47: 99.154, 48: 99.308, 49: 99.44, 50: 99.552,
+  51: 99.646, 52: 99.725, 53: 99.789, 54: 99.842, 55: 99.884, 56: 99.917, 57: 99.943, 58: 99.962, 59: 99.976, 60: 99.985,
+  61: 99.992, 62: 99.996, 63: 99.998, 64: 99.999, 65: 100.0, 66: 100.0, 67: 100.0, 68: 100.0, 69: 100.0
+};
 
 const getPlanningStatusLabel = (status) => {
   if (status === 0) return 'NONE';
@@ -1730,128 +1740,130 @@ function VaultCarousel({ items, setItems, onClose }) {
     </div>
   );
 }
+function StrategicPlanning({ topics }) {
+  const masteredCount = topics.filter(t => t.finished).length;
+  const [targetCount, setTargetCount] = useState(masteredCount);
+  
+  const currentOdds = PROBABILITY_DATA[masteredCount] || 0;
+  const targetOdds = PROBABILITY_DATA[targetCount] || 0;
+  const gain = targetOdds - currentOdds;
 
+  /* --- SWIFTIE REFERENCE: Milestones based on major probability shifts --- */
+  const milestones = [
+    { n: 11, label: "Archer", color: "text-emerald-500" },
+    { n: 20, label: "Safe Zone", color: "text-blue-500" },
+    { n: 29, label: "Mastermind", color: "text-purple-500" },
+    { n: 36, label: "End Game", color: "text-slate-900" }
+  ];
+
+  return (
+    <div className="space-y-8 animate-in fade-in zoom-in-95 text-left">
+      <div className="bento-card p-8 bg-white border-slate-100 shadow-xl relative overflow-hidden">
+        {/* Marca de agua Mastermind */}
+        <div className="absolute top-0 right-0 p-4 opacity-5"><Icon name="Pawn" size={120} /></div>
+        
+        <div className="flex justify-between items-end mb-10 relative z-10">
+          <div className="space-y-1">
+            <span className="text-[8px] font-black uppercase text-slate-400 tracking-[0.2em]">Actual Reality</span>
+            <p className="text-3xl font-black text-slate-800">{masteredCount} <span className="text-xs font-bold text-slate-400">Topics</span></p>
+            <p className="text-sm font-black text-slate-400 tabular-nums">{currentOdds.toFixed(3)}%</p>
+          </div>
+          
+          <div className="flex flex-col items-center pb-2">
+            <Icon name="ChevronRight" className="text-slate-200" size={32} />
+            {gain > 0 && <span className="text-[10px] font-black text-emerald-500">+{gain.toFixed(2)}%</span>}
+          </div>
+
+          <div className="text-right space-y-1">
+            <span className="text-[8px] font-black uppercase text-emerald-500 tracking-[0.2em]">Strategic Forecast</span>
+            <p className="text-3xl font-black text-emerald-600">{targetCount} <span className="text-xs font-bold text-emerald-400">Topics</span></p>
+            <p className="text-xl font-black text-emerald-700 tabular-nums">{targetOdds.toFixed(3)}%</p>
+          </div>
+        </div>
+
+        <div className="relative pt-10 pb-4">
+          {/* Milestone markers */}
+          <div className="absolute top-0 left-0 right-0 flex justify-between px-2">
+            {milestones.map(m => (
+              <div key={m.n} className="flex flex-col items-center">
+                <div className={`h-2 w-0.5 ${masteredCount >= m.n ? 'bg-emerald-500' : 'bg-slate-200'}`} />
+                <span className={`text-[7px] font-black uppercase mt-1 ${m.color}`}>{m.label}</span>
+              </div>
+            ))}
+          </div>
+
+          <input 
+            type="range" min="0" max="69" value={targetCount} 
+            onChange={(e) => setTargetCount(parseInt(e.target.value))}
+            className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-emerald-600"
+            style={{ backgroundImage: 'linear-gradient(to right, #10b981 0%, #10b981 ' + (targetCount/69*100) + '%, #f1f5f9 ' + (targetCount/69*100) + '%, #f1f5f9 100%)' }}
+          />
+          
+          {/* --- SWIFTIE REFERENCE: Floating Pawn as the slider thumb --- */}
+          <div 
+            className="absolute pointer-events-none transition-all duration-150"
+            style={{ left: `calc(${(targetCount / 69) * 100}% - 10px)`, top: '35px' }}
+          >
+            <div className="flex flex-col items-center">
+              <Icon name="Pawn" size={20} className="text-emerald-600 drop-shadow-md" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 function StatsView({ actionLogs, undoAction, topics, planning, units, levelDates }) {
   const [tab, setTab] = useState('hist');
-  const [statsView, setStatsView] = useState('syllabus');
+  /* --- UI STATE: Switch between history and strategy --- */
+  const [mode, setMode] = useState('activity'); // 'activity' | 'strategy'
 
-  const exportData = () => {
-    const exportObj = {
-      levelHistory: {}, // <-- HISTORIAL DE NIVELES INCLUIDO
-      topics: {},
-      planning: {},
-      practico: []
-    };
-
-    if (levelDates) {
-      Object.entries(levelDates).forEach(([level, date]) => {
-        exportObj.levelHistory[`Level ${level}`] = date;
-      });
-    }
-
-    actionLogs.forEach(log => {
-      if (log.actionData) {
-        const { entity, id, field } = log.actionData;
-        const date = new Date(log.timestamp).toLocaleString();
-        if (entity === 'topic') {
-          if (!exportObj.topics[id]) exportObj.topics[id] = [];
-          exportObj.topics[id].push({ date, action: field || log.description, points: log.amount });
-        } else if (entity === 'planning' || entity === 'unit') {
-          if (!exportObj.planning[id]) exportObj.planning[id] = [];
-          exportObj.planning[id].push({ date, action: field || log.description, points: log.amount });
-        } else {
-          exportObj.practico.push({ date, entity, action: log.description, points: log.amount });
-        }
-      }
-    });
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportObj, null, 2));
-    const downloadAnchorNode = document.createElement('a');
-    downloadAnchorNode.setAttribute("href", dataStr);
-    downloadAnchorNode.setAttribute("download", "study_logs_export.json");
-    document.body.appendChild(downloadAnchorNode);
-    downloadAnchorNode.click();
-    downloadAnchorNode.remove();
-  };
-
-  const syllabusStats = useMemo(() => {
-    const useful = topics.filter(t => !t.discarded);
-    const total = useful.length;
-    const done = useful.filter(t => t.finished).length;
-    const started = useful.filter(t => (t.redactado || t.estudiado > 0) && !t.finished).length;
-    const pending = total - done - started;
-    return { done, started, pending, total, donePct: Math.round((done/total)*100) || 0, startedPct: Math.round((started/total)*100) || 0 };
-  }, [topics]);
-
-  const planningStats = useMemo(() => {
-    const combined = [...planning, ...units];
-    const total = combined.length;
-    const done = combined.filter(i => i.status === 10).length;
-    const started = combined.filter(i => i.status > 0 && i.status < 10).length;
-    const pending = total - done - started;
-    return { done, started, pending, total, donePct: Math.round((done/total)*100) || 0, startedPct: Math.round((started/total)*100) || 0 };
-  }, [planning, units]);
-
-  const currentStats = statsView === 'syllabus' ? syllabusStats : planningStats;
-  const groupLogs = (mode) => { const groups = {}; actionLogs.forEach(l => { const d = new Date(l.timestamp); const key = mode === 'week' ? `Week ${Math.ceil(d.getDate()/7)} - ${d.toLocaleString('en-US',{month:'short'})}` : d.toLocaleString('en-US',{month:'long',year:'numeric'}); if(!groups[key]) groups[key] = { pts: 0, count: 0 }; groups[key].pts += l.amount; groups[key].count += 1; }); return Object.entries(groups).reverse(); };
-  
   return (
     <div className="space-y-6 text-left animate-in zoom-in-95">
-      <div className="bento-card bg-white p-8 border-violet-100 shadow-xl">
-        <div className="flex justify-center mb-8 bg-slate-100 p-1 rounded-2xl w-fit mx-auto">
-          <button onClick={()=>setStatsView('syllabus')} className={`px-4 py-2 rounded-xl text-[10px] font-black transition-all ${statsView==='syllabus'?'bg-white text-violet-600 shadow-md':'text-slate-400'}`}>SYLLABUS</button>
-          <button onClick={()=>setStatsView('planning')} className={`px-4 py-2 rounded-xl text-[10px] font-black transition-all ${statsView==='planning'?'bg-white text-violet-600 shadow-md':'text-slate-400'}`}>PLANNING</button>
+      {/* Selector de Modo Estratégico */}
+      <div className="flex justify-center mb-4">
+        <div className="bg-slate-100 p-1 rounded-2xl flex gap-1 shadow-inner w-full max-w-sm">
+          <button 
+            onClick={() => setMode('activity')}
+            className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase transition-all ${mode==='activity' ? 'bg-white text-violet-600 shadow-md' : 'text-slate-400'}`}
+          >
+            Activity Log
+          </button>
+          <button 
+            onClick={() => setMode('strategy')}
+            className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase transition-all flex items-center justify-center gap-2 ${mode==='strategy' ? 'bg-white text-emerald-600 shadow-md' : 'text-slate-400'}`}
+          >
+            <Icon name="Pawn" size={14} /> Mastermind Strategy
+          </button>
         </div>
-        <div className="flex flex-col md:flex-row items-center justify-center gap-12">
-          <div className="relative w-48 h-48 rounded-full shadow-inner border-8 border-slate-50 flex items-center justify-center" style={{ background: `conic-gradient(#10b981 ${currentStats.donePct}%, #8b5cf6 ${currentStats.donePct}% ${currentStats.donePct + currentStats.startedPct}%, #f1f5f9 ${currentStats.donePct + currentStats.startedPct}% 100%)` }}><div className="w-32 h-32 bg-white rounded-full shadow-2xl flex flex-col items-center justify-center"><span className="text-3xl font-black text-slate-900">{currentStats.donePct}%</span><span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mt-1">Mastered</span></div></div>
-          <div className="grid grid-cols-1 gap-4">
-            <div className="flex items-center gap-3"><div className="w-4 h-4 rounded-full bg-emerald-500 shadow-sm" /><div className="text-left leading-none"><p className="text-xs font-black text-slate-800">{currentStats.done} Finished</p></div></div>
-            <div className="flex items-center gap-3"><div className="w-4 h-4 rounded-full bg-violet-500 shadow-sm" /><div className="text-left leading-none"><p className="text-xs font-black text-slate-800">{currentStats.started} In Progress</p></div></div>
-            <div className="flex items-center gap-3"><div className="w-4 h-4 rounded-full bg-slate-200 shadow-sm" /><div className="text-left leading-none"><p className="text-xs font-black text-slate-800">{currentStats.pending} Pending</p></div></div>
+      </div>
+
+      {mode === 'strategy' ? (
+        <StrategicPlanning topics={topics} />
+      ) : (
+        <>
+          <div id="activity-log" className="flex flex-col sm:flex-row justify-between items-center bg-white/50 backdrop-blur px-4 py-2 rounded-2xl shadow-sm border border-white/50 gap-4">
+            <h2 className="text-xl font-black text-violet-950">Activity Log</h2>
+            <div className="flex bg-slate-200 p-1 rounded-xl shrink-0 w-full sm:w-auto">
+              {['hist','week','month'].map(t=>(<button key={t} onClick={()=>setTab(t)} className={`px-3 py-1 text-[10px] font-black rounded-lg uppercase transition-all flex-1 sm:flex-none ${tab===t?'bg-white shadow-md text-violet-600':'text-slate-500'}`}>{t==='hist'?'History':t==='week'?'Weeks':'Months'}</button>))}
+            </div>
           </div>
-        </div>
-      </div>
-      <div id="activity-log" className="flex flex-col sm:flex-row justify-between items-center bg-white/50 backdrop-blur px-4 py-2 rounded-2xl shadow-sm border border-white/50 gap-4">
-        <div className="flex items-center gap-4 w-full sm:w-auto">
-          <h2 className="text-xl font-black text-violet-950">Activity Log</h2>
-          <button onClick={exportData} className="px-3 py-1.5 bg-violet-100 text-violet-700 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-violet-200 transition-colors shadow-sm whitespace-nowrap">Export Logs</button>
-        </div>
-        <div className="flex bg-slate-200 p-1 rounded-xl shrink-0 w-full sm:w-auto overflow-x-auto">
-          {['hist','week','month'].map(t=>(<button key={t} onClick={()=>setTab(t)} className={`px-3 py-1 text-[10px] font-black rounded-lg uppercase transition-all flex-1 sm:flex-none ${tab===t?'bg-white shadow-md text-violet-600':'text-slate-500'}`}>{t==='hist'?'History':t==='week'?'Weeks':'Months'}</button>))}
-        </div>
-      </div>
-      <div className="min-h-[400px]">
-        {tab === 'hist' ? (
           <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
-            {actionLogs.length === 0 ? <p className="italic text-slate-300 font-bold">No records found.</p> : actionLogs.slice(0,50).map(l=>(
-              <div key={l.id} className="bento-card bg-white p-4 flex justify-between items-center border-violet-50 hover:border-violet-200 transition-all">
-                <div className="text-left leading-tight">
-                  <p className="text-sm font-black text-slate-800 line-clamp-1">{l.description}</p>
-                  <p className="text-[9px] font-bold text-slate-400 uppercase mt-1">{new Date(l.timestamp).toLocaleString()}</p>
+              {actionLogs.length === 0 ? <p className="italic text-slate-300 font-bold">No records found.</p> : actionLogs.slice(0,50).map(l=>(
+                <div key={l.id} className="bento-card bg-white p-4 flex justify-between items-center border-violet-50 hover:border-violet-200 transition-all">
+                  <div className="text-left leading-tight">
+                    <p className="text-sm font-black text-slate-800 line-clamp-1">{l.description}</p>
+                    <p className="text-[9px] font-bold text-slate-400 uppercase mt-1">{new Date(l.timestamp).toLocaleString()}</p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className={`text-xs font-black px-2 py-1 rounded-lg shadow-inner ${l.amount > 0 ? 'text-violet-700 bg-violet-50' : l.amount < 0 ? 'text-red-700 bg-red-50' : 'text-slate-500 bg-slate-100'}`}>{l.amount > 0 ? '+'+l.amount : l.amount}</span>
+                    <button onClick={()=>undoAction(l.id)} className="text-slate-300 hover:text-red-500 transition-colors active:scale-90" title="Undo"><Icon name="Undo2" size={16}/></button>
+                  </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <span className={`text-xs font-black px-2 py-1 rounded-lg shadow-inner ${l.amount > 0 ? 'text-violet-700 bg-violet-50' : l.amount < 0 ? 'text-red-700 bg-red-50' : 'text-slate-500 bg-slate-100'}`}>{l.amount > 0 ? '+'+l.amount : l.amount}</span>
-                  <button onClick={()=>undoAction(l.id)} className="text-slate-300 hover:text-red-500 transition-colors active:scale-90" title="Undo"><Icon name="Undo2" size={16}/></button>
-                </div>
-              </div>
-            ))}
+              ))}
           </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {groupLogs(tab).map(([key, data]) => (
-              <div key={key} className="bento-card bg-white p-6 border-violet-100 flex justify-between items-center shadow-md">
-                <div className="text-left leading-tight">
-                  <p className="text-xs font-black text-violet-900 uppercase tracking-tighter">{key}</p>
-                  <p className="text-[10px] font-bold text-slate-400">{data.count} actions</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-2xl font-black text-violet-600">{data.pts > 0 ? '+'+data.pts : data.pts}</p>
-                  <p className="text-[8px] font-black opacity-40 uppercase tracking-widest">Points</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+        </>
+      )}
     </div>
   );
 }
