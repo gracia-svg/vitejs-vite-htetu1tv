@@ -978,16 +978,13 @@ function SyllabusView({ topics, setTopics, addPoints, onOpenModal, actionLogs, o
 
   return (
     <div className="space-y-6 animate-in fade-in">
-      {/* HEADER TEMAS CON COUNTDOWN SWIFTIE */}
       <div className="bg-white/50 backdrop-blur p-6 rounded-3xl border border-white/50 shadow-sm flex flex-col gap-4">
         <div className="flex justify-between items-start">
            <div className="flex items-center gap-3"><Icon name="BookOpen" className="text-amber-600" /><h2 className="text-2xl font-black text-slate-950">Temas</h2></div>
            <div className="text-right cursor-pointer relative" onClick={() => setShowDate(!showDate)}>
               <p className="text-3xl font-black text-slate-800 tabular-nums leading-none">{days}</p>
-              {/* --- SWIFTIE REFERENCE START --- */}
               <p className="text-[8px] font-black uppercase text-amber-600 tracking-widest mt-1">Days to End Game 🖤</p>
-              {/* --- SWIFTIE REFERENCE END --- */}
-              {showDate && <input type="date" value={examDate} onChange={e=>{setExamDate(e.target.value); setShowDate(false);}} className="absolute top-0 right-0 bg-white shadow-xl rounded-lg p-2 text-xs border z-50" />}
+              {showDate && <input type="date" value={examDate} onClick={(e) => e.stopPropagation()} onChange={e=>{setExamDate(e.target.value); setShowDate(false);}} className="absolute top-0 right-0 bg-white shadow-xl rounded-lg p-2 text-xs border z-50" />}
            </div>
         </div>
         <div className="flex items-center gap-3 w-full">
@@ -1007,7 +1004,6 @@ function SyllabusView({ topics, setTopics, addPoints, onOpenModal, actionLogs, o
           return (
             <div key={t.id} className={`bento-card p-5 border-2 transition-all duration-300 relative overflow-hidden ${cardStyle}`}>
               <div onClick={() => cyclePriority(t.id, t.priority)} className={`absolute left-0 top-0 bottom-0 w-2.5 ${getPriorityColor(t)} cursor-pointer transition-all hover:w-4 z-10`} />
-              
               <div className="flex items-center justify-between mb-4 pl-4">
                 <div className="flex items-center gap-4">
                   <div onClick={() => onOpenModal(t)} className={`w-12 h-12 rounded-xl flex items-center justify-center font-black text-lg border-2 cursor-pointer active:scale-90 transition-transform ${badgeStyle}`}>{t.id}</div>
@@ -1021,17 +1017,10 @@ function SyllabusView({ topics, setTopics, addPoints, onOpenModal, actionLogs, o
                   <button onClick={()=>updateField(t.id,'discarded',!t.discarded, 0)} className={`p-2 rounded-xl transition-all active:scale-90 ${t.discarded ? '!text-slate-600 !bg-slate-300 shadow-inner' : (t.finished ? '!text-white !bg-black/20' : 'text-slate-300 bg-slate-50 hover:bg-slate-100')}`}><Icon name="Archive" size={16}/></button>
                 </div>
               </div>
-
               <div className="grid grid-cols-2 gap-2 mb-4 pl-4">
-                <button onClick={() => updateField(t.id, 'redactado', !t.redactado, t.redactado ? -15 : 15)} className={`py-2.5 rounded-2xl text-[10px] font-black border-2 transition-all active:scale-95 ${t.redactado ? (t.finished ? '!bg-white !text-slate-900 !border-transparent' : 'bg-emerald-500 text-white border-transparent shadow-md') : (t.finished ? '!bg-black/20 !text-white !border-transparent' : 'bg-white text-slate-400 border-slate-50')}`}>
-                  WRITTEN
-                </button>
-                <button onClick={() => { const next = (t.estudiado + 1) % 4; updateField(t.id, 'estudiado', next, next === 0 ? -75 : 25); }} className={`py-2.5 rounded-2xl text-[10px] font-black border-2 transition-all relative overflow-hidden active:scale-95 ${t.estudiado > 0 ? (t.finished ? '!bg-white !text-slate-900 !border-transparent' : 'bg-orange-500 text-white border-transparent shadow-md') : (t.finished ? '!bg-black/20 !text-white !border-transparent' : 'bg-white text-slate-400 border-slate-50')}`}>
-                  {t.estudiado > 0 && t.estudiado < 3 && !t.finished && <div className="absolute left-0 top-0 bottom-0 bg-white/20 transition-all" style={{ width: `${(t.estudiado/3)*100}%` }} />}
-                  <span className="relative z-10 uppercase">Studied {t.estudiado > 0 ? `(${t.estudiado}/3)` : ''}</span>
-                </button>
+                <button onClick={() => updateField(t.id, 'redactado', !t.redactado, t.redactado ? -15 : 15)} className={`py-2.5 rounded-2xl text-[10px] font-black border-2 transition-all active:scale-95 ${t.redactado ? (t.finished ? '!bg-white !text-slate-900 !border-transparent' : 'bg-emerald-500 text-white border-transparent shadow-md') : (t.finished ? '!bg-black/20 !text-white !border-transparent' : 'bg-white text-slate-400 border-slate-50')}`}>WRITTEN</button>
+                <button onClick={() => { const next = (t.estudiado + 1) % 4; updateField(t.id, 'estudiado', next, next === 0 ? -75 : 25); }} className={`py-2.5 rounded-2xl text-[10px] font-black border-2 transition-all relative overflow-hidden active:scale-95 ${t.estudiado > 0 ? (t.finished ? '!bg-white !text-slate-900 !border-transparent' : 'bg-orange-500 text-white border-transparent shadow-md') : (t.finished ? '!bg-black/20 !text-white !border-transparent' : 'bg-white text-slate-400 border-slate-50')}`}>{t.estudiado > 0 && t.estudiado < 3 && !t.finished && <div className="absolute left-0 top-0 bottom-0 bg-white/20 transition-all" style={{ width: `${(t.estudiado/3)*100}%` }} />}<span className="relative z-10 uppercase">Studied {t.estudiado > 0 ? `(${t.estudiado}/3)` : ''}</span></button>
               </div>
-
               <div className="grid grid-cols-3 gap-2 pl-4">
                 <CounterPill label="REVIEWS" count={t.reviews} onAdd={()=>updateField(t.id,'reviews',Number(t.reviews||0)+1,10)} onSub={()=>updateField(t.id,'reviews',Math.max(0,Number(t.reviews||0)-1),-10)} />
                 <CounterPill label="MOCKS" count={t.mocks} onAdd={()=>updateField(t.id,'mocks',Number(t.mocks||0)+1,40)} onSub={()=>updateField(t.id,'mocks',Math.max(0,Number(t.mocks||0)-1),-40)} />
@@ -1044,7 +1033,6 @@ function SyllabusView({ topics, setTopics, addPoints, onOpenModal, actionLogs, o
     </div>
   );
 }
-
 function CounterPill({ label, count, onAdd, onSub }) {
   const [open, setOpen] = useState(false);
   
@@ -1130,7 +1118,7 @@ function PlanningHub({ planning, setPlanning, units, setUnits, addPoints, submis
 
               <div className="text-right cursor-pointer relative" onClick={() => setShowSubDate(!showSubDate)}>
                 <p className="text-3xl font-black text-slate-800 tabular-nums leading-none">{days}</p>
-                <p className="text-[8px] font-black uppercase text-teal-600 tracking-widest mt-1">Days to Deadline 📑</p>
+                <p className="text-[8px] font-black uppercase text-teal-600 tracking-widest mt-1">days left</p>
                 {showSubDate && (
                   <input 
                     type="date" 
@@ -1445,7 +1433,7 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam }) {
       <div className="flex flex-col sm:flex-row justify-between items-center bg-white/50 backdrop-blur px-4 py-2 rounded-2xl shadow-sm border border-white/50 gap-4">
         <h2 className="text-2xl font-black text-rose-950">Library</h2>
         <div className="flex items-center gap-2">
-          <button onClick={()=>setShowDailyModal(true)} className="px-3 py-2 bg-amber-100 text-amber-700 rounded-xl font-black text-[10px] flex items-center gap-2 border border-amber-200 active:scale-95 transition-all shadow-sm"><Icon name="Flame" size={14} className="fill-amber-700"/> DAILY RETO</button>
+          <button onClick={()=>setShowDailyModal(true)} className="px-3 py-2 bg-amber-100 text-amber-700 rounded-xl font-black text-[10px] flex items-center gap-2 border border-amber-200 active:scale-95 transition-all shadow-sm"><Icon name="Flame" size={14} className="fill-amber-700"/> DAILY </button>
           <button onClick={()=>setShowExamModal(true)} className="px-3 py-2 bg-rose-100 text-rose-700 rounded-xl font-black text-[10px] flex items-center gap-2 border border-rose-200 active:scale-95 transition-all shadow-sm"><Icon name="Dices" size={14}/> EXAM MODE</button>
           <button onClick={()=>setShowSettingsModal(true)} className="p-2 bg-slate-100 text-slate-500 rounded-xl hover:bg-slate-200 transition-all" title="Settings"><Icon name="Settings" size={18}/></button>
         </div>
@@ -1521,10 +1509,15 @@ function DeckStudyView({ deck, onBack, addPoints, onUpdateCard, onFinishChalleng
 
   if (isChallenge && !challengeStarted) {
     return (
-      <div className="max-w-xl mx-auto py-20 text-center space-y-8 animate-in zoom-in-95">
-        <div className="w-24 h-24 bg-slate-900 rounded-3xl flex items-center justify-center mx-auto text-4xl">🧣</div>
-        <h2 className="text-2xl font-black text-slate-800 leading-tight">Do you have 10 minutes to spare?</h2>
-        <button onClick={() => setChallengeStarted(true)} className="px-12 py-5 bg-slate-900 text-white rounded-2xl font-black shadow-xl active:scale-95 transition-all uppercase">Yes</button>
+      <div className="max-w-xl mx-auto py-20 text-center space-y-8 animate-in zoom-in-95 relative">
+        <button onClick={onBack} className="absolute top-4 right-4 text-slate-300 hover:text-red-500 transition-colors">
+          <Icon name="X" size={24}/>
+        </button>
+        <h2 className="text-2xl font-black text-slate-800 leading-tight pt-10">Do you have 10 minutes to spare?</h2>
+        <div className="flex flex-col items-center gap-4">
+          <button onClick={() => setChallengeStarted(true)} className="px-12 py-5 bg-slate-900 text-white rounded-2xl font-black shadow-xl active:scale-95 transition-all uppercase tracking-widest">Yes</button>
+          <button onClick={onBack} className="text-[10px] font-black text-slate-400 uppercase tracking-widest hover:underline">Not now</button>
+        </div>
       </div>
     );
   }
@@ -1534,26 +1527,14 @@ function DeckStudyView({ deck, onBack, addPoints, onUpdateCard, onFinishChalleng
       <div className="max-w-xl mx-auto py-10 text-center space-y-8 animate-in zoom-in-95">
         <div className="space-y-2">
           <Icon name="Award" size={60} className="mx-auto text-amber-500" />
-          <h2 className="text-3xl font-black text-rose-950">We're out of the woods! 🌲</h2>
+          <h2 className="text-3xl font-black text-rose-950">You're out of the woods! 🌲</h2>
           <p className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">Session Results</p>
         </div>
         <div className="grid grid-cols-2 gap-4">
-          <div className="bg-white p-4 rounded-3xl border-2 border-slate-100 flex flex-col items-center">
-            <span className="text-2xl font-black text-blue-600">{sessionStats.easy}</span>
-            <span className="text-[8px] font-black uppercase text-slate-400">Easy</span>
-          </div>
-          <div className="bg-white p-4 rounded-3xl border-2 border-slate-100 flex flex-col items-center">
-            <span className="text-2xl font-black text-emerald-600">{sessionStats.good}</span>
-            <span className="text-[8px] font-black uppercase text-slate-400">Good</span>
-          </div>
-          <div className="bg-white p-4 rounded-3xl border-2 border-slate-100 flex flex-col items-center">
-            <span className="text-2xl font-black text-orange-600">{sessionStats.hard}</span>
-            <span className="text-[8px] font-black uppercase text-slate-400">Hard</span>
-          </div>
-          <div className="bg-white p-4 rounded-3xl border-2 border-slate-100 flex flex-col items-center">
-            <span className="text-2xl font-black text-red-600">{sessionStats.repeat}</span>
-            <span className="text-[8px] font-black uppercase text-slate-400">Repeat</span>
-          </div>
+          <div className="bg-white p-4 rounded-3xl border-2 border-slate-100 flex flex-col items-center"><span className="text-2xl font-black text-blue-600">{sessionStats.easy}</span><span className="text-[8px] font-black uppercase text-slate-400">Easy</span></div>
+          <div className="bg-white p-4 rounded-3xl border-2 border-slate-100 flex flex-col items-center"><span className="text-2xl font-black text-emerald-600">{sessionStats.good}</span><span className="text-[8px] font-black uppercase text-slate-400">Good</span></div>
+          <div className="bg-white p-4 rounded-3xl border-2 border-slate-100 flex flex-col items-center"><span className="text-2xl font-black text-orange-600">{sessionStats.hard}</span><span className="text-[8px] font-black uppercase text-slate-400">Hard</span></div>
+          <div className="bg-white p-4 rounded-3xl border-2 border-slate-100 flex flex-col items-center"><span className="text-2xl font-black text-red-600">{sessionStats.repeat}</span><span className="text-[8px] font-black uppercase text-slate-400">Repeat</span></div>
         </div>
         <button onClick={onFinishChallenge || onBack} className="w-full py-5 bg-rose-600 text-white rounded-[24px] font-black shadow-lg shadow-rose-100 active:scale-95 transition-all uppercase tracking-widest text-sm">Finish Review</button>
       </div>
@@ -1566,20 +1547,14 @@ function DeckStudyView({ deck, onBack, addPoints, onUpdateCard, onFinishChalleng
     const targetDeckId = (card.deckId || deck.id)?.toString();
     if (!targetDeckId || !onUpdateCard) return;
     setSessionStats(prev => ({ ...prev, [rating]: prev[rating] + 1 }));
-
     let { interval = 0, ease = 2.5 } = card;
     let newInterval = interval, newEase = ease;
-
     if (rating === 'repeat') newInterval = 0;
     else if (rating === 'hard') { newInterval = Math.max(1, interval * 1.2); newEase = Math.max(1.3, ease - 0.15); }
     else if (rating === 'good') newInterval = interval === 0 ? 1 : interval * 2.5;
     else if (rating === 'easy') { newInterval = interval === 0 ? 4 : interval * ease * 1.3; newEase += 0.15; }
-
     onUpdateCard(targetDeckId, card.id, { interval: newInterval, ease: newEase, nextDate: rating === 'repeat' ? 0 : Date.now() + (newInterval * 86400000) });
-
-    if (rating === 'repeat' && isChallenge) {
-      setChallengeQueue(prev => [...prev, {...card, interval: newInterval, ease: newEase, nextDate: 0}]);
-    }
+    if (rating === 'repeat' && isChallenge) setChallengeQueue(prev => [...prev, {...card, interval: newInterval, ease: newEase, nextDate: 0}]);
     setFlipped(false);
     setIdx(p => p + 1);
   };
@@ -1587,17 +1562,8 @@ function DeckStudyView({ deck, onBack, addPoints, onUpdateCard, onFinishChalleng
   return (
     <div className="max-w-xl mx-auto py-10 space-y-8 text-left">
       <div className="flex justify-between items-center">
-        <button onClick={onBack} className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-rose-600 transition-all">
-          <Icon name="ChevronRight" className="rotate-180" size={16}/> Back
-        </button>
-        {!isChallenge && (
-          <button 
-            onClick={() => { setIsShuffled(!isShuffled); setIdx(0); setFlipped(false); }}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-xl font-black text-[10px] uppercase transition-all ${isShuffled ? 'bg-rose-600 text-white shadow-lg' : 'bg-slate-100 text-slate-400 hover:bg-slate-200'}`}
-          >
-            <Icon name="Shuffle" size={14}/> {isShuffled ? 'Shuffled' : 'Normal'}
-          </button>
-        )}
+        <button onClick={onBack} className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-rose-600 transition-all"><Icon name="ChevronRight" className="rotate-180" size={16}/> Back</button>
+        {!isChallenge && <button onClick={() => { setIsShuffled(!isShuffled); setIdx(0); setFlipped(false); }} className={`flex items-center gap-2 px-3 py-1.5 rounded-xl font-black text-[10px] uppercase transition-all ${isShuffled ? 'bg-rose-600 text-white shadow-lg' : 'bg-slate-100 text-slate-400 hover:bg-slate-200'}`}><Icon name="Shuffle" size={14}/> {isShuffled ? 'Shuffled' : 'Normal'}</button>}
       </div>
       <FlashcardUI key={card.id + idx} card={card} deckName={deck.name} addPoints={addPoints} isFlipped={flipped} setIsFlipped={setFlipped} />
       {flipped ? (
