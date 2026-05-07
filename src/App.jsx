@@ -1111,24 +1111,34 @@ function PlanningHub({ planning, setPlanning, units, setUnits, addPoints, submis
 
   return (
     <div className="space-y-8 text-left animate-in slide-in-from-right-4">
-      <div className="flex flex-col sm:flex-row justify-between items-center gap-4 bg-white/50 backdrop-blur p-4 rounded-3xl border border-white/50 shadow-sm">
-        <div className="flex items-center gap-3"><Icon name="FileText" className="text-teal-600" /><h2 className="text-2xl font-black text-slate-950">Programación</h2></div>
-        <div className="flex items-center gap-4 w-full sm:w-auto justify-between">
-          <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-2xl border-2 border-blue-50 shadow-sm cursor-pointer relative" onClick={() => setShowSubDate(!showSubDate)}>
-            <Icon name="Calendar" size={16} className="text-blue-500" />
-            <span className="text-xl font-black text-blue-600 tabular-nums leading-none">{days}</span>
-            <span className="text-[10px] font-black uppercase text-slate-400">Días</span>
-            {showSubDate && <input type="date" value={submissionDate} onChange={e=>{setSubmissionDate(e.target.value); setShowSubDate(false);}} onClick={e=>e.stopPropagation()} className="absolute top-full right-0 mt-2 bg-white text-blue-900 rounded-xl p-2 text-xs font-black outline-none shadow-xl z-50 border-2 border-blue-100" />}
-          </div>
+      {/* HEADER ACTUALIZADO: Estilo idéntico a SyllabusView para cohesión */}
+      <div className="bg-white/50 backdrop-blur p-6 rounded-3xl border border-white/50 shadow-sm flex flex-col gap-4">
+        <div className="flex justify-between items-start">
+           <div className="flex items-center gap-3">
+             <Icon name="FileText" className="text-teal-600" />
+             <h2 className="text-2xl font-black text-slate-950">Programación</h2>
+           </div>
+           <div className="text-right cursor-pointer relative" onClick={() => setShowSubDate(!showSubDate)}>
+              <p className="text-3xl font-black text-slate-800 tabular-nums leading-none">{days}</p>
+              <p className="text-[8px] font-black uppercase text-teal-600 tracking-widest mt-1">Days to Deadline 📑</p>
+              {showSubDate && (
+                <input 
+                  type="date" 
+                  value={submissionDate} 
+                  onChange={e => { setSubmissionDate(e.target.value); setShowSubDate(false); }} 
+                  onClick={e => e.stopPropagation()} 
+                  className="absolute top-0 right-0 bg-white shadow-xl rounded-lg p-2 text-xs border z-50" 
+                />
+              )}
+           </div>
+        </div>
+        <div className="flex items-center gap-3 w-full">
+          <form onSubmit={e => { e.preventDefault(); if(newPlan.trim()){ setPlanning([...planning, {id: 'p'+(planning.length+1), title: newPlan.trim(), status: 0, indexNotes: "", priority: null, leg: "LOMLOE"}]); setNewPlan(""); } }} className="flex-1 flex gap-2">
+            <input placeholder="Nueva sección de programación..." value={newPlan} onChange={e=>setNewPlan(e.target.value)} className="flex-1 bg-white border-2 border-slate-100 rounded-2xl px-4 py-2 text-sm font-black outline-none focus:border-teal-200 transition-all shadow-sm" />
+            <button type="submit" className="bg-teal-600 text-white p-3 rounded-xl shadow-md active:scale-95 transition-transform"><Icon name="Plus" size={20}/></button>
+          </form>
           <button onClick={onReset} className="px-3 py-2 bg-red-50 text-red-600 font-black text-[10px] rounded-xl hover:bg-red-100 transition-all shrink-0 uppercase tracking-widest">Reset</button>
         </div>
-      </div>
-
-      <div className="bento-card p-6 border-blue-100 shadow-sm flex flex-col justify-center">
-         <form onSubmit={e => { e.preventDefault(); if(newPlan.trim()){ setPlanning([...planning, {id: 'p'+(planning.length+1), title: newPlan.trim(), status: 0, indexNotes: "", priority: null, leg: "LOMLOE"}]); setNewPlan(""); } }} className="flex gap-2">
-            <input placeholder="Añadir nueva sección a la programación..." value={newPlan} onChange={e=>setNewPlan(e.target.value)} className="flex-1 bg-slate-50 border border-slate-100 rounded-xl px-4 py-2 text-sm font-black outline-none focus:border-blue-200 shadow-sm" />
-            <button type="submit" className="bg-blue-600 text-white p-3 rounded-xl shadow-md active:scale-95 transition-transform"><Icon name="Plus" size={20}/></button>
-          </form>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1384,17 +1394,24 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam }) {
 }
 
 function FlashcardUI({ card, deckName, addPoints, isFlipped, setIsFlipped }) {
+  // Obtenemos las clases de color de la categoría, pero solo usaremos el borde
+  const categoryColorClass = getCategoryBadge(card.category).split(' ')[1]; // Extrae el color de texto/borde
+
   return (
     <div className="h-80 w-full relative" style={{ perspective: '1000px' }} onClick={() => { if(!isFlipped) { addPoints(2, "Flashcard Mastery"); setIsFlipped(true); } }}>
       <div className={`relative w-full h-full transition-transform duration-500 rounded-[40px] shadow-2xl cursor-pointer ${isFlipped ? '[transform:rotateY(180deg)]' : ''}`} style={{ transformStyle: 'preserve-3d' }}>
-        <div className="absolute inset-0 bg-white border-8 border-rose-50 rounded-[40px] flex flex-col items-center justify-center p-10 text-center [backface-visibility:hidden] shadow-inner">
-          <span className={`absolute top-6 px-3 py-1 text-[8px] font-black rounded-full uppercase border ${getCategoryBadge(card.category)}`}>
-            {card.deckName || deckName}
-          </span>
-          <p className="text-2xl font-black text-slate-800">{card.q}</p>
+        
+        {/* CARA A: PREGUNTA (Sin texto que tape) */}
+        <div className="absolute inset-0 bg-white border-8 border-rose-50 rounded-[40px] flex flex-col items-center justify-center p-10 text-center [backface-visibility:hidden] shadow-inner overflow-hidden">
+          {/* Indicador visual sutil: Borde superior con el color de la categoría */}
+          <div className={`absolute top-0 left-0 right-0 h-4 ${getCategoryBadge(card.category).split(' ')[0]}`} title={card.category} />
+          
+          <p className="text-2xl font-black text-slate-800 leading-tight">{card.q}</p>
         </div>
+
+        {/* CARA B: RESPUESTA */}
         <div className="absolute inset-0 bg-rose-600 text-white rounded-[40px] flex items-center justify-center p-10 text-center [transform:rotateY(180deg)] [backface-visibility:hidden] shadow-xl shadow-rose-200">
-          <p className="text-xl font-medium italic">{card.a}</p>
+          <p className="text-xl font-medium italic leading-relaxed">{card.a}</p>
         </div>
       </div>
     </div>
@@ -1410,6 +1427,9 @@ function DeckStudyView({ deck, onBack, addPoints, onUpdateCard, onFinishChalleng
   const [flipped, setFlipped] = useState(false);
   const [isShuffled, setIsShuffled] = useState(false);
   const [challengeStarted, setChallengeStarted] = useState(false);
+  
+  // Nuevo estado para el resumen de la sesión
+  const [sessionStats, setSessionStats] = useState({ repeat: 0, hard: 0, good: 0, easy: 0 });
   
   const isChallenge = deck.isChallenge;
   const [challengeQueue, setChallengeQueue] = useState(isChallenge ? deck.cards : []);
@@ -1430,12 +1450,36 @@ function DeckStudyView({ deck, onBack, addPoints, onUpdateCard, onFinishChalleng
     );
   }
 
+  // Pantalla de finalización con RESUMEN DE SESIÓN
   if (idx >= cardsToStudy.length) {
     return (
-      <div className="max-w-xl mx-auto py-20 text-center space-y-6 animate-in zoom-in-95">
-        <Icon name="Award" size={80} className="mx-auto text-amber-500" />
-        <h2 className="text-3xl font-black text-rose-950">You're out of the woods! 🌲</h2>
-        <button onClick={onFinishChallenge || onBack} className="px-8 py-4 bg-rose-600 text-white rounded-2xl font-black shadow-xl hover:bg-rose-700 active:scale-95 transition-all uppercase">Volver</button>
+      <div className="max-w-xl mx-auto py-10 text-center space-y-8 animate-in zoom-in-95">
+        <div className="space-y-2">
+          <Icon name="Award" size={60} className="mx-auto text-amber-500" />
+          <h2 className="text-3xl font-black text-rose-950">You're out of the woods! 🌲</h2>
+          <p className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">Session Results</p>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div className="bg-white p-4 rounded-3xl border-2 border-slate-100 flex flex-col items-center">
+            <span className="text-2xl font-black text-blue-600">{sessionStats.easy}</span>
+            <span className="text-[8px] font-black uppercase text-slate-400">Easy</span>
+          </div>
+          <div className="bg-white p-4 rounded-3xl border-2 border-slate-100 flex flex-col items-center">
+            <span className="text-2xl font-black text-emerald-600">{sessionStats.good}</span>
+            <span className="text-[8px] font-black uppercase text-slate-400">Good</span>
+          </div>
+          <div className="bg-white p-4 rounded-3xl border-2 border-slate-100 flex flex-col items-center">
+            <span className="text-2xl font-black text-orange-600">{sessionStats.hard}</span>
+            <span className="text-[8px] font-black uppercase text-slate-400">Hard</span>
+          </div>
+          <div className="bg-white p-4 rounded-3xl border-2 border-slate-100 flex flex-col items-center">
+            <span className="text-2xl font-black text-red-600">{sessionStats.repeat}</span>
+            <span className="text-[8px] font-black uppercase text-slate-400">Repeat</span>
+          </div>
+        </div>
+
+        <button onClick={onFinishChallenge || onBack} className="w-full py-5 bg-rose-600 text-white rounded-[24px] font-black shadow-lg shadow-rose-100 active:scale-95 transition-all uppercase tracking-widest text-sm">Finish Review</button>
       </div>
     );
   }
@@ -1445,6 +1489,9 @@ function DeckStudyView({ deck, onBack, addPoints, onUpdateCard, onFinishChalleng
   const handleAnki = (rating) => {
     const targetDeckId = (card.deckId || deck.id)?.toString();
     if (!targetDeckId || !onUpdateCard) return;
+
+    // Actualizamos estadísticas locales
+    setSessionStats(prev => ({ ...prev, [rating]: prev[rating] + 1 }));
 
     let { interval = 0, ease = 2.5 } = card;
     let newInterval = interval, newEase = ease;
@@ -1479,7 +1526,6 @@ function DeckStudyView({ deck, onBack, addPoints, onUpdateCard, onFinishChalleng
         )}
       </div>
 
-      {/* key={card.id} fuerza a React a recrear el componente, eliminando cualquier rastro de la rotación anterior */}
       <FlashcardUI 
         key={card.id + idx} 
         card={card} 
