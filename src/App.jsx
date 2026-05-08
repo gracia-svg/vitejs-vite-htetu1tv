@@ -1444,22 +1444,32 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam }) {
   );
 }
 
-function FlashcardUI({ card, deckName, addPoints, isFlipped, setIsFlipped }) {
+function FlashcardUI({ card, isFlipped, setIsFlipped }) {
   return (
-    <div className="h-80 w-full relative" style={{ perspective: '1000px' }} onClick={() => { if(!isFlipped) { addPoints(2, "Flashcard Mastery"); setIsFlipped(true); } }}>
+    <div className="h-80 w-full relative" style={{ perspective: '1000px' }} onClick={() => setIsFlipped(!isFlipped)}>
       <div className={`relative w-full h-full transition-transform duration-500 rounded-[40px] shadow-2xl cursor-pointer ${isFlipped ? '[transform:rotateY(180deg)]' : ''}`} style={{ transformStyle: 'preserve-3d' }}>
-        <div className="absolute inset-0 bg-white border-8 border-rose-50 rounded-[40px] flex flex-col items-center justify-center p-10 text-center [backface-visibility:hidden] shadow-inner overflow-hidden">
+        
+        {/* CARA A: PREGUNTA */}
+        <div className="absolute inset-0 bg-white border-8 border-rose-50 rounded-[40px] flex flex-col items-center justify-center p-8 text-center [backface-visibility:hidden] shadow-inner">
           <div className={`absolute top-0 left-0 right-0 h-4 ${getCategoryBadge(card.category).split(' ')[0]}`} title={card.category} />
-          <p className="text-2xl font-black text-slate-800 leading-tight">{card.q}</p>
+          <div className="w-full max-h-full overflow-y-auto custom-scrollbar pr-2">
+            <p className="text-xl font-black text-slate-800 leading-tight">{card.q}</p>
+          </div>
+          <p className="mt-4 text-[7px] font-black uppercase text-slate-300 tracking-widest">Tap to reveal answer</p>
         </div>
-        <div className="absolute inset-0 bg-rose-600 text-white rounded-[40px] flex items-center justify-center p-10 text-center [transform:rotateY(180deg)] [backface-visibility:hidden] shadow-xl shadow-rose-200">
-          <p className="text-xl font-medium italic leading-relaxed">{card.a}</p>
+
+        {/* CARA B: RESPUESTA */}
+        <div className="absolute inset-0 bg-rose-600 text-white rounded-[40px] flex flex-col items-center justify-center p-8 text-center [transform:rotateY(180deg)] [backface-visibility:hidden] shadow-xl shadow-rose-200">
+          <div className="w-full max-h-full overflow-y-auto custom-scrollbar pr-2">
+            <p className="text-lg font-medium italic leading-relaxed">{card.a}</p>
+          </div>
+          <p className="mt-4 text-[7px] font-black uppercase text-rose-300 tracking-widest">Tap to see question</p>
         </div>
+
       </div>
     </div>
   );
 }
-
 function DeckStudyView({ deck, onBack, addPoints, onUpdateCard, onFinishChallenge }) {
   const [idx, setIdx] = useState(0);
   const [flipped, setFlipped] = useState(false);
@@ -1476,25 +1486,31 @@ function DeckStudyView({ deck, onBack, addPoints, onUpdateCard, onFinishChalleng
     return [...deck.cards].sort(() => Math.random() - 0.5);
   }, [deck.cards, isShuffled, challengeQueue, isChallenge]);
 
+  // Pantalla de confirmación para el Reto Diario
   if (isChallenge && !challengeStarted) {
     return (
       <div className="max-w-xl mx-auto py-20 text-center space-y-8 animate-in zoom-in-95 relative">
         <button onClick={onBack} className="absolute top-4 right-4 text-slate-300 hover:text-red-500 transition-colors"><Icon name="X" size={24}/></button>
-        <h2 className="text-2xl font-black text-slate-800 leading-tight pt-10">Do you have 10 minutes to spare?</h2>
+        <div className="w-20 h-20 bg-emerald-50 text-emerald-600 rounded-3xl flex items-center justify-center mx-auto mb-2 shadow-inner">
+           <Icon name="Clock" size={40} />
+        </div>
+        <h2 className="text-2xl font-black text-slate-800 leading-tight">Daily Challenge</h2>
+        <p className="text-slate-500 font-bold italic">"Do you have 10 minutes to spare?"</p>
         <div className="flex flex-col items-center gap-4">
-          <button onClick={() => setChallengeStarted(true)} className="px-12 py-5 bg-slate-900 text-white rounded-2xl font-black shadow-xl active:scale-95 transition-all uppercase tracking-widest">Yes</button>
+          <button onClick={() => setChallengeStarted(true)} className="w-full max-w-xs py-5 bg-emerald-600 text-white rounded-2xl font-black shadow-xl shadow-emerald-100 active:scale-95 transition-all uppercase tracking-widest">Yes, let's go</button>
           <button onClick={onBack} className="text-[10px] font-black text-slate-400 uppercase tracking-widest hover:underline">Not now</button>
         </div>
       </div>
     );
   }
 
+  // Pantalla de finalización
   if (idx >= cardsToStudy.length) {
     return (
       <div className="max-w-xl mx-auto py-10 text-center space-y-8 animate-in zoom-in-95">
         <div className="space-y-2">
           <Icon name="Award" size={60} className="mx-auto text-amber-500" />
-          <h2 className="text-3xl font-black text-rose-950">You're out of the woods! 🌲</h2>
+          <h2 className="text-3xl font-black text-rose-950">Review Complete!</h2>
           <p className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">Session Results</p>
         </div>
         <div className="grid grid-cols-2 gap-4">
@@ -1503,7 +1519,7 @@ function DeckStudyView({ deck, onBack, addPoints, onUpdateCard, onFinishChalleng
           <div className="bg-white p-4 rounded-3xl border-2 border-slate-100 flex flex-col items-center"><span className="text-2xl font-black text-orange-600">{sessionStats.hard}</span><span className="text-[8px] font-black uppercase text-slate-400">Hard</span></div>
           <div className="bg-white p-4 rounded-3xl border-2 border-slate-100 flex flex-col items-center"><span className="text-2xl font-black text-red-600">{sessionStats.repeat}</span><span className="text-[8px] font-black uppercase text-slate-400">Repeat</span></div>
         </div>
-        <button onClick={onFinishChallenge || onBack} className="w-full py-5 bg-rose-600 text-white rounded-[24px] font-black shadow-lg shadow-rose-100 active:scale-95 transition-all uppercase tracking-widest text-sm">Finish Review</button>
+        <button onClick={onFinishChallenge || onBack} className="w-full py-5 bg-rose-600 text-white rounded-[24px] font-black shadow-lg shadow-rose-100 active:scale-95 transition-all uppercase tracking-widest text-sm">Finish Session</button>
       </div>
     );
   }
@@ -1513,6 +1529,10 @@ function DeckStudyView({ deck, onBack, addPoints, onUpdateCard, onFinishChalleng
   const handleAnki = (rating) => {
     const targetDeckId = (card.deckId || deck.id)?.toString();
     if (!targetDeckId || !onUpdateCard) return;
+
+    // SUMAR SOLO 1 PUNTO POR TARJETA REPASADA
+    addPoints(1, `Review: ${card.q.substring(0,20)}...`);
+
     setSessionStats(prev => ({ ...prev, [rating]: prev[rating] + 1 }));
     let { interval = 0, ease = 2.5 } = card;
     let newInterval = interval, newEase = ease;
@@ -1520,8 +1540,11 @@ function DeckStudyView({ deck, onBack, addPoints, onUpdateCard, onFinishChalleng
     else if (rating === 'hard') { newInterval = Math.max(1, interval * 1.2); newEase = Math.max(1.3, ease - 0.15); }
     else if (rating === 'good') newInterval = interval === 0 ? 1 : interval * 2.5;
     else if (rating === 'easy') { newInterval = interval === 0 ? 4 : interval * ease * 1.3; newEase += 0.15; }
+    
     onUpdateCard(targetDeckId, card.id, { interval: newInterval, ease: newEase, nextDate: rating === 'repeat' ? 0 : Date.now() + (newInterval * 86400000) });
+    
     if (rating === 'repeat' && isChallenge) setChallengeQueue(prev => [...prev, {...card, interval: newInterval, ease: newEase, nextDate: 0}]);
+    
     setFlipped(false);
     setIdx(p => p + 1);
   };
@@ -1532,7 +1555,7 @@ function DeckStudyView({ deck, onBack, addPoints, onUpdateCard, onFinishChalleng
         <button onClick={onBack} className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-rose-600 transition-all"><Icon name="ChevronRight" className="rotate-180" size={16}/> Back</button>
         {!isChallenge && <button onClick={() => { setIsShuffled(!isShuffled); setIdx(0); setFlipped(false); }} className={`flex items-center gap-2 px-3 py-1.5 rounded-xl font-black text-[10px] uppercase transition-all ${isShuffled ? 'bg-rose-600 text-white shadow-lg' : 'bg-slate-100 text-slate-400 hover:bg-slate-200'}`}><Icon name="Shuffle" size={14}/> {isShuffled ? 'Shuffled' : 'Normal'}</button>}
       </div>
-      <FlashcardUI key={card.id + idx} card={card} deckName={deck.name} addPoints={addPoints} isFlipped={flipped} setIsFlipped={setFlipped} />
+      <FlashcardUI key={card.id + idx} card={card} deckName={deck.name} isFlipped={flipped} setIsFlipped={setFlipped} />
       {flipped ? (
         <div className="grid grid-cols-4 gap-2 animate-in fade-in slide-in-from-bottom-2">
           <button onClick={(e)=>{e.stopPropagation(); handleAnki('repeat')}} className="py-4 bg-slate-100 text-slate-600 rounded-2xl font-black text-[10px] uppercase active:scale-95 transition-all">Repeat</button>
@@ -1543,7 +1566,7 @@ function DeckStudyView({ deck, onBack, addPoints, onUpdateCard, onFinishChalleng
       ) : (
         <div className="flex gap-4">
           <button onClick={(e)=>{e.stopPropagation(); setIdx(p=>Math.max(0,p-1)); setFlipped(false);}} className="flex-1 py-4 bg-white border-2 border-rose-100 rounded-2xl font-black text-rose-600 shadow-sm active:scale-95 transition-all" disabled={idx===0}>PREVIOUS</button>
-          <button onClick={(e)=>{e.stopPropagation(); setIdx(p=>p+1); setFlipped(false);}} className="flex-1 py-4 bg-rose-600 text-white rounded-2xl font-black shadow-xl active:scale-95 transition-all">NEXT</button>
+          <button onClick={(e)=>{e.stopPropagation(); setFlipped(true);}} className="flex-1 py-4 bg-rose-600 text-white rounded-2xl font-black shadow-xl active:scale-95 transition-all uppercase text-xs">Reveal Answer</button>
         </div>
       )}
       <p className="text-center text-[10px] font-black text-slate-300 uppercase tracking-widest">{idx + 1} / {cardsToStudy.length}</p>
