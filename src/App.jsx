@@ -878,8 +878,6 @@ function ProgressMap({ points, level, xp, addPoints, streak, perfectWeeks, onVau
   return (
     <div className="space-y-8 max-w-xl mx-auto py-8 text-center animate-in fade-in">
       <div className="grid grid-cols-2 gap-4">
-        
-        {/* CARD 1: NIVEL Y XP */}
         <div className="relative">
           <div onClick={() => setPtsMenu(ptsMenu === 'closed' ? 'main' : 'closed')} className="bento-card p-6 border-emerald-100 shadow-md cursor-pointer h-full flex flex-col items-center justify-center hover:border-emerald-300">
             <div className="flex justify-between items-end w-full mb-1">
@@ -919,7 +917,6 @@ function ProgressMap({ points, level, xp, addPoints, streak, perfectWeeks, onVau
           )}
         </div>
 
-        {/* CARD 2: RACHA Y SEMANAS */}
         <div className="bento-card p-4 border-orange-100 shadow-md flex items-center justify-between">
            <div className="flex-1 flex flex-col items-center border-r border-slate-100">
               <Icon name="Flame" size={24} className="fill-orange-500 text-orange-500" />
@@ -934,18 +931,13 @@ function ProgressMap({ points, level, xp, addPoints, streak, perfectWeeks, onVau
         </div>
       </div>
 
-      {/* WIDGET: FROM THE VAULT (REDUCIDO) */}
       <div className="flex justify-center">
-        <button 
-          onClick={onVaultOpen}
-          className="vault-pill py-2 px-5 rounded-full flex items-center gap-2 shadow-lg active:scale-95 transition-all border border-slate-700/50"
-        >
+        <button onClick={onVaultOpen} className="vault-pill py-2 px-5 rounded-full flex items-center gap-2 shadow-lg active:scale-95 transition-all border border-slate-700/50">
           <span className="text-sm">🗝️</span>
           <span className="text-[9px] font-black uppercase tracking-[0.2em] opacity-80">Vault</span>
         </button>
       </div>
 
-      {/* MAPA DE NIVELES */}
       <div className="flex flex-col items-center gap-16 relative mt-12">
         <div className="absolute top-0 bottom-0 w-2 bg-emerald-50 rounded-full -z-10" />
         {[level+1, level, level-1, level-2].filter(l=>l>0).map(l => (
@@ -1059,23 +1051,18 @@ function SyllabusView({ topics, setTopics, addPoints, onOpenModal, actionLogs, o
     </div>
   );
 }
+
 function CounterPill({ label, count, onAdd, onSub }) {
   const [open, setOpen] = useState(false);
   
   useEffect(() => {
     let timer;
-    if (open) {
-      timer = setTimeout(() => setOpen(false), 3000);
-    }
+    if (open) timer = setTimeout(() => setOpen(false), 3000);
     return () => clearTimeout(timer);
   }, [open, count]);
 
   return (
-    <div 
-      className={`flex flex-col items-center p-2 rounded-2xl border-2 transition-all cursor-pointer relative h-12 justify-center bg-slate-50 hover:border-emerald-100 shadow-inner`} 
-      onClick={() => setOpen(true)}
-      onMouseLeave={() => setOpen(false)}
-    >
+    <div className={`flex flex-col items-center p-2 rounded-2xl border-2 transition-all cursor-pointer relative h-12 justify-center bg-slate-50 hover:border-emerald-100 shadow-inner`} onClick={() => setOpen(true)} onMouseLeave={() => setOpen(false)}>
       <p className="text-[7px] font-black text-slate-400 uppercase mb-1 leading-none">{label}</p>
       <div className="flex items-center justify-center w-full relative">
         {open && (<button onClick={(e)=>{e.stopPropagation(); onSub(); setOpen(true);}} className={`absolute left-0 w-7 h-7 bg-white shadow-sm rounded-lg flex items-center justify-center text-[10px] active:scale-90`}><Icon name="Minus" size={12} /></button>)}
@@ -1125,56 +1112,26 @@ function PlanningHub({ planning, setPlanning, units, setUnits, addPoints, submis
 
   return (
     <div className="space-y-8 text-left animate-in slide-in-from-right-4">
-      {/* HEADER REDISEÑADO: Más compacto y amigable para móvil */}
       <div className="bg-white/50 backdrop-blur p-6 rounded-[32px] border border-white/50 shadow-sm flex flex-col gap-6">
         <div className="flex justify-between items-start">
            <div className="flex items-center gap-3">
              <Icon name="FileText" className="text-teal-600" />
-             <h2 className="text-xl sm:text-2xl font-black text-slate-950">Program</h2>
+             <h2 className="text-xl sm:text-2xl font-black text-slate-950">Programación</h2>
            </div>
            
            <div className="flex items-start gap-4">
-              {/* Botón Reset movido aquí para ahorrar espacio horizontal */}
-              <button 
-                onClick={onReset} 
-                className="px-2.5 py-1.5 bg-red-50 text-red-600 font-black text-[9px] rounded-xl hover:bg-red-100 transition-all uppercase tracking-widest mt-0.5 border border-red-100 shadow-sm active:scale-90"
-              >
-                Reset
-              </button>
-
+              <button onClick={onReset} className="px-2.5 py-1.5 bg-red-50 text-red-600 font-black text-[9px] rounded-xl hover:bg-red-100 transition-all uppercase tracking-widest mt-0.5 border border-red-100 shadow-sm active:scale-90">Reset</button>
               <div className="text-right cursor-pointer relative" onClick={() => setShowSubDate(!showSubDate)}>
                 <p className="text-3xl font-black text-slate-800 tabular-nums leading-none">{days}</p>
                 <p className="text-[8px] font-black uppercase text-teal-600 tracking-widest mt-1">days</p>
-                {showSubDate && (
-                  <input 
-                    type="date" 
-                    value={submissionDate} 
-                    onChange={e => { setSubmissionDate(e.target.value); setShowSubDate(false); }} 
-                    onClick={e => e.stopPropagation()} 
-                    className="absolute top-0 right-0 bg-white shadow-xl rounded-lg p-2 text-xs border z-50" 
-                  />
-                )}
+                {showSubDate && <input type="date" value={submissionDate} onChange={e => { setSubmissionDate(e.target.value); setShowSubDate(false); }} onClick={e => e.stopPropagation()} className="absolute top-0 right-0 bg-white shadow-xl rounded-lg p-2 text-xs border z-50" />}
               </div>
            </div>
         </div>
 
-        {/* Fila dedicada al formulario: Ocupa el ancho completo sin apretarse */}
-        <form 
-          onSubmit={e => { e.preventDefault(); if(newPlan.trim()){ setPlanning([...planning, {id: 'p'+(planning.length+1), title: newPlan.trim(), status: 0, indexNotes: "", priority: null, leg: "LOMLOE"}]); setNewPlan(""); } }} 
-          className="flex gap-2"
-        >
-          <input 
-            placeholder="Añadir sección..." 
-            value={newPlan} 
-            onChange={e => setNewPlan(e.target.value)} 
-            className="flex-1 bg-white border-2 border-slate-100 rounded-2xl px-4 py-3 text-sm font-black outline-none focus:border-teal-200 transition-all shadow-inner" 
-          />
-          <button 
-            type="submit" 
-            className="bg-teal-600 text-white p-3.5 rounded-2xl shadow-lg shadow-teal-100 active:scale-95 transition-transform"
-          >
-            <Icon name="Plus" size={20}/>
-          </button>
+        <form onSubmit={e => { e.preventDefault(); if(newPlan.trim()){ setPlanning([...planning, {id: 'p'+(planning.length+1), title: newPlan.trim(), status: 0, indexNotes: "", priority: null, leg: "LOMLOE"}]); setNewPlan(""); } }} className="flex gap-2">
+          <input placeholder="Añadir sección..." value={newPlan} onChange={e => setNewPlan(e.target.value)} className="flex-1 bg-white border-2 border-slate-100 rounded-2xl px-4 py-3 text-sm font-black outline-none focus:border-teal-200 transition-all shadow-inner" />
+          <button type="submit" className="bg-teal-600 text-white p-3.5 rounded-2xl shadow-lg shadow-teal-100 active:scale-95 transition-transform"><Icon name="Plus" size={20}/></button>
         </form>
       </div>
 
@@ -1250,11 +1207,7 @@ function NoteItem({ n, notes, setNotes }) {
   return (
     <div style={{transform:`rotate(${n.rot}deg)`}} className={`relative p-5 aspect-square rounded shadow-lg border-t-[8px] ${n.color.bg} ${n.color.border} transition-all hover:scale-105 shadow-yellow-100`}>
       <Icon name="Pin" size={16} className={`absolute top-2 left-1/2 -translate-x-1/2 opacity-20 ${n.color.pin}`} />
-      
-      <button onClick={() => setIsEditing(!isEditing)} className={`absolute top-2 right-2 text-slate-400 hover:text-emerald-600 transition-colors ${isEditing ? 'text-emerald-600' : ''}`}>
-        <Icon name={isEditing ? "Check" : "Edit"} size={14} />
-      </button>
-
+      <button onClick={() => setIsEditing(!isEditing)} className={`absolute top-2 right-2 text-slate-400 hover:text-emerald-600 transition-colors ${isEditing ? 'text-emerald-600' : ''}`}><Icon name={isEditing ? "Check" : "Edit"} size={14} /></button>
       <div className="pt-2 h-full">
         {isEditing ? (
           <textarea autoFocus value={temp} onChange={e=>setTemp(e.target.value)} onBlur={() => { if(temp.trim()) setNotes(notes.map(x=>x.id===n.id?{...x,text:temp}:x)); setIsEditing(false); }} className={`w-full h-full bg-transparent resize-none outline-none text-[11px] font-black ${n.color.text} custom-scrollbar`} />
@@ -1262,10 +1215,7 @@ function NoteItem({ n, notes, setNotes }) {
           <p className={`text-[11px] font-black h-full ${n.color.text} text-left overflow-y-auto custom-scrollbar`}>{n.text}</p>
         )}
       </div>
-      
-      <button onClick={()=>setNotes(notes.filter(x=>x.id!==n.id))} className="absolute bottom-2 right-2 text-slate-400 hover:text-red-500 transition-colors">
-        <Icon name="Trash2" size={14}/>
-      </button>
+      <button onClick={()=>setNotes(notes.filter(x=>x.id!==n.id))} className="absolute bottom-2 right-2 text-slate-400 hover:text-red-500 transition-colors"><Icon name="Trash2" size={14}/></button>
     </div>
   );
 }
@@ -1296,10 +1246,6 @@ function NotesView({ notes, setNotes }) {
   );
 }
 
-// ==========================================
-// COMPONENTES DE FLASHCARDS ACTUALIZADOS (MANAGER + UI + STUDY)
-// ==========================================
-
 function FlashcardsManager({ decks, setDecks, onSelect, onExam }) {
   const [open, setOpen] = useState(false);
   const [txt, setTxt] = useState("");
@@ -1307,12 +1253,10 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam }) {
   const [deckCat, setDeckCat] = useState("General");
   const [editingId, setEditingId] = useState(null);
 
-  // Estados de control de Modales
   const [showDailyModal, setShowDailyModal] = useState(false);
   const [showExamModal, setShowExamModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
 
-  // Estados de configuración de estudio
   const [dailyCats, setDailyCats] = useState(DECK_CATEGORIES);
   const [examCats, setExamCats] = useState(DECK_CATEGORIES);
   const [examLimit, setExamCount] = useState(20); 
@@ -1323,9 +1267,7 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam }) {
     decks.forEach(d => {
       if (dailyCats.includes(d.category || "General")) {
         d.cards.forEach(c => {
-          if (!c.nextDate || c.nextDate <= now) {
-            dueCards.push({...c, deckId: d.id, deckName: d.name, category: d.category});
-          }
+          if (!c.nextDate || c.nextDate <= now) dueCards.push({...c, deckId: d.id, deckName: d.name, category: d.category});
         });
       }
     });
@@ -1338,15 +1280,11 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam }) {
   const executeExam = () => {
     let pool = [];
     decks.forEach(d => {
-      if (examCats.includes(d.category || "General")) {
-        pool.push(...d.cards.map(c => ({...c, deckId: d.id, deckName: d.name, category: d.category})));
-      }
+      if (examCats.includes(d.category || "General")) pool.push(...d.cards.map(c => ({...c, deckId: d.id, deckName: d.name, category: d.category})));
     });
     if (pool.length === 0) return alert("No hay tarjetas en las categorías seleccionadas.");
-    
     let finalCards = pool.sort(() => Math.random() - 0.5);
     if (examLimit > 0) finalCards = finalCards.slice(0, examLimit);
-
     onExam({ id: 'exam-mode', name: 'CUSTOM EXAM', cards: finalCards });
     setShowExamModal(false);
   };
@@ -1361,11 +1299,7 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam }) {
     if (input) {
       try {
         const imported = JSON.parse(input);
-        if (Array.isArray(imported)) { 
-          setDecks(prev => [...prev, ...imported]); 
-          alert("¡Mazos importados con éxito!"); 
-          setShowSettingsModal(false);
-        }
+        if (Array.isArray(imported)) { setDecks(prev => [...prev, ...imported]); alert("¡Mazos importados con éxito!"); setShowSettingsModal(false); }
       } catch (e) { alert("Error al importar el código."); }
     }
   };
@@ -1392,8 +1326,6 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam }) {
 
   return (
     <div className="space-y-6 text-left relative">
-      
-      {/* MODAL: AJUSTES (Import/Export) */}
       {showSettingsModal && (
         <div className="modal-overlay" onClick={()=>setShowSettingsModal(false)}>
           <div className="bg-white rounded-[40px] p-8 w-full max-w-sm shadow-2xl animate-in zoom-in-95" onClick={e=>e.stopPropagation()}>
@@ -1406,7 +1338,6 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam }) {
         </div>
       )}
 
-      {/* MODAL: RETO DIARIO */}
       {showDailyModal && (
         <div className="modal-overlay" onClick={()=>setShowDailyModal(false)}>
           <div className="bg-white rounded-[40px] p-8 w-full max-w-md shadow-2xl animate-in zoom-in-95" onClick={e=>e.stopPropagation()}>
@@ -1425,21 +1356,16 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam }) {
         </div>
       )}
 
-      {/* MODAL: CONFIGURACIÓN MODO EXAMEN */}
       {showExamModal && (
         <div className="modal-overlay" onClick={()=>setShowExamModal(false)}>
           <div className="bg-white rounded-[40px] p-8 w-full max-w-md shadow-2xl animate-in zoom-in-95" onClick={e=>e.stopPropagation()}>
             <h3 className="text-xl font-black text-rose-950 mb-4 flex items-center gap-2"><Icon name="Dices" className="text-rose-500"/> Exam Config</h3>
-            
             <p className="text-[10px] font-black uppercase text-slate-400 mb-2">Number of Cards</p>
             <div className="grid grid-cols-4 gap-2 mb-6">
               {[10, 20, 50, 0].map(v => (
-                <button key={v} onClick={() => setExamCount(v)} className={`py-2 rounded-xl text-xs font-black border-2 transition-all ${examLimit === v ? 'border-rose-500 bg-rose-50 text-rose-600' : 'border-slate-100 text-slate-400'}`}>
-                  {v === 0 ? 'ALL' : v}
-                </button>
+                <button key={v} onClick={() => setExamCount(v)} className={`py-2 rounded-xl text-xs font-black border-2 transition-all ${examLimit === v ? 'border-rose-500 bg-rose-50 text-rose-600' : 'border-slate-100 text-slate-400'}`}>{v === 0 ? 'ALL' : v}</button>
               ))}
             </div>
-
             <div className="flex justify-between items-center mb-4">
                <p className="text-[10px] font-black uppercase text-slate-400">Categories</p>
                <button onClick={() => setExamCats([...DECK_CATEGORIES])} className="text-[10px] font-black text-rose-600 uppercase">Select All</button>
@@ -1449,19 +1375,17 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam }) {
                 <button key={c} onClick={() => setExamCats(prev => prev.includes(c) ? prev.filter(x=>x!==c) : [...prev, c])} className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all border ${examCats.includes(c) ? getCategoryBadge(c) : 'bg-slate-50 text-slate-300 border-transparent'}`}>{c}</button>
               ))}
             </div>
-
             <button onClick={executeExam} className="w-full p-4 bg-slate-900 text-white rounded-2xl font-black shadow-xl uppercase tracking-widest">Start Exam</button>
           </div>
         </div>
       )}
 
-      {/* CABECERA DE LA LIBRERÍA */}
       <div className="flex flex-col sm:flex-row justify-between items-center bg-white/50 backdrop-blur px-4 py-2 rounded-2xl shadow-sm border border-white/50 gap-4">
         <h2 className="text-2xl font-black text-rose-950">Library</h2>
         <div className="flex items-center gap-2">
           <button onClick={()=>setShowDailyModal(true)} className="px-3 py-2 bg-amber-100 text-amber-700 rounded-xl font-black text-[10px] flex items-center gap-2 border border-amber-200 active:scale-95 transition-all shadow-sm"><Icon name="Flame" size={14} className="fill-amber-700"/> DAILY </button>
           <button onClick={()=>setShowExamModal(true)} className="px-3 py-2 bg-rose-100 text-rose-700 rounded-xl font-black text-[10px] flex items-center gap-2 border border-rose-200 active:scale-95 transition-all shadow-sm"><Icon name="Dices" size={14}/> EXAM MODE</button>
-          <button onClick={()=>setShowSettingsModal(true)} className="p-2 bg-slate-100 text-slate-500 rounded-xl hover:bg-slate-200 transition-all" title="Settings"><Icon name="Settings" size={18}/></button>
+          <button onClick={()=>setShowSettingsModal(true)} className="p-2 bg-slate-100 text-slate-500 rounded-xl hover:bg-slate-200 transition-all"><Icon name="Settings" size={18}/></button>
         </div>
       </div>
       
@@ -1471,9 +1395,7 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam }) {
         <div className="bento-card p-6 border-rose-100 space-y-4 shadow-xl animate-in zoom-in-95 bg-white">
           <div className="flex gap-2">
             <input placeholder="Deck name..." value={name} onChange={e=>setName(e.target.value)} className="flex-1 bg-slate-50 p-3 rounded-xl font-black outline-none border-2 border-transparent focus:border-rose-200" />
-            <select value={deckCat} onChange={e=>setDeckCat(e.target.value)} className="bg-slate-50 p-3 rounded-xl font-black outline-none border-2 border-transparent focus:border-rose-200 text-slate-600">
-              {DECK_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-            </select>
+            <select value={deckCat} onChange={e=>setDeckCat(e.target.value)} className="bg-slate-50 p-3 rounded-xl font-black outline-none border-2 border-transparent focus:border-rose-200 text-slate-600">{DECK_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}</select>
           </div>
           <textarea placeholder="Question : Answer" value={txt} onChange={e=>setTxt(e.target.value)} className="w-full h-32 bg-slate-50 p-3 rounded-xl font-black outline-none resize-none border-2 border-transparent focus:border-rose-200" />
           <button onClick={saveDeck} className="w-full p-3 bg-rose-600 text-white rounded-xl font-black uppercase">{editingId ? 'Save Changes' : 'Create Deck'}</button>
@@ -1536,9 +1458,7 @@ function DeckStudyView({ deck, onBack, addPoints, onUpdateCard, onFinishChalleng
   if (isChallenge && !challengeStarted) {
     return (
       <div className="max-w-xl mx-auto py-20 text-center space-y-8 animate-in zoom-in-95 relative">
-        <button onClick={onBack} className="absolute top-4 right-4 text-slate-300 hover:text-red-500 transition-colors">
-          <Icon name="X" size={24}/>
-        </button>
+        <button onClick={onBack} className="absolute top-4 right-4 text-slate-300 hover:text-red-500 transition-colors"><Icon name="X" size={24}/></button>
         <h2 className="text-2xl font-black text-slate-800 leading-tight pt-10">Do you have 10 minutes to spare?</h2>
         <div className="flex flex-col items-center gap-4">
           <button onClick={() => setChallengeStarted(true)} className="px-12 py-5 bg-slate-900 text-white rounded-2xl font-black shadow-xl active:scale-95 transition-all uppercase tracking-widest">Yes</button>
@@ -1609,16 +1529,16 @@ function DeckStudyView({ deck, onBack, addPoints, onUpdateCard, onFinishChalleng
     </div>
   );
 }
+
 function BadgesView({ points, streak, maxStreak, topics, planning, units, skills, perfectWeeks, totalDailyChallenges }) {
   const doneTopics = topics.filter(t=>t.finished).length;
   const studiedTopics = topics.filter(t=>t.estudiado > 0).length;
   const writtenTopics = topics.filter(t=>t.redactado).length;
   const planningDone = planning.filter(p=>p.status===10).length;
   const unitsDone = units.filter(u=>u.status===10).length;
-  const allSkills = skills.reduce((a, s) => a + s.level, 0);
   const totalMocks = topics.reduce((a, t) => a + (t.mocks || 0), 0);
 
-  /* --- SWIFTIE REFERENCE START --- */
+  /* --- SWIFTIE REFERENCE: Badge thresholds and era names --- */
   const BADGES = [
     { icon: '🥚', title: 'Hatching', desc: '500 pts', cond: points >= 500 },
     { icon: '🐾', title: 'Walker', desc: '2,500 pts', cond: points >= 2500 },
@@ -1648,7 +1568,6 @@ function BadgesView({ points, streak, maxStreak, topics, planning, units, skills
     { icon: '✨', title: 'Bejeweled', desc: '30 Sem. Perfectas', cond: perfectWeeks >= 30 },
     { icon: '🧠', title: 'Leyenda Repaso', desc: '50 Retos Diarios', cond: totalDailyChallenges >= 50 },
   ];
-  /* --- SWIFTIE REFERENCE END --- */
 
   return (
     <div className="space-y-8 text-left animate-in fade-in slide-in-from-bottom-6">
@@ -1708,20 +1627,15 @@ function VaultCarousel({ items, setItems, onClose }) {
   return (
     <div className="fixed inset-0 z-[600] bg-slate-900 flex flex-col items-center justify-center p-6 sm:p-12 animate-in fade-in">
        <div className="absolute top-6 right-6 flex gap-4">
-          <button onClick={handleShuffle} title="Shuffle Vault" className="text-white/30 hover:text-amber-500 transition-colors"><Icon name="Shuffle" size={24}/></button>
-          <button onClick={() => setImportOpen(!importOpen)} title="Settings" className="text-white/30 hover:text-white transition-colors"><Icon name="Settings" size={24}/></button>
+          <button onClick={handleShuffle} className="text-white/30 hover:text-amber-500 transition-colors"><Icon name="Shuffle" size={24}/></button>
+          <button onClick={() => setImportOpen(!importOpen)} className="text-white/30 hover:text-white transition-colors"><Icon name="Settings" size={24}/></button>
           <button onClick={onClose} className="text-white/30 hover:text-red-500 transition-colors"><Icon name="X" size={28}/></button>
        </div>
 
        {importOpen ? (
          <div className="w-full max-w-md space-y-4 animate-in zoom-in-95">
            <p className="text-white text-center font-black uppercase text-xs tracking-widest">Import citations (JSON)</p>
-           <textarea 
-             className="w-full h-64 bg-slate-800 border-2 border-slate-700 rounded-2xl p-4 text-white font-mono text-xs outline-none focus:border-amber-500"
-             placeholder='[{"category": "...", "reference": "...", "text": "..."}]'
-             value={importTxt}
-             onChange={e => setImportTxt(e.target.value)}
-           />
+           <textarea className="w-full h-64 bg-slate-800 border-2 border-slate-700 rounded-2xl p-4 text-white font-mono text-xs outline-none focus:border-amber-500" placeholder='[{"category": "...", "reference": "...", "text": "..."}]' value={importTxt} onChange={e => setImportTxt(e.target.value)} />
            <button onClick={handleImport} className="w-full py-4 bg-amber-500 text-slate-950 font-black rounded-2xl uppercase shadow-xl">Apply Updates</button>
          </div>
        ) : (
@@ -1731,7 +1645,6 @@ function VaultCarousel({ items, setItems, onClose }) {
                <p className="text-white text-2xl sm:text-4xl font-black leading-tight">"{current.text}"</p>
                <p className="text-slate-400 font-bold italic">— {current.reference}</p>
             </div>
-            
             <div className="flex gap-8 items-center">
               <button onClick={() => setIdx(p => Math.max(0, p-1))} className={`p-4 rounded-full border-2 border-white/10 text-white transition-all ${idx === 0 ? 'opacity-20' : 'hover:bg-white/5 active:scale-90'}`} disabled={idx===0}><Icon name="ChevronRight" className="rotate-180" size={32}/></button>
               <p className="text-white/20 font-black tabular-nums">{idx + 1} / {items.length}</p>
@@ -1742,6 +1655,8 @@ function VaultCarousel({ items, setItems, onClose }) {
     </div>
   );
 }
+
+/* --- SWIFTIE REFERENCE: Strategic planning tool based on Mastermind logic --- */
 function StrategicPlanning({ topics }) {
   const masteredCount = topics.filter(t => t.finished).length;
   const [targetCount, setTargetCount] = useState(masteredCount);
@@ -1761,7 +1676,6 @@ function StrategicPlanning({ topics }) {
   return (
     <div className="space-y-8 animate-in fade-in zoom-in-95 text-left">
       <div className="bento-card p-8 bg-white border-slate-100 shadow-xl relative overflow-hidden">
-        {/* Marca de agua Mastermind */}
         <div className="absolute top-0 right-0 p-4 opacity-5"><Icon name="Pawn" size={120} /></div>
         
         <div className="flex justify-between items-end mb-10 relative z-10">
@@ -1770,85 +1684,10 @@ function StrategicPlanning({ topics }) {
             <p className="text-3xl font-black text-slate-800">{masteredCount} <span className="text-xs font-bold text-slate-400">Topics</span></p>
             <p className="text-sm font-black text-slate-400 tabular-nums">{currentOdds.toFixed(3)}%</p>
           </div>
-          
           <div className="flex flex-col items-center pb-2">
             <Icon name="ChevronRight" className="text-slate-200" size={32} />
             {gain > 0 && <span className="text-[10px] font-black text-emerald-500">+{gain.toFixed(2)}%</span>}
           </div>
-
-          <div className="text-right space-y-1">
-            <span className="text-[8px] font-black uppercase text-emerald-500 tracking-[0.2em]">Strategic Forecast</span>
-            <p className="text-3xl font-black text-emerald-600">{targetCount} <span className="text-xs font-bold text-emerald-400">Topics</span></p>
-            <p className="text-xl font-black text-emerald-700 tabular-nums">{targetOdds.toFixed(3)}%</p>
-          </div>
-        </div>
-
-        <div className="relative pt-10 pb-4">
-          {/* Milestone markers */}
-          <div className="absolute top-0 left-0 right-0 flex justify-between px-2">
-            {milestones.map(m => (
-              <div key={m.n} className="flex flex-col items-center">
-                <div className={`h-2 w-0.5 ${masteredCount >= m.n ? 'bg-emerald-500' : 'bg-slate-200'}`} />
-                <span className={`text-[7px] font-black uppercase mt-1 ${m.color}`}>{m.label}</span>
-              </div>
-            ))}
-          </div>
-
-          <input 
-            type="range" min="0" max="69" value={targetCount} 
-            onChange={(e) => setTargetCount(parseInt(e.target.value))}
-            className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-emerald-600"
-            style={{ backgroundImage: 'linear-gradient(to right, #10b981 0%, #10b981 ' + (targetCount/69*100) + '%, #f1f5f9 ' + (targetCount/69*100) + '%, #f1f5f9 100%)' }}
-          />
-          
-          {/* --- SWIFTIE REFERENCE: Floating Pawn as the slider thumb --- */}
-          <div 
-            className="absolute pointer-events-none transition-all duration-150"
-            style={{ left: `calc(${(targetCount / 69) * 100}% - 10px)`, top: '35px' }}
-          >
-            <div className="flex flex-col items-center">
-              <Icon name="Pawn" size={20} className="text-emerald-600 drop-shadow-md" />
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-/* --- SWIFTIE REFERENCE: Strategic planning tool based on Mastermind logic --- */
-function StrategicPlanning({ topics }) {
-  const masteredCount = topics.filter(t => t.finished).length;
-  const [targetCount, setTargetCount] = useState(masteredCount);
-  
-  const currentOdds = PROBABILITY_DATA[masteredCount] || 0;
-  const targetOdds = PROBABILITY_DATA[targetCount] || 0;
-  const gain = targetOdds - currentOdds;
-
-  /* --- SWIFTIE REFERENCE: Milestones based on Era themes --- */
-  const milestones = [
-    { n: 11, label: "Archer", color: "text-emerald-500" },
-    { n: 20, label: "Safe Zone", color: "text-blue-500" },
-    { n: 29, label: "Mastermind", color: "text-purple-500" },
-    { n: 36, label: "End Game", color: "text-slate-900" }
-  ];
-
-  return (
-    <div className="space-y-8 animate-in fade-in zoom-in-95 text-left">
-      <div className="bento-card p-8 bg-white border-slate-100 shadow-xl relative overflow-hidden">
-        <div className="absolute top-0 right-0 p-4 opacity-5"><Icon name="Pawn" size={120} /></div>
-        
-        <div className="flex justify-between items-end mb-10 relative z-10">
-          <div className="space-y-1">
-            <span className="text-[8px] font-black uppercase text-slate-400 tracking-[0.2em]">Actual Reality</span>
-            <p className="text-3xl font-black text-slate-800">{masteredCount} <span className="text-xs font-bold text-slate-400">Topics</span></p>
-            <p className="text-sm font-black text-slate-400 tabular-nums">{currentOdds.toFixed(3)}%</p>
-          </div>
-          
-          <div className="flex flex-col items-center pb-2">
-            <Icon name="ChevronRight" className="text-slate-200" size={32} />
-            {gain > 0 && <span className="text-[10px] font-black text-emerald-500">+{gain.toFixed(2)}%</span>}
-          </div>
-
           <div className="text-right space-y-1">
             <span className="text-[8px] font-black uppercase text-emerald-500 tracking-[0.2em]">Strategic Forecast</span>
             <p className="text-3xl font-black text-emerald-600">{targetCount} <span className="text-xs font-bold text-emerald-400">Topics</span></p>
@@ -1865,19 +1704,8 @@ function StrategicPlanning({ topics }) {
               </div>
             ))}
           </div>
-
-          <input 
-            type="range" min="0" max="69" value={targetCount} 
-            onChange={(e) => setTargetCount(parseInt(e.target.value))}
-            className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-emerald-600"
-            style={{ backgroundImage: 'linear-gradient(to right, #10b981 0%, #10b981 ' + (targetCount/69*100) + '%, #f1f5f9 ' + (targetCount/69*100) + '%, #f1f5f9 100%)' }}
-          />
-          
-          {/* --- SWIFTIE REFERENCE: Pawn thumb slider --- */}
-          <div 
-            className="absolute pointer-events-none transition-all duration-150"
-            style={{ left: `calc(${(targetCount / 69) * 100}% - 10px)`, top: '35px' }}
-          >
+          <input type="range" min="0" max="69" value={targetCount} onChange={(e) => setTargetCount(parseInt(e.target.value))} className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-emerald-600" style={{ backgroundImage: `linear-gradient(to right, #10b981 0%, #10b981 ${(targetCount/69)*100}%, #f1f5f9 ${(targetCount/69)*100}%, #f1f5f9 100%)` }} />
+          <div className="absolute pointer-events-none transition-all duration-150" style={{ left: `calc(${(targetCount / 69) * 100}% - 10px)`, top: '35px' }}>
             <Icon name="Pawn" size={20} className="text-emerald-600 drop-shadow-md" />
           </div>
         </div>
@@ -1890,10 +1718,30 @@ function StatsView({ actionLogs, undoAction, topics, planning, units, levelDates
   const [tab, setTab] = useState('hist');
   /* --- SWIFTIE REFERENCE: Strategic planning mode state --- */
   const [mode, setMode] = useState('activity'); 
+  const [statsView, setStatsView] = useState('syllabus');
+
+  const syllabusStats = useMemo(() => {
+    const useful = topics.filter(t => !t.discarded);
+    const total = useful.length;
+    const done = useful.filter(t => t.finished).length;
+    const started = useful.filter(t => (t.redactado || t.estudiado > 0) && !t.finished).length;
+    const pending = total - done - started;
+    return { done, started, pending, total, donePct: Math.round((done/total)*100) || 0, startedPct: Math.round((started/total)*100) || 0 };
+  }, [topics]);
+
+  const planningStats = useMemo(() => {
+    const combined = [...planning, ...units];
+    const total = combined.length;
+    const done = combined.filter(i => i.status === 10).length;
+    const started = combined.filter(i => i.status > 0 && i.status < 10).length;
+    const pending = total - done - started;
+    return { done, started, pending, total, donePct: Math.round((done/total)*100) || 0, startedPct: Math.round((started/total)*100) || 0 };
+  }, [planning, units]);
+
+  const currentStats = statsView === 'syllabus' ? syllabusStats : planningStats;
 
   return (
     <div className="space-y-6 text-left animate-in zoom-in-95">
-      {/* --- SWIFTIE REFERENCE: Mastermind Mode Selector --- */}
       <div className="flex justify-center mb-4">
         <div className="bg-slate-100 p-1 rounded-2xl flex gap-1 shadow-inner w-full max-w-sm">
           <button onClick={() => setMode('activity')} className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase transition-all ${mode==='activity' ? 'bg-white text-violet-600 shadow-md' : 'text-slate-400'}`}>Activity Log</button>
@@ -1905,10 +1753,25 @@ function StatsView({ actionLogs, undoAction, topics, planning, units, levelDates
         <StrategicPlanning topics={topics} />
       ) : (
         <>
+          <div className="bento-card bg-white p-8 border-violet-100 shadow-xl">
+            <div className="flex justify-center mb-8 bg-slate-100 p-1 rounded-2xl w-fit mx-auto">
+              <button onClick={()=>setStatsView('syllabus')} className={`px-4 py-2 rounded-xl text-[10px] font-black transition-all ${statsView==='syllabus'?'bg-white text-violet-600 shadow-md':'text-slate-400'}`}>SYLLABUS</button>
+              <button onClick={()=>setStatsView('planning')} className={`px-4 py-2 rounded-xl text-[10px] font-black transition-all ${statsView==='planning'?'bg-white text-violet-600 shadow-md':'text-slate-400'}`}>PLANNING</button>
+            </div>
+            <div className="flex flex-col md:flex-row items-center justify-center gap-12">
+              <div className="relative w-48 h-48 rounded-full shadow-inner border-8 border-slate-50 flex items-center justify-center" style={{ background: `conic-gradient(#10b981 ${currentStats.donePct}%, #8b5cf6 ${currentStats.donePct}% ${currentStats.donePct + currentStats.startedPct}%, #f1f5f9 ${currentStats.donePct + currentStats.startedPct}% 100%)` }}><div className="w-32 h-32 bg-white rounded-full shadow-2xl flex flex-col items-center justify-center"><span className="text-3xl font-black text-slate-900">{currentStats.donePct}%</span><span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mt-1">Mastered</span></div></div>
+              <div className="grid grid-cols-1 gap-4">
+                <div className="flex items-center gap-3"><div className="w-4 h-4 rounded-full bg-emerald-500 shadow-sm" /><div className="text-left leading-none"><p className="text-xs font-black text-slate-800">{currentStats.done} Finished</p></div></div>
+                <div className="flex items-center gap-3"><div className="w-4 h-4 rounded-full bg-violet-500 shadow-sm" /><div className="text-left leading-none"><p className="text-xs font-black text-slate-800">{currentStats.started} In Progress</p></div></div>
+                <div className="flex items-center gap-3"><div className="w-4 h-4 rounded-full bg-slate-200 shadow-sm" /><div className="text-left leading-none"><p className="text-xs font-black text-slate-800">{currentStats.pending} Pending</p></div></div>
+              </div>
+            </div>
+          </div>
+
           <div id="activity-log" className="flex flex-col sm:flex-row justify-between items-center bg-white/50 backdrop-blur px-4 py-2 rounded-2xl shadow-sm border border-white/50 gap-4">
             <h2 className="text-xl font-black text-violet-950">Activity Log</h2>
             <div className="flex bg-slate-200 p-1 rounded-xl shrink-0 w-full sm:w-auto">
-              {['hist','rewards'].map(t=>(<button key={t} onClick={()=>setTab(t)} className={`px-4 py-1 text-[10px] font-black rounded-lg uppercase transition-all ${tab===t?'bg-white shadow-md text-violet-600':'text-slate-500'}`}>{t==='hist'?'History':'Rewards'}</button>))}
+              {['hist','rewards'].map(t=>(<button key={t} onClick={()=>setTab(t)} className={`px-4 py-1 text-[10px] font-black rounded-lg uppercase transition-all flex-1 sm:flex-none ${tab===t?'bg-white shadow-md text-violet-600':'text-slate-500'}`}>{t==='hist'?'History':'Level Rewards'}</button>))}
             </div>
           </div>
 
@@ -1933,7 +1796,7 @@ function StatsView({ actionLogs, undoAction, topics, planning, units, levelDates
               {Object.entries(levelDates || {}).sort((a,b) => b[0] - a[0]).map(([lvl, date]) => (
                 <div key={lvl} className="bento-card bg-white p-6 border-amber-100 flex justify-between items-center shadow-sm">
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-amber-50 text-amber-600 rounded-full flex items-center justify-center font-black text-xl border-2 border-amber-100">{lvl}</div>
+                    <div className="w-12 h-12 bg-amber-50 text-amber-600 rounded-full flex items-center justify-center font-black text-xl border-2 border-amber-100 shadow-inner">{lvl}</div>
                     <p className="text-sm font-bold text-slate-700 italic">"The legacy you leave behind..."</p>
                   </div>
                   <div className="text-right">
@@ -1947,4 +1810,70 @@ function StatsView({ actionLogs, undoAction, topics, planning, units, levelDates
       )}
     </div>
   );
+}
+
+function TodoView({ todos, setTodos, addPoints }) {
+  const [type, setType] = useState('goal');
+  const [inp, setInp] = useState("");
+  return (
+    <div className="space-y-6 text-left">
+      <div className="flex p-1 bg-slate-100 rounded-2xl shadow-inner">
+        <button onClick={()=>setType('goal')} className={`flex-1 py-3 rounded-xl text-xs font-black transition-all ${type==='goal'?'bg-white text-orange-600 shadow-md':'text-slate-400'}`}>GOALS</button>
+        <button onClick={()=>setType('review')} className={`flex-1 py-3 rounded-xl text-xs font-black transition-all ${type==='review'?'bg-white text-orange-600 shadow-md':'text-slate-400'}`}>REVIEWS</button>
+      </div>
+      <form onSubmit={e=>{e.preventDefault(); if(inp.trim()){setTodos([{id:Date.now().toString(),text:inp,completed:false,type}, ...todos]); setInp("");}}} className="flex gap-2">
+        {/* --- SWIFTIE REFERENCE START --- */}
+        <input placeholder="Got a blank space, baby... ¡añade una tarea!" value={inp} onChange={e=>setInp(e.target.value)} className="flex-1 bento-card bg-white px-4 py-3 text-sm font-black outline-none border-orange-50 focus:border-orange-200 shadow-sm" />
+        {/* --- SWIFTIE REFERENCE END --- */}
+        <button type="submit" className="p-3 bg-orange-600 text-white rounded-xl shadow-lg shadow-orange-100 active:scale-95 transition-all"><Icon name="Plus" size={24}/></button>
+      </form>
+      <div className="space-y-3">
+        {todos.filter(t=>t.type===type).map(t=>(
+          <div key={t.id} className="bento-card bg-white p-4 flex items-center justify-between shadow-sm hover:shadow-md transition-all">
+            <div className="flex items-center gap-3">
+              <button onClick={()=>{const isDone = !t.completed; setTodos(todos.map(pt=>pt.id===t.id?{...pt,completed:isDone}:pt)); addPoints(isDone ? 5 : -5, t.text, { entity: 'todo', id: t.id, prevValue: t.completed });}} className={`w-8 h-8 rounded-lg border-2 flex items-center justify-center transition-all ${t.completed?'bg-emerald-500 border-emerald-500 text-white shadow-sm':'border-orange-100 hover:border-orange-300'}`}>{t.completed && <Icon name="Check" size={16}/>}</button>
+              <span className={`text-sm font-black text-left transition-all ${t.completed?'line-through text-slate-300':'text-slate-700'}`}>{t.text}</span>
+            </div>
+            <button onClick={()=>setTodos(todos.filter(x=>x.id!==t.id))} className="text-slate-200 hover:text-red-500 transition-colors active:scale-90"><Icon name="Trash2" size={18}/></button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function HeaderToolBtn({ active, icon, label, color, onClick }) {
+  const c = active ? `bg-${color}-50 text-${color}-600 shadow-md` : `bg-white text-slate-600 border border-slate-100 hover:bg-slate-50`;
+  return <button onClick={onClick} className={`flex flex-col items-center gap-1.5 p-2 rounded-xl transition-all active:scale-95 ${c}`}><Icon name={icon} size={16} /><span className="text-[7px] font-black uppercase tracking-widest leading-none mt-0.5">{label}</span></button>;
+}
+
+function NavBtn({ active, icon, label, color, onClick }) {
+  const c = active ? `text-${color}-600 bg-${color}-50 shadow-inner` : 'text-slate-400 opacity-60 hover:opacity-100';
+  return <button onClick={onClick} className={`flex flex-col items-center gap-1 p-2 transition-all ${active?'scale-110':''}`}><div className={`p-2.5 rounded-xl ${c} transition-all shadow-sm`}><Icon name={icon} size={24} strokeWidth={active?3:2}/></div><span className={`text-[9px] font-black tracking-widest mt-1 ${active?`text-${color}-600`:'text-slate-400'}`}>{label}</span></button>;
+}
+
+function LoginScreen({ onLogin }) {
+  const [c, setC] = useState("");
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-emerald-50 p-6 text-center animate-in fade-in">
+      <div className="bg-white p-10 rounded-[40px] shadow-2xl w-full max-w-sm border-4 border-emerald-100">
+        <Icon name="Turtle" size={80} className="text-emerald-500 mx-auto mb-6" />
+        <h1 className="text-3xl font-black mb-2 tracking-tighter text-emerald-950 leading-none">TurtleStudy</h1>
+        <p className="text-slate-400 text-xs font-bold uppercase mb-6 tracking-widest">Master Syllabus Manager</p>
+        <input placeholder="Sync Code" value={c} onChange={e=>setC(e.target.value)} className="w-full p-4 bg-slate-50 rounded-2xl mb-4 text-center font-black outline-none border-2 border-transparent focus:border-emerald-300 transition-all shadow-inner" />
+        <button onClick={()=>onLogin(c)} className="w-full py-5 bg-emerald-600 text-white rounded-[24px] font-black shadow-lg hover:bg-emerald-700 active:scale-95 transition-all shadow-emerald-100 uppercase tracking-tighter">Enter App</button>
+      </div>
+    </div>
+  );
+}
+
+function LoadingScreen() { 
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-white">
+      <div className="text-center space-y-6">
+        <Icon name="Turtle" className="text-emerald-500 animate-bounce mx-auto" size={80} />
+        <p className="font-black text-emerald-900 animate-pulse uppercase tracking-[0.4em] text-xs">Synchronizing Vault...</p>
+      </div>
+    </div>
+  ); 
 }
