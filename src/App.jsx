@@ -1657,6 +1657,7 @@ function VaultCarousel({ items, setItems, onClose }) {
 }
 
 /* --- SWIFTIE REFERENCE: Strategic planning tool based on Mastermind logic --- */
+/* --- SWIFTIE REFERENCE: Strategic planning tool based on Mastermind logic --- */
 function StrategicPlanning({ topics }) {
   const masteredCount = topics.filter(t => t.finished).length;
   const [targetCount, setTargetCount] = useState(masteredCount);
@@ -1665,7 +1666,6 @@ function StrategicPlanning({ topics }) {
   const targetOdds = PROBABILITY_DATA[targetCount] || 0;
   const gain = targetOdds - currentOdds;
 
-  /* --- SWIFTIE REFERENCE: Milestones based on major probability shifts --- */
   const milestones = [
     { n: 11, label: "Archer", color: "text-emerald-500" },
     { n: 20, label: "Safe Zone", color: "text-blue-500" },
@@ -1684,13 +1684,16 @@ function StrategicPlanning({ topics }) {
             <p className="text-3xl font-black text-slate-800">{masteredCount} <span className="text-xs font-bold text-slate-400">Topics</span></p>
             <p className="text-sm font-black text-slate-400 tabular-nums">{currentOdds.toFixed(3)}%</p>
           </div>
+          
           <div className="flex flex-col items-center pb-2">
             <Icon name="ChevronRight" className="text-slate-200" size={32} />
             {gain > 0 && <span className="text-[10px] font-black text-emerald-500">+{gain.toFixed(2)}%</span>}
           </div>
+
           <div className="text-right space-y-1">
             <span className="text-[8px] font-black uppercase text-emerald-500 tracking-[0.2em]">Strategic Forecast</span>
             <p className="text-3xl font-black text-emerald-600">{targetCount} <span className="text-xs font-bold text-emerald-400">Topics</span></p>
+            {/* CORRECCIÓN: Ahora muestra la probabilidad total (targetOdds) y no el incremento (gain) */}
             <p className="text-xl font-black text-emerald-700 tabular-nums">{targetOdds.toFixed(3)}%</p>
           </div>
         </div>
@@ -1704,8 +1707,18 @@ function StrategicPlanning({ topics }) {
               </div>
             ))}
           </div>
-          <input type="range" min="0" max="69" value={targetCount} onChange={(e) => setTargetCount(parseInt(e.target.value))} className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-emerald-600" style={{ backgroundImage: `linear-gradient(to right, #10b981 0%, #10b981 ${(targetCount/69)*100}%, #f1f5f9 ${(targetCount/69)*100}%, #f1f5f9 100%)` }} />
-          <div className="absolute pointer-events-none transition-all duration-150" style={{ left: `calc(${(targetCount / 69) * 100}% - 10px)`, top: '35px' }}>
+
+          <input 
+            type="range" min="0" max="69" value={targetCount} 
+            onChange={(e) => setTargetCount(parseInt(e.target.value))}
+            className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-emerald-600"
+            style={{ backgroundImage: `linear-gradient(to right, #10b981 0%, #10b981 ${(targetCount/69)*100}%, #f1f5f9 ${(targetCount/69)*100}%, #f1f5f9 100%)` }}
+          />
+          
+          <div 
+            className="absolute pointer-events-none transition-all duration-150"
+            style={{ left: `calc(${(targetCount / 69) * 100}% - 10px)`, top: '35px' }}
+          >
             <Icon name="Pawn" size={20} className="text-emerald-600 drop-shadow-md" />
           </div>
         </div>
@@ -1715,18 +1728,34 @@ function StrategicPlanning({ topics }) {
 }
 
 function StatsView({ actionLogs, undoAction, topics, planning, units, levelDates }) {
+  const [showLog, setShowLog] = useState(false);
   const [tab, setTab] = useState('hist');
-  /* --- SWIFTIE REFERENCE: Strategic planning mode state --- */
-  const [mode, setMode] = useState('activity'); 
   const [statsView, setStatsView] = useState('syllabus');
 
   const syllabusStats = useMemo(() => {
     const useful = topics.filter(t => !t.discarded);
     const total = useful.length;
     const done = useful.filter(t => t.finished).length;
-    const started = useful.filter(t => (t.redactado || t.estudiado > 0) && !t.finished).length;
+    
+    // DESGLOSE: Written Only (solo redactado) vs Studying (estudiado > 0)
+    const writtenOnly = useful.filter(t => t.redactado && t.estudiado === 0 && !t.finished).length;
+    const studying = useful.filter(t => t.estudiado > 0 && !t.finished).length;
+    const started = writtenOnly + studying;
+    
     const pending = total - done - started;
-    return { done, started, pending, total, donePct: Math.round((done/total)*100) || 0, startedPct: Math.round((started/total)*100) || 0 };
+    
+    return { 
+      done, 
+      started, 
+      writtenOnly,
+      studying,
+      pending, 
+      total, 
+      donePct: Math.round((done/total)*100) || 0, 
+      startedPct: Math.round((started/total)*100) || 0,
+      writtenPct: Math.round((writtenOnly/total)*100) || 0,
+      studyingPct: Math.round((studying/total)*100) || 0
+    };
   }, [topics]);
 
   const planningStats = useMemo(() => {
@@ -1740,78 +1769,117 @@ function StatsView({ actionLogs, undoAction, topics, planning, units, levelDates
 
   const currentStats = statsView === 'syllabus' ? syllabusStats : planningStats;
 
-  return (
-    <div className="space-y-6 text-left animate-in zoom-in-95">
-      <div className="flex justify-center mb-4">
-        <div className="bg-slate-100 p-1 rounded-2xl flex gap-1 shadow-inner w-full max-w-sm">
-          <button onClick={() => setMode('activity')} className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase transition-all ${mode==='activity' ? 'bg-white text-violet-600 shadow-md' : 'text-slate-400'}`}>Activity Log</button>
-          <button onClick={() => setMode('strategy')} className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase transition-all flex items-center justify-center gap-2 ${mode==='strategy' ? 'bg-white text-emerald-600 shadow-md' : 'text-slate-400'}`}><Icon name="Pawn" size={14} /> Mastermind Strategy</button>
+  // Pantalla del historial (Píldora secundaria)
+  if (showLog) {
+    return (
+      <div className="space-y-6 text-left animate-in fade-in">
+        <button onClick={() => setShowLog(false)} className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-violet-600 transition-all">
+          <Icon name="ChevronRight" className="rotate-180" size={16}/> Back to Strategy
+        </button>
+
+        <div id="activity-log" className="flex flex-col sm:flex-row justify-between items-center bg-white/50 backdrop-blur px-4 py-2 rounded-2xl shadow-sm border border-white/50 gap-4">
+          <h2 className="text-xl font-black text-violet-950">Activity Log</h2>
+          <div className="flex bg-slate-200 p-1 rounded-xl shrink-0 w-full sm:w-auto">
+            {['hist','rewards'].map(t=>(<button key={t} onClick={()=>setTab(t)} className={`px-4 py-1 text-[10px] font-black rounded-lg uppercase transition-all flex-1 sm:flex-none ${tab===t?'bg-white shadow-md text-violet-600':'text-slate-500'}`}>{t==='hist'?'History':'Level Rewards'}</button>))}
+          </div>
         </div>
-      </div>
 
-      {mode === 'strategy' ? (
-        <StrategicPlanning topics={topics} />
-      ) : (
-        <>
-          <div className="bento-card bg-white p-8 border-violet-100 shadow-xl">
-            <div className="flex justify-center mb-8 bg-slate-100 p-1 rounded-2xl w-fit mx-auto">
-              <button onClick={()=>setStatsView('syllabus')} className={`px-4 py-2 rounded-xl text-[10px] font-black transition-all ${statsView==='syllabus'?'bg-white text-violet-600 shadow-md':'text-slate-400'}`}>SYLLABUS</button>
-              <button onClick={()=>setStatsView('planning')} className={`px-4 py-2 rounded-xl text-[10px] font-black transition-all ${statsView==='planning'?'bg-white text-violet-600 shadow-md':'text-slate-400'}`}>PLANNING</button>
-            </div>
-            <div className="flex flex-col md:flex-row items-center justify-center gap-12">
-              <div className="relative w-48 h-48 rounded-full shadow-inner border-8 border-slate-50 flex items-center justify-center" style={{ background: `conic-gradient(#10b981 ${currentStats.donePct}%, #8b5cf6 ${currentStats.donePct}% ${currentStats.donePct + currentStats.startedPct}%, #f1f5f9 ${currentStats.donePct + currentStats.startedPct}% 100%)` }}><div className="w-32 h-32 bg-white rounded-full shadow-2xl flex flex-col items-center justify-center"><span className="text-3xl font-black text-slate-900">{currentStats.donePct}%</span><span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mt-1">Mastered</span></div></div>
-              <div className="grid grid-cols-1 gap-4">
-                <div className="flex items-center gap-3"><div className="w-4 h-4 rounded-full bg-emerald-500 shadow-sm" /><div className="text-left leading-none"><p className="text-xs font-black text-slate-800">{currentStats.done} Finished</p></div></div>
-                <div className="flex items-center gap-3"><div className="w-4 h-4 rounded-full bg-violet-500 shadow-sm" /><div className="text-left leading-none"><p className="text-xs font-black text-slate-800">{currentStats.started} In Progress</p></div></div>
-                <div className="flex items-center gap-3"><div className="w-4 h-4 rounded-full bg-slate-200 shadow-sm" /><div className="text-left leading-none"><p className="text-xs font-black text-slate-800">{currentStats.pending} Pending</p></div></div>
-              </div>
-            </div>
-          </div>
-
-          <div id="activity-log" className="flex flex-col sm:flex-row justify-between items-center bg-white/50 backdrop-blur px-4 py-2 rounded-2xl shadow-sm border border-white/50 gap-4">
-            <h2 className="text-xl font-black text-violet-950">Activity Log</h2>
-            <div className="flex bg-slate-200 p-1 rounded-xl shrink-0 w-full sm:w-auto">
-              {['hist','rewards'].map(t=>(<button key={t} onClick={()=>setTab(t)} className={`px-4 py-1 text-[10px] font-black rounded-lg uppercase transition-all flex-1 sm:flex-none ${tab===t?'bg-white shadow-md text-violet-600':'text-slate-500'}`}>{t==='hist'?'History':'Level Rewards'}</button>))}
-            </div>
-          </div>
-
-          {tab === 'hist' ? (
-            <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
-                {actionLogs.length === 0 ? <p className="italic text-slate-300 font-bold text-center py-8">No records found.</p> : actionLogs.slice(0,50).map(l=>(
-                  <div key={l.id} className="bento-card bg-white p-4 flex justify-between items-center border-violet-50 hover:border-violet-200 transition-all">
-                    <div className="text-left leading-tight">
-                      <p className="text-sm font-black text-slate-800 line-clamp-1">{l.description}</p>
-                      <p className="text-[9px] font-bold text-slate-400 uppercase mt-1">{new Date(l.timestamp).toLocaleString()}</p>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span className={`text-xs font-black px-2 py-1 rounded-lg shadow-inner ${l.amount > 0 ? 'text-violet-700 bg-violet-50' : l.amount < 0 ? 'text-red-700 bg-red-50' : 'text-slate-500 bg-slate-100'}`}>{l.amount > 0 ? '+'+l.amount : l.amount}</span>
-                      <button onClick={()=>undoAction(l.id)} className="text-slate-300 hover:text-red-500 transition-colors active:scale-90" title="Undo"><Icon name="Undo2" size={16}/></button>
-                    </div>
+        {tab === 'hist' ? (
+          <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
+              {actionLogs.length === 0 ? <p className="italic text-slate-300 font-bold text-center py-8">No records found.</p> : actionLogs.slice(0,50).map(l=>(
+                <div key={l.id} className="bento-card bg-white p-4 flex justify-between items-center border-violet-50 hover:border-violet-200 transition-all">
+                  <div className="text-left leading-tight">
+                    <p className="text-sm font-black text-slate-800 line-clamp-1">{l.description}</p>
+                    <p className="text-[9px] font-bold text-slate-400 uppercase mt-1">{new Date(l.timestamp).toLocaleString()}</p>
                   </div>
-                ))}
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {/* --- SWIFTIE REFERENCE: Rewards history based on level reached --- */}
-              {Object.entries(levelDates || {}).sort((a,b) => b[0] - a[0]).map(([lvl, date]) => (
-                <div key={lvl} className="bento-card bg-white p-6 border-amber-100 flex justify-between items-center shadow-sm">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-amber-50 text-amber-600 rounded-full flex items-center justify-center font-black text-xl border-2 border-amber-100 shadow-inner">{lvl}</div>
-                    <p className="text-sm font-bold text-slate-700 italic">"The legacy you leave behind..."</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-[10px] font-black text-amber-600 uppercase bg-amber-50 px-2 py-1 rounded-lg border border-amber-100">{date}</p>
+                  <div className="flex items-center gap-3">
+                    <span className={`text-xs font-black px-2 py-1 rounded-lg shadow-inner ${l.amount > 0 ? 'text-violet-700 bg-violet-50' : l.amount < 0 ? 'text-red-700 bg-red-50' : 'text-slate-500 bg-slate-100'}`}>{l.amount > 0 ? '+'+l.amount : l.amount}</span>
+                    <button onClick={()=>undoAction(l.id)} className="text-slate-300 hover:text-red-500 transition-colors active:scale-90" title="Undo"><Icon name="Undo2" size={16}/></button>
                   </div>
                 </div>
               ))}
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {Object.entries(levelDates || {}).sort((a,b) => b[0] - a[0]).map(([lvl, date]) => (
+              <div key={lvl} className="bento-card bg-white p-6 border-amber-100 flex justify-between items-center shadow-sm">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-amber-50 text-amber-600 rounded-full flex items-center justify-center font-black text-xl border-2 border-amber-100 shadow-inner">{lvl}</div>
+                  <p className="text-sm font-bold text-slate-700 italic">"The legacy you leave behind..."</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-[10px] font-black text-amber-600 uppercase bg-amber-50 px-2 py-1 rounded-lg border border-amber-100">{date}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Vista Principal: Mastermind Strategy (con Gráfico y Probabilidad)
+  return (
+    <div className="space-y-6 text-left animate-in zoom-in-95">
+      <div className="flex justify-end">
+        <button onClick={() => setShowLog(true)} className="px-3 py-1.5 bg-violet-50 text-violet-700 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-violet-100 transition-colors shadow-sm">
+          Activity & Rewards
+        </button>
+      </div>
+
+      <div className="bento-card bg-white p-8 border-violet-100 shadow-xl">
+        <div className="flex justify-center mb-8 bg-slate-100 p-1 rounded-2xl w-fit mx-auto">
+          <button onClick={()=>setStatsView('syllabus')} className={`px-4 py-2 rounded-xl text-[10px] font-black transition-all ${statsView==='syllabus'?'bg-white text-violet-600 shadow-md':'text-slate-400'}`}>SYLLABUS</button>
+          <button onClick={()=>setStatsView('planning')} className={`px-4 py-2 rounded-xl text-[10px] font-black transition-all ${statsView==='planning'?'bg-white text-violet-600 shadow-md':'text-slate-400'}`}>PLANNING</button>
+        </div>
+        
+        <div className="flex flex-col md:flex-row items-center justify-center gap-12">
+          {/* Gráfico circular con 4 segmentos si es Syllabus */}
+          <div className="relative w-48 h-48 rounded-full shadow-inner border-8 border-slate-50 flex items-center justify-center" 
+               style={{ 
+                 background: statsView === 'syllabus' 
+                   ? `conic-gradient(#10b981 0% ${currentStats.donePct}%, #a78bfa ${currentStats.donePct}% ${currentStats.donePct + currentStats.writtenPct}%, #7c3aed ${currentStats.donePct + currentStats.writtenPct}% ${currentStats.donePct + currentStats.startedPct}%, #f1f5f9 ${currentStats.donePct + currentStats.startedPct}% 100%)`
+                   : `conic-gradient(#10b981 0% ${currentStats.donePct}%, #8b5cf6 ${currentStats.donePct}% ${currentStats.donePct + currentStats.startedPct}%, #f1f5f9 ${currentStats.donePct + currentStats.startedPct}% 100%)`
+               }}>
+            <div className="w-32 h-32 bg-white rounded-full shadow-2xl flex flex-col items-center justify-center">
+              <span className="text-3xl font-black text-slate-900">{currentStats.donePct}%</span>
+              <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mt-1">Mastered</span>
             </div>
-          )}
-        </>
-      )}
+          </div>
+          
+          <div className="grid grid-cols-1 gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-4 h-4 rounded-full bg-emerald-500 shadow-sm" />
+              <div className="text-left leading-none"><p className="text-xs font-black text-slate-800">{currentStats.done} Finished</p></div>
+            </div>
+            
+            <div className="flex items-start gap-3">
+              <div className="w-4 h-4 rounded-full bg-violet-500 shadow-sm mt-0.5" />
+              <div className="text-left leading-none">
+                <p className="text-xs font-black text-slate-800 mb-1">{currentStats.started} In Progress</p>
+                {/* Desglose detallado de "In Progress" */}
+                {statsView === 'syllabus' && (
+                  <div className="pl-2 border-l-2 border-violet-100 space-y-1">
+                    <p className="text-[10px] font-bold text-slate-500"><span className="inline-block w-2 h-2 rounded-full bg-violet-300 mr-1" />{currentStats.writtenOnly} Written Only</p>
+                    <p className="text-[10px] font-bold text-slate-500"><span className="inline-block w-2 h-2 rounded-full bg-violet-600 mr-1" />{currentStats.studying} Studying</p>
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-3">
+              <div className="w-4 h-4 rounded-full bg-slate-200 shadow-sm" />
+              <div className="text-left leading-none"><p className="text-xs font-black text-slate-800">{currentStats.pending} Pending</p></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* El calculador de probabilidades ahora se muestra directamente debajo del gráfico */}
+      <StrategicPlanning topics={topics} />
     </div>
   );
 }
-
 function TodoView({ todos, setTodos, addPoints }) {
   const [type, setType] = useState('goal');
   const [inp, setInp] = useState("");
