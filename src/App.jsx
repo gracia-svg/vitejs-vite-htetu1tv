@@ -996,18 +996,25 @@ function SyllabusView({ topics, setTopics, addPoints, onOpenModal, actionLogs, o
 
   return (
     <div className="space-y-6 animate-in fade-in">
-      <div className="bg-white/50 backdrop-blur p-6 rounded-3xl border border-white/50 shadow-sm flex flex-col gap-4">
+      {/* CABECERO REDISEÑADO */}
+      <div className="bg-white/50 backdrop-blur p-6 rounded-[32px] border border-white/50 shadow-sm flex flex-col gap-5">
         <div className="flex justify-between items-start">
-           <div className="flex items-center gap-3"><Icon name="BookOpen" className="text-amber-600" /><h2 className="text-2xl font-black text-slate-950">Temas</h2></div>
+           <div className="flex items-center gap-3">
+             <Icon name="BookOpen" className="text-amber-600" />
+             <h2 className="text-2xl font-black text-slate-950">Temas</h2>
+           </div>
            <div className="text-right cursor-pointer relative" onClick={() => setShowDate(!showDate)}>
               <p className="text-3xl font-black text-slate-800 tabular-nums leading-none">{days}</p>
               <p className="text-[8px] font-black uppercase text-amber-600 tracking-widest mt-1">Days to End Game 🖤</p>
               {showDate && <input type="date" value={examDate} onClick={(e) => e.stopPropagation()} onChange={e=>{setExamDate(e.target.value); setShowDate(false);}} className="absolute top-0 right-0 bg-white shadow-xl rounded-lg p-2 text-xs border z-50" />}
            </div>
         </div>
-        <div className="flex items-center gap-3 w-full">
-          <div className="relative flex-1"><Icon name="Search" size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" /><input placeholder="Buscar temas..." value={search} onChange={e=>setSearch(e.target.value)} className="w-full bg-white border-2 border-slate-100 rounded-2xl pl-10 pr-4 py-2 text-sm font-black outline-none focus:border-emerald-200 transition-all" /></div>
-          <button onClick={onReset} className="px-3 py-2 bg-red-50 text-red-600 font-black text-[10px] rounded-xl hover:bg-red-100 transition-all shrink-0 uppercase tracking-widest">Reset</button>
+        <div className="flex flex-col sm:flex-row items-center gap-3 w-full">
+          <div className="relative flex-1 w-full">
+            <Icon name="Search" size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input placeholder="Buscar temas..." value={search} onChange={e=>setSearch(e.target.value)} className="w-full bg-white border-2 border-slate-100 rounded-2xl pl-12 pr-4 py-3 text-sm font-black outline-none focus:border-amber-200 transition-all shadow-inner" />
+          </div>
+          <button onClick={onReset} className="w-full sm:w-auto px-5 py-3 bg-red-50 text-red-600 font-black text-[10px] rounded-2xl hover:bg-red-100 transition-all uppercase tracking-widest active:scale-95">Reset</button>
         </div>
       </div>
       
@@ -1112,27 +1119,34 @@ function PlanningHub({ planning, setPlanning, units, setUnits, addPoints, submis
 
   return (
     <div className="space-y-8 text-left animate-in slide-in-from-right-4">
-      <div className="bg-white/50 backdrop-blur p-6 rounded-[32px] border border-white/50 shadow-sm flex flex-col gap-6">
+      {/* CABECERO REDISEÑADO */}
+      <div className="bg-white/50 backdrop-blur p-6 rounded-[32px] border border-white/50 shadow-sm flex flex-col gap-5">
         <div className="flex justify-between items-start">
-           <div className="flex items-center gap-3">
-             <Icon name="FileText" className="text-teal-600" />
-             <h2 className="text-xl sm:text-2xl font-black text-slate-950">Programación</h2>
+           <div className="flex items-start gap-3">
+             <Icon name="FileText" className="text-teal-600 mt-1" />
+             <div>
+               <h2 className="text-2xl font-black text-slate-950 leading-none">Programación</h2>
+               <div className="flex items-center gap-1.5 mt-2 opacity-60">
+                 <Icon name="Pawn" size={12} className="text-slate-400" />
+                 <p className="text-[9px] font-black text-slate-400 italic">"If you fail to plan, you plan to fail"</p>
+               </div>
+             </div>
            </div>
            
-           <div className="flex items-start gap-4">
-              <button onClick={onReset} className="px-2.5 py-1.5 bg-red-50 text-red-600 font-black text-[9px] rounded-xl hover:bg-red-100 transition-all uppercase tracking-widest mt-0.5 border border-red-100 shadow-sm active:scale-90">Reset</button>
-              <div className="text-right cursor-pointer relative" onClick={() => setShowSubDate(!showSubDate)}>
-                <p className="text-3xl font-black text-slate-800 tabular-nums leading-none">{days}</p>
-                <p className="text-[8px] font-black uppercase text-teal-600 tracking-widest mt-1">days</p>
-                {showSubDate && <input type="date" value={submissionDate} onChange={e => { setSubmissionDate(e.target.value); setShowSubDate(false); }} onClick={e => e.stopPropagation()} className="absolute top-0 right-0 bg-white shadow-xl rounded-lg p-2 text-xs border z-50" />}
-              </div>
+           <div className="text-right cursor-pointer relative" onClick={() => setShowSubDate(!showSubDate)}>
+              <p className="text-3xl font-black text-slate-800 tabular-nums leading-none">{days}</p>
+              <p className="text-[8px] font-black uppercase text-teal-600 tracking-widest mt-1">Days to Delivery ♟️</p>
+              {showSubDate && <input type="date" value={submissionDate} onChange={e => { setSubmissionDate(e.target.value); setShowSubDate(false); }} onClick={e => e.stopPropagation()} className="absolute top-0 right-0 bg-white shadow-xl rounded-lg p-2 text-xs border z-50" />}
            </div>
         </div>
 
-        <form onSubmit={e => { e.preventDefault(); if(newPlan.trim()){ setPlanning([...planning, {id: 'p'+(planning.length+1), title: newPlan.trim(), status: 0, indexNotes: "", priority: null, leg: "LOMLOE"}]); setNewPlan(""); } }} className="flex gap-2">
-          <input placeholder="Añadir sección..." value={newPlan} onChange={e => setNewPlan(e.target.value)} className="flex-1 bg-white border-2 border-slate-100 rounded-2xl px-4 py-3 text-sm font-black outline-none focus:border-teal-200 transition-all shadow-inner" />
-          <button type="submit" className="bg-teal-600 text-white p-3.5 rounded-2xl shadow-lg shadow-teal-100 active:scale-95 transition-transform"><Icon name="Plus" size={20}/></button>
-        </form>
+        <div className="flex flex-col sm:flex-row items-center gap-3 w-full">
+          <form onSubmit={e => { e.preventDefault(); if(newPlan.trim()){ setPlanning([...planning, {id: 'p'+(planning.length+1), title: newPlan.trim(), status: 0, indexNotes: "", priority: null, leg: "LOMLOE"}]); setNewPlan(""); } }} className="flex gap-2 flex-1 w-full">
+            <input placeholder="Añadir sección..." value={newPlan} onChange={e => setNewPlan(e.target.value)} className="flex-1 bg-white border-2 border-slate-100 rounded-2xl px-4 py-3 text-sm font-black outline-none focus:border-teal-200 transition-all shadow-inner" />
+            <button type="submit" className="bg-teal-600 text-white px-5 py-3 rounded-2xl shadow-lg shadow-teal-100 active:scale-95 transition-transform"><Icon name="Plus" size={20}/></button>
+          </form>
+          <button onClick={onReset} className="w-full sm:w-auto px-5 py-3 bg-red-50 text-red-600 font-black text-[10px] rounded-2xl hover:bg-red-100 transition-all uppercase tracking-widest active:scale-95">Reset</button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1166,14 +1180,17 @@ function PlanningHub({ planning, setPlanning, units, setUnits, addPoints, submis
     </div>
   );
 }
-
 function PracticoView({ skills, setSkills, addPoints, sessions, setSessions, onReset, touchWeekly }) {
   const [newSkill, setNewSkill] = useState("");
   return (
     <div className="space-y-6 animate-in slide-in-from-left-4 text-left">
-      <div className="flex flex-col sm:flex-row justify-between items-center gap-4 bg-white/50 backdrop-blur p-4 rounded-3xl border border-white/50 shadow-sm">
-        <div className="flex items-center gap-3"><Icon name="Target" className="text-indigo-600" /><h2 className="text-2xl font-black text-slate-950">Práctico</h2></div>
-        <button onClick={onReset} className="px-3 py-2 bg-red-50 text-red-600 font-black text-[10px] rounded-xl hover:bg-red-100 transition-all shrink-0 uppercase tracking-widest">Reset</button>
+      {/* CABECERO HOMOGENEIZADO */}
+      <div className="bg-white/50 backdrop-blur p-6 rounded-[32px] border border-white/50 shadow-sm flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div className="flex items-center gap-3 w-full sm:w-auto">
+          <Icon name="Target" className="text-indigo-600" />
+          <h2 className="text-2xl font-black text-slate-950">Práctico</h2>
+        </div>
+        <button onClick={onReset} className="w-full sm:w-auto px-5 py-3 bg-red-50 text-red-600 font-black text-[10px] rounded-2xl hover:bg-red-100 transition-all uppercase tracking-widest active:scale-95">Reset</button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1733,16 +1750,18 @@ function StatsView({ actionLogs, undoAction, topics, planning, units, levelDates
   const [statsView, setStatsView] = useState('syllabus');
 
   const syllabusStats = useMemo(() => {
+    const total = topics.length; 
+    const discardedCount = topics.filter(t => t.discarded).length;
+    const activeTotal = total - discardedCount; // Tu objetivo real
+    
     const useful = topics.filter(t => !t.discarded);
-    const total = useful.length;
     const done = useful.filter(t => t.finished).length;
     
-    // DESGLOSE: Written Only (solo redactado) vs Studying (estudiado > 0)
     const writtenOnly = useful.filter(t => t.redactado && t.estudiado === 0 && !t.finished).length;
     const studying = useful.filter(t => t.estudiado > 0 && !t.finished).length;
     const started = writtenOnly + studying;
     
-    const pending = total - done - started;
+    const pending = activeTotal - done - started;
     
     return { 
       done, 
@@ -1750,11 +1769,18 @@ function StatsView({ actionLogs, undoAction, topics, planning, units, levelDates
       writtenOnly,
       studying,
       pending, 
+      discardedCount,
       total, 
-      donePct: Math.round((done/total)*100) || 0, 
-      startedPct: Math.round((started/total)*100) || 0,
-      writtenPct: Math.round((writtenOnly/total)*100) || 0,
-      studyingPct: Math.round((studying/total)*100) || 0
+      activeTotal,
+      // Porcentaje central: calculado SOBRE LOS ACTIVOS
+      donePct: activeTotal > 0 ? Math.round((done/activeTotal)*100) : 0, 
+      
+      // Porcentajes visuales para rellenar el anillo (sobre el TOTAL)
+      absDone: (done/total)*100 || 0,
+      absWritten: (writtenOnly/total)*100 || 0,
+      absStudying: (studying/total)*100 || 0,
+      absPending: (pending/total)*100 || 0,
+      absDiscarded: (discardedCount/total)*100 || 0
     };
   }, [topics]);
 
@@ -1764,12 +1790,19 @@ function StatsView({ actionLogs, undoAction, topics, planning, units, levelDates
     const done = combined.filter(i => i.status === 10).length;
     const started = combined.filter(i => i.status > 0 && i.status < 10).length;
     const pending = total - done - started;
-    return { done, started, pending, total, donePct: Math.round((done/total)*100) || 0, startedPct: Math.round((started/total)*100) || 0 };
+    return { 
+      done, started, pending, total, 
+      donePct: Math.round((done/total)*100) || 0, 
+      
+      absDone: (done/total)*100 || 0,
+      absStarted: (started/total)*100 || 0,
+      absPending: (pending/total)*100 || 0
+    };
   }, [planning, units]);
 
   const currentStats = statsView === 'syllabus' ? syllabusStats : planningStats;
 
-  // Pantalla del historial (Píldora secundaria)
+  // Pantalla del historial de actividad
   if (showLog) {
     return (
       <div className="space-y-6 text-left animate-in fade-in">
@@ -1818,7 +1851,7 @@ function StatsView({ actionLogs, undoAction, topics, planning, units, levelDates
     );
   }
 
-  // Vista Principal: Mastermind Strategy (con Gráfico y Probabilidad)
+  // Vista Principal: Mastermind Strategy
   return (
     <div className="space-y-6 text-left animate-in zoom-in-95">
       <div className="flex justify-end">
@@ -1834,12 +1867,14 @@ function StatsView({ actionLogs, undoAction, topics, planning, units, levelDates
         </div>
         
         <div className="flex flex-col md:flex-row items-center justify-center gap-12">
-          {/* Gráfico circular con 4 segmentos si es Syllabus */}
+          
           <div className="relative w-48 h-48 rounded-full shadow-inner border-8 border-slate-50 flex items-center justify-center" 
                style={{ 
                  background: statsView === 'syllabus' 
-                   ? `conic-gradient(#10b981 0% ${currentStats.donePct}%, #a78bfa ${currentStats.donePct}% ${currentStats.donePct + currentStats.writtenPct}%, #7c3aed ${currentStats.donePct + currentStats.writtenPct}% ${currentStats.donePct + currentStats.startedPct}%, #f1f5f9 ${currentStats.donePct + currentStats.startedPct}% 100%)`
-                   : `conic-gradient(#10b981 0% ${currentStats.donePct}%, #8b5cf6 ${currentStats.donePct}% ${currentStats.donePct + currentStats.startedPct}%, #f1f5f9 ${currentStats.donePct + currentStats.startedPct}% 100%)`
+                   // Verde -> Violeta Claro -> Violeta Oscuro -> Gris Claro -> Gris Oscuro
+                   ? `conic-gradient(#10b981 0% ${currentStats.absDone}%, #a78bfa ${currentStats.absDone}% ${currentStats.absDone + currentStats.absWritten}%, #7c3aed ${currentStats.absDone + currentStats.absWritten}% ${currentStats.absDone + currentStats.absWritten + currentStats.absStudying}%, #f1f5f9 ${currentStats.absDone + currentStats.absWritten + currentStats.absStudying}% ${currentStats.absDone + currentStats.absWritten + currentStats.absStudying + currentStats.absPending}%, #94a3b8 ${currentStats.absDone + currentStats.absWritten + currentStats.absStudying + currentStats.absPending}% 100%)`
+                   // Lógica para planning (sin descartados)
+                   : `conic-gradient(#10b981 0% ${currentStats.absDone}%, #8b5cf6 ${currentStats.absDone}% ${currentStats.absDone + currentStats.absStarted}%, #f1f5f9 ${currentStats.absDone + currentStats.absStarted}% 100%)`
                }}>
             <div className="w-32 h-32 bg-white rounded-full shadow-2xl flex flex-col items-center justify-center">
               <span className="text-3xl font-black text-slate-900">{currentStats.donePct}%</span>
@@ -1857,7 +1892,6 @@ function StatsView({ actionLogs, undoAction, topics, planning, units, levelDates
               <div className="w-4 h-4 rounded-full bg-violet-500 shadow-sm mt-0.5" />
               <div className="text-left leading-none">
                 <p className="text-xs font-black text-slate-800 mb-1">{currentStats.started} In Progress</p>
-                {/* Desglose detallado de "In Progress" */}
                 {statsView === 'syllabus' && (
                   <div className="pl-2 border-l-2 border-violet-100 space-y-1">
                     <p className="text-[10px] font-bold text-slate-500"><span className="inline-block w-2 h-2 rounded-full bg-violet-300 mr-1" />{currentStats.writtenOnly} Written Only</p>
@@ -1871,11 +1905,17 @@ function StatsView({ actionLogs, undoAction, topics, planning, units, levelDates
               <div className="w-4 h-4 rounded-full bg-slate-200 shadow-sm" />
               <div className="text-left leading-none"><p className="text-xs font-black text-slate-800">{currentStats.pending} Pending</p></div>
             </div>
+
+            {statsView === 'syllabus' && currentStats.discardedCount > 0 && (
+              <div className="flex items-center gap-3">
+                <div className="w-4 h-4 rounded-full bg-slate-400 shadow-inner" />
+                <div className="text-left leading-none"><p className="text-xs font-black text-slate-500">{currentStats.discardedCount} Discarded</p></div>
+              </div>
+            )}
           </div>
         </div>
       </div>
 
-      {/* El calculador de probabilidades ahora se muestra directamente debajo del gráfico */}
       <StrategicPlanning topics={topics} />
     </div>
   );
