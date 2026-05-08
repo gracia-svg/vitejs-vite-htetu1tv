@@ -1037,7 +1037,8 @@ function SyllabusView({ topics, setTopics, addPoints, onOpenModal, actionLogs, o
           <div className="relative flex-1 w-full">
             <Icon name="Search" size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
             <input placeholder="Buscar temas..." value={search} onChange={e=>setSearch(e.target.value)} className="w-full bg-white border-2 border-slate-100 rounded-2xl pl-12 pr-4 py-3 text-sm font-black outline-none focus:border-amber-200 transition-all shadow-inner" />
-          </div>
+      </div>
+        </div>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1079,7 +1080,7 @@ function SyllabusView({ topics, setTopics, addPoints, onOpenModal, actionLogs, o
       </div>
     </div>
   );
-
+}
 function CounterPill({ label, count, onAdd, onSub }) {
   const [open, setOpen] = useState(false);
   
