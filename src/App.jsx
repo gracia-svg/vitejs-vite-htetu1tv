@@ -850,7 +850,6 @@ const handleLogout = () => {
 
       {/* MAIN CONTAINER */}
       <main className="max-w-5xl mx-auto p-4 md:p-8">
-      <main className="max-w-5xl mx-auto p-4 md:p-8">
         {activeTab === 'map' && (
           <ProgressMap 
             points={points} 
@@ -896,7 +895,7 @@ const handleLogout = () => {
       </nav>
     </div>
   );
-
+}
 // ==========================================
 // 5. COMPONENTES DE VISTA (COMPLETOS)
 // ==========================================
