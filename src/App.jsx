@@ -1079,7 +1079,7 @@ function SyllabusView({ topics, setTopics, addPoints, onOpenModal, actionLogs, o
       </div>
     </div>
   );
-}
+
 function CounterPill({ label, count, onAdd, onSub }) {
   const [open, setOpen] = useState(false);
   
