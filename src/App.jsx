@@ -1618,11 +1618,9 @@ function VaultCarousel({ items, setItems, onClose }) {
         setItems(parsed);
         setImportOpen(false);
         setImportTxt("");
-        alert("Vault updated successfully!");
+        alert("¡Vault actualizado con éxito!");
       }
-    } catch(e) {
-      alert("Invalid JSON format. Check your input.");
-    }
+    } catch(e) { alert("Formato JSON inválido. Revisa el código."); }
   };
 
   const handleShuffle = () => {
@@ -1646,7 +1644,8 @@ function VaultCarousel({ items, setItems, onClose }) {
   const current = items[idx];
 
   return (
- <div className="absolute top-6 right-6 flex gap-4">
+    <div className="fixed inset-0 z-[600] bg-slate-900 flex flex-col items-center justify-center p-6 sm:p-12 animate-in fade-in">
+       <div className="absolute top-6 right-6 flex gap-4">
           <button onClick={handleShuffle} className="text-white/30 hover:text-amber-500 transition-colors"><Icon name="Shuffle" size={24}/></button>
           <button onClick={onClose} className="text-white/30 hover:text-red-500 transition-colors"><Icon name="X" size={28}/></button>
        </div>
@@ -1655,14 +1654,14 @@ function VaultCarousel({ items, setItems, onClose }) {
          <div className="w-full max-w-md space-y-4 animate-in zoom-in-95">
            <p className="text-white text-center font-black uppercase text-xs tracking-widest">Import citations (JSON)</p>
            <textarea className="w-full h-64 bg-slate-800 border-2 border-slate-700 rounded-2xl p-4 text-white font-mono text-xs outline-none focus:border-amber-500" placeholder='[{"category": "...", "reference": "...", "text": "..."}]' value={importTxt} onChange={e => setImportTxt(e.target.value)} />
-           <button onClick={handleImport} className="w-full py-4 bg-amber-500 text-slate-950 font-black rounded-2xl uppercase shadow-xl">Apply Updates</button>
+           <button onClick={handleImport} className="w-full py-4 bg-amber-500 text-slate-950 font-black rounded-2xl uppercase shadow-xl">Update Vault</button>
          </div>
        ) : (
          <div className="w-full max-w-2xl flex flex-col items-center gap-12">
             <div className="text-center space-y-4 animate-in slide-in-from-bottom-4">
-               <span className="px-3 py-1 bg-amber-500/10 text-amber-500 border border-amber-500/20 rounded-full text-[10px] font-black uppercase tracking-[0.2em]">{current.category}</span>
-               <p className="text-white text-2xl sm:text-4xl font-black leading-tight">"{current.text}"</p>
-               <p className="text-slate-400 font-bold italic">— {current.reference}</p>
+               <span className="px-3 py-1 bg-amber-500/10 text-amber-500 border border-amber-500/20 rounded-full text-[10px] font-black uppercase tracking-[0.2em]">{current?.category}</span>
+               <p className="text-white text-2xl sm:text-4xl font-black leading-tight">"{current?.text}"</p>
+               <p className="text-slate-400 font-bold italic">— {current?.reference}</p>
             </div>
             <div className="flex gap-8 items-center">
               <button onClick={() => setIdx(p => Math.max(0, p-1))} className={`p-4 rounded-full border-2 border-white/10 text-white transition-all ${idx === 0 ? 'opacity-20' : 'hover:bg-white/5 active:scale-90'}`} disabled={idx===0}><Icon name="ChevronRight" className="rotate-180" size={32}/></button>
