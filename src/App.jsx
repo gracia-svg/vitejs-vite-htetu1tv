@@ -974,9 +974,8 @@ function ProgressMap({ points, level, xp, addPoints, streak, perfectWeeks, onVau
   );
 }
 
-function SyllabusView({ topics, setTopics, addPoints, onOpenModal, actionLogs, onReset, touchWeekly, examDate, setExamDate }) {
+function SyllabusView({ topics, setTopics, addPoints, onOpenModal, actionLogs, touchWeekly, examDate, setExamDate }) {
   const [search, setSearch] = useState("");
-
   const diff = new Date(examDate) - new Date();
   const days = Math.ceil(diff / 864e5);
   
@@ -1007,8 +1006,8 @@ function SyllabusView({ topics, setTopics, addPoints, onOpenModal, actionLogs, o
     if (topic.priority === 4) return 'bg-slate-500'; 
     const logs = actionLogs.filter(l => l.actionData && l.actionData.entity === 'topic' && String(l.actionData.id) === String(topic.id)).sort((a,b) => b.timestamp - a.timestamp);
     if (logs.length === 0) return 'bg-slate-200/50';
-    const diff = (Date.now() - logs[0].timestamp) / 864e5;
-    return diff < 7 ? 'bg-emerald-500/40' : diff < 15 ? 'bg-amber-500/40' : 'bg-red-500/40';
+    const d = (Date.now() - logs[0].timestamp) / 864e5;
+    return d < 7 ? 'bg-emerald-500/40' : d < 15 ? 'bg-amber-500/40' : 'bg-red-500/40';
   };
 
   const displayList = topics.filter(t => (t.title.toLowerCase().includes(search.toLowerCase()) || t.id.toString().includes(search))).sort((a, b) => {
@@ -1017,27 +1016,23 @@ function SyllabusView({ topics, setTopics, addPoints, onOpenModal, actionLogs, o
   });
 
   return (
-    <div className="space-y-6 animate-in fade-in">
-      {/* CABECERO REDISEÑADO */}
+    <div className="space-y-6 animate-in fade-in text-left">
       <div className="bg-white/50 backdrop-blur p-6 rounded-[32px] border border-white/50 shadow-sm flex flex-col gap-5">
         <div className="flex justify-between items-start">
            <div className="flex items-center gap-3">
              <Icon name="BookOpen" className="text-amber-600" />
              <h2 className="text-2xl font-black text-slate-950">Temas</h2>
            </div>
-           
-           {/* AQUÍ ESTÁ EL CAMBIO: El contador ya no es clickeable ni saca el calendario */}
            <div className="text-right relative">
               <p className="text-3xl font-black text-slate-800 tabular-nums leading-none">{days}</p>
               <p className="text-[8px] font-black uppercase text-amber-600 tracking-widest mt-1">Days to End Game 🖤</p>
            </div>
-
         </div>
         <div className="flex flex-col sm:flex-row items-center gap-3 w-full">
           <div className="relative flex-1 w-full">
             <Icon name="Search" size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
             <input placeholder="Buscar temas..." value={search} onChange={e=>setSearch(e.target.value)} className="w-full bg-white border-2 border-slate-100 rounded-2xl pl-12 pr-4 py-3 text-sm font-black outline-none focus:border-amber-200 transition-all shadow-inner" />
-      </div>
+          </div>
         </div>
       </div>
       
@@ -1102,10 +1097,9 @@ function CounterPill({ label, count, onAdd, onSub }) {
   );
 }
 
-function PlanningHub({ planning, setPlanning, units, setUnits, addPoints, submissionDate, setSubmissionDate, actionLogs, onOpenModal, onReset, touchWeekly }) {
+function PlanningHub({ planning, setPlanning, units, setUnits, addPoints, submissionDate, actionLogs, onOpenModal, touchWeekly }) {
   const diff = new Date(submissionDate) - new Date();
   const days = Math.ceil(diff / 864e5);
-  const [showSubDate, setShowSubDate] = useState(false);
   const [newPlan, setNewPlan] = useState("");
 
   const upd = (id, list, setter, field, nv, pts = 0) => {
@@ -1141,7 +1135,6 @@ function PlanningHub({ planning, setPlanning, units, setUnits, addPoints, submis
 
   return (
     <div className="space-y-8 text-left animate-in slide-in-from-right-4">
-      {/* CABECERO REDISEÑADO */}
       <div className="bg-white/50 backdrop-blur p-6 rounded-[32px] border border-white/50 shadow-sm flex flex-col gap-5">
         <div className="flex justify-between items-start">
            <div className="flex items-start gap-3">
@@ -1154,19 +1147,17 @@ function PlanningHub({ planning, setPlanning, units, setUnits, addPoints, submis
                </div>
              </div>
            </div>
-           
-           <div className="text-right cursor-pointer relative" onClick={() => setShowSubDate(!showSubDate)}>
+           <div className="text-right relative">
               <p className="text-3xl font-black text-slate-800 tabular-nums leading-none">{days}</p>
               <p className="text-[8px] font-black uppercase text-teal-600 tracking-widest mt-1">Days to Delivery ♟️</p>
-              {showSubDate && <input type="date" value={submissionDate} onChange={e => { setSubmissionDate(e.target.value); setShowSubDate(false); }} onClick={e => e.stopPropagation()} className="absolute top-0 right-0 bg-white shadow-xl rounded-lg p-2 text-xs border z-50" />}
            </div>
         </div>
-
         <div className="flex flex-col sm:flex-row items-center gap-3 w-full">
           <form onSubmit={e => { e.preventDefault(); if(newPlan.trim()){ setPlanning([...planning, {id: 'p'+(planning.length+1), title: newPlan.trim(), status: 0, indexNotes: "", priority: null, leg: "LOMLOE"}]); setNewPlan(""); } }} className="flex gap-2 flex-1 w-full">
             <input placeholder="Añadir sección..." value={newPlan} onChange={e => setNewPlan(e.target.value)} className="flex-1 bg-white border-2 border-slate-100 rounded-2xl px-4 py-3 text-sm font-black outline-none focus:border-teal-200 transition-all shadow-inner" />
             <button type="submit" className="bg-teal-600 text-white px-5 py-3 rounded-2xl shadow-lg shadow-teal-100 active:scale-95 transition-transform"><Icon name="Plus" size={20}/></button>
           </form>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1175,7 +1166,6 @@ function PlanningHub({ planning, setPlanning, units, setUnits, addPoints, submis
           return (
             <div key={item.id} className={`bento-card bg-white p-5 border-2 ${isU ? 'border-teal-100 hover:border-teal-300' : 'border-blue-100 hover:border-blue-300'} transition-all relative overflow-hidden`}>
               <div onClick={() => cyclePriority(item.id, item.priority, isU)} className={`absolute left-0 top-0 bottom-0 w-2.5 ${getPriorityColor(item, isU)} cursor-pointer transition-all hover:w-4 z-10`} />
-              
               <div className="flex justify-between items-center mb-4 pl-3">
                 <div className="flex items-center gap-4 flex-1">
                   <div onClick={() => onOpenModal(item)} className={`w-12 h-12 rounded-2xl flex items-center justify-center font-black text-sm border-2 cursor-pointer shadow-sm active:scale-90 transition-transform shrink-0 ${isU ? 'bg-teal-50 text-teal-600 border-teal-100' : 'bg-blue-50 text-blue-600 border-blue-100'}`}>{isU ? item.id.replace('ud','') : item.id.replace('p','')}</div>
@@ -1183,9 +1173,8 @@ function PlanningHub({ planning, setPlanning, units, setUnits, addPoints, submis
                 </div>
                 <button onClick={(e)=>{e.stopPropagation(); if(window.confirm("¿Eliminar sección?")) (isU?setUnits:setPlanning)(p=>p.filter(x=>x.id!==item.id))}} className="text-slate-200 hover:text-red-500 p-2 transition-colors"><Icon name="Trash2" size={16}/></button>
               </div>
-
               <div className="pl-3">
-                <button onClick={()=>{const ns = (item.status===10) ? 0 : item.status+1; upd(item.id, isU?units:planning, isU?setUnits:setPlanning, 'status', ns, ns===0 ? -(item.status*15) : 15);}} className={`w-full py-2 px-3 rounded-xl text-[10px] font-black border-2 transition-all relative overflow-hidden text-center active:scale-95 ${item.status > 0 ? (item.status===10 ? (isU ? 'bg-emerald-500 text-white border-transparent shadow-md' : 'bg-emerald-500 text-white border-transparent shadow-md') : (item.status <= 3 ? 'bg-amber-50 text-amber-700 border-amber-200' : item.status <= 6 ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-purple-50 text-purple-700 border-purple-200')) : 'bg-white text-slate-400 border-slate-100 shadow-sm'}`}>
+                <button onClick={()=>{const ns = (item.status===10) ? 0 : item.status+1; upd(item.id, isU?units:planning, isU?setUnits:setPlanning, 'status', ns, ns===0 ? -(item.status*15) : 15);}} className={`w-full py-2 px-3 rounded-xl text-[10px] font-black border-2 transition-all relative overflow-hidden text-center active:scale-95 ${item.status > 0 ? (item.status===10 ? 'bg-emerald-500 text-white border-transparent shadow-md' : (item.status <= 3 ? 'bg-amber-50 text-amber-700 border-amber-200' : item.status <= 6 ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-purple-50 text-purple-700 border-purple-200')) : 'bg-white text-slate-400 border-slate-100 shadow-sm'}`}>
                   {item.status > 0 && item.status < 10 && <div className={`absolute left-0 top-0 bottom-0 opacity-20 transition-all duration-500 ${item.status <= 3 ? 'bg-amber-500' : item.status <= 6 ? 'bg-blue-500' : 'bg-purple-500'}`} style={{ width: `${((item.status % 3 || 3)/3)*100}%` }} />}
                   <span className="relative z-10">{getPlanningStatusLabel(item.status)}</span>
                 </button>
@@ -1200,24 +1189,23 @@ function PlanningHub({ planning, setPlanning, units, setUnits, addPoints, submis
     </div>
   );
 }
-function PracticoView({ skills, setSkills, addPoints, sessions, setSessions, onReset, touchWeekly }) {
+function PracticoView({ skills, setSkills, addPoints, sessions, setSessions, touchWeekly }) {
   const [newSkill, setNewSkill] = useState("");
   return (
     <div className="space-y-6 animate-in slide-in-from-left-4 text-left">
-      {/* CABECERO HOMOGENEIZADO */}
       <div className="bg-white/50 backdrop-blur p-6 rounded-[32px] border border-white/50 shadow-sm flex flex-col sm:flex-row justify-between items-center gap-4">
         <div className="flex items-center gap-3 w-full sm:w-auto">
           <Icon name="Target" className="text-indigo-600" />
           <h2 className="text-2xl font-black text-slate-950">Práctico</h2>
         </div>
-
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="bento-card bg-white p-6 space-y-6 border-indigo-50 shadow-md">
           <form onSubmit={e => { e.preventDefault(); if(newSkill.trim()){setSkills([...skills,{id:Date.now().toString(),label:newSkill.trim(),level:0}]); setNewSkill("");} }} className="flex gap-2 mb-4"><input placeholder="New skill..." value={newSkill} onChange={e=>setNewSkill(e.target.value)} className="flex-1 bg-slate-50 rounded-xl px-3 py-2 text-xs font-black outline-none border-2 border-transparent focus:border-indigo-200" /><button type="submit" className="bg-indigo-600 text-white p-2 rounded-xl shadow-md active:scale-95 transition-transform"><Icon name="Plus" size={18}/></button></form>
           {skills.length === 0 && <p className="text-xs text-slate-400 font-bold italic text-center py-4">No skills registered yet.</p>}
           {skills.map(s => (
             <div key={s.id} className="space-y-2 text-left mb-4">
-              <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-slate-500"><EditableText value={s.label} onSave={(nv)=>{touchWeekly('practico'); setSkills(skills.map(x=>x.id===s.id?{...x,label:nv}:x));}} className="flex-1 mr-2 leading-tight" /><div className="flex gap-1 shrink-0"><button onClick={()=>{touchWeekly('practico'); if(s.level>0){setSkills(skills.map(ps=>ps.id===s.id?{...ps,level:ps.level-1}:ps)); addPoints(-25,"Skill Adjustment",{entity:'skill',id:s.id,prevValue:s.level});}}} className="w-6 h-6 bg-slate-50 text-slate-400 rounded-lg shadow-sm hover:bg-slate-100 transition-colors font-black flex items-center justify-center active:scale-90">-</button><button onClick={()=>{touchWeekly('practico'); if(s.level<10){setSkills(skills.map(ps=>ps.id===s.id?{...ps,level:ps.level+1}:ps)); addPoints(25,s.label,{entity:'skill',id:s.id,prevValue:s.level});}}} className="w-6 h-6 bg-indigo-50 text-indigo-600 rounded-lg shadow-sm hover:bg-indigo-100 transition-colors font-black flex items-center justify-center active:scale-90">+</button></div></div>
+              <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-slate-500"><EditableText value={s.label} onSave={(nv)=>{touchWeekly('practico'); setSkills(skills.map(x=>x.id===s.id?{...x,label:nv}:x));}} className="flex-1 mr-2 leading-tight" /><div className="flex gap-1 shrink-0"><button onClick={()=>{touchWeekly('practico'); if(s.level>0){setSkills(skills.map(ps=>ps.id===s.id?{...ps,level:ps.level-1}:ps)); addPoints(-25,"Skill Adjustment",{entity:'skill',id:s.id,prevValue:s.level});}}} className="w-6 h-6 bg-slate-50 text-slate-400 rounded-lg shadow-sm hover:bg-slate-100 transition-colors font-black flex items-center justify-center active:scale-90">-</button><button onClick={()=>{touchWeekly('practico'); if(s.level<10){setSkills(skills.map(ps=>ps.id===s.id?{...ps,level:ps.level+1}:ps)); addPoints(25,s.label",{entity:'skill',id:s.id,prevValue:s.level});}}} className="w-6 h-6 bg-indigo-50 text-indigo-600 rounded-lg shadow-sm hover:bg-indigo-100 transition-colors font-black flex items-center justify-center active:scale-90">+</button></div></div>
               <div className="h-3 bg-slate-100 rounded-full overflow-hidden border border-slate-200"><div className="h-full bg-indigo-500 transition-all duration-700 shadow-sm" style={{width:`${s.level*10}%`}} /></div>
             </div>
           ))}
@@ -1234,7 +1222,6 @@ function PracticoView({ skills, setSkills, addPoints, sessions, setSessions, onR
     </div>
   );
 }
-
 function NoteItem({ n, notes, setNotes }) {
   const [isEditing, setIsEditing] = useState(false);
   const [temp, setTemp] = useState(n.text);
