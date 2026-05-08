@@ -42,10 +42,10 @@ const ICON_PATHS = {
   Calendar: '<rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',
   AlertTriangle: '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>',
   Settings: '<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.72V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.17a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/>',
-  /* --- SWIFTIE REFERENCE: Pawn icon --- */
-  Pawn: '<path d="M12 2a3 3 0 0 0-3 3 3 3 0 0 0 2 2.82V9h-2a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-1a1 1 0 0 0-1-1h-2V7.82A3 3 0 0 0 12 2zM9 14l-1 6h8l-1-6H9zm-1 8h8a1 1 0 0 1 1 1v1H7v-1a1 1 0 0 1 1-1z"/>'
+ /* --- SWIFTIE REFERENCE: Pawn icon --- */
+  Pawn: '<path d="M12 2a3 3 0 0 0-3 3 3 3 0 0 0 2 2.82V9h-2a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-1a1 1 0 0 0-1-1h-2V7.82A3 3 0 0 0 12 2zM9 14l-1 6h8l-1-6H9zm-1 8h8a1 1 0 0 1 1 1v1H7v-1a1 1 0 0 1 1-1z"/>',
+  LogOut: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>'
 };
-
 /* --- DATA REFERENCE: Probability table (MOVIDA FUERA DE APP PARA QUE SEA ACCESIBLE) --- */
 const PROBABILITY_DATA = {
   0: 0, 1: 5.797, 2: 11.338, 3: 16.632, 4: 21.684, 5: 26.504, 6: 31.097, 7: 35.472, 8: 39.635, 9: 43.593, 10: 47.354, 
@@ -232,6 +232,13 @@ export default function App() {
   const [endTime, setEndTime] = useState(null);
   const [showTimerMenu, setShowTimerMenu] = useState(false);
   const [customMinutes, setCustomMinutes] = useState("");
+  const [showGlobalSettings, setShowGlobalSettings] = useState(false);
+const handleLogout = () => {
+  if(window.confirm("¿Seguro que quieres desconectar este dispositivo? Se cerrará la sesión.")) {
+     localStorage.removeItem('turtle_sync_code');
+     window.location.reload();
+  }
+};
 
   const [luckyNumbers, setLuckyNumbers] = useState([0,0,0,0]);
   const [activeDeckId, setActiveDeckId] = useState(null);
@@ -752,6 +759,15 @@ export default function App() {
                 </div>
               )}
             </div>
+            {/* El botón nuevo de Ajustes Globales */}
+            <button onClick={() => setShowGlobalSettings(true)} className="p-2 bg-slate-100 text-slate-500 rounded-xl hover:bg-slate-200 transition-colors shadow-sm ml-1">
+              <Icon name="Settings" size={20} />
+            </button>
+
+            {/* Este es tu botón actual que despliega las pestañas */}
+            <button onClick={() => setIsToolsExpanded(!isToolsExpanded)} className={`p-2 rounded-xl transition-all ml-1 ${isToolsExpanded ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-500'}`}>
+              <Icon name="ChevronDown" size={24} className={isToolsExpanded ? 'rotate-180' : ''} />
+            </button>
 
             <button onClick={() => setIsToolsExpanded(!isToolsExpanded)} className={`p-2 rounded-xl transition-all ${isToolsExpanded ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-500'}`}>
               <Icon name="ChevronDown" size={24} className={isToolsExpanded ? 'rotate-180' : ''} />
@@ -820,6 +836,20 @@ export default function App() {
       </header>
 
       {/* MAIN CONTAINER */}
+      {/* EL CENTRO DE MANDO INVISIBLE HASTA QUE SE LLAMA */}
+      {showGlobalSettings && (
+        <GlobalSettingsModal 
+          onClose={() => setShowGlobalSettings(false)}
+          actionLogs={actionLogs} undoAction={undoAction} levelDates={levelDates}
+          decks={decks} setDecks={setDecks} vaultItems={vaultItems} setVaultItems={setVaultItems}
+          examDate={examDate} setExamDate={setExamDate} submissionDate={submissionDate} setSubmissionDate={setSubmissionDate}
+          addPoints={addPoints} onResetTopics={handleResetTopics} onResetPlanning={handleResetPlanning} onResetPractico={handleResetPractico}
+          onLogout={handleLogout}
+        />
+      )}
+
+      {/* MAIN CONTAINER */}
+      <main className="max-w-5xl mx-auto p-4 md:p-8">
       <main className="max-w-5xl mx-auto p-4 md:p-8">
         {activeTab === 'map' && (
           <ProgressMap 
@@ -1984,4 +2014,187 @@ function LoadingScreen() {
       </div>
     </div>
   ); 
+}
+function GlobalSettingsModal({
+  onClose, actionLogs, undoAction, levelDates,
+  decks, setDecks, vaultItems, setVaultItems,
+  examDate, setExamDate, submissionDate, setSubmissionDate,
+  addPoints, onResetTopics, onResetPlanning, onResetPractico, onLogout
+}) {
+  const [activeTab, setActiveTab] = useState('logs');
+  const [logTab, setLogTab] = useState('hist');
+  const [vaultImportTxt, setVaultImportTxt] = useState("");
+
+  const exportDecks = () => {
+    const json = JSON.stringify(decks);
+    navigator.clipboard.writeText(json).then(() => alert("¡Mazos copiados al portapapeles!"));
+  };
+
+  const importDecks = () => {
+    const input = prompt("Pega el código de tus mazos exportados:");
+    if (input) {
+      try {
+        const imported = JSON.parse(input);
+        if (Array.isArray(imported)) { setDecks(prev => [...prev, ...imported]); alert("¡Mazos importados con éxito!"); }
+      } catch (e) { alert("Error al importar el código."); }
+    }
+  };
+
+  const handleVaultImport = () => {
+    try {
+      const parsed = JSON.parse(vaultImportTxt);
+      if (Array.isArray(parsed)) {
+        setVaultItems(parsed);
+        setVaultImportTxt("");
+        alert("Vault actualizado con éxito!");
+      }
+    } catch(e) { alert("Formato JSON inválido. Revisa tu código."); }
+  };
+
+  return (
+    <div className="modal-overlay animate-in fade-in" onClick={onClose}>
+      <div className="bg-white rounded-[40px] w-full max-w-2xl max-h-[85vh] flex flex-col shadow-2xl overflow-hidden animate-in zoom-in-95" onClick={e=>e.stopPropagation()}>
+        
+        {/* CABECERA DEL MODAL */}
+        <div className="p-6 bg-slate-50 border-b border-slate-100 flex justify-between items-center shrink-0">
+           <div className="flex items-center gap-3">
+             <div className="p-2 bg-slate-800 text-white rounded-xl shadow-md"><Icon name="Settings" size={20} /></div>
+             <h2 className="text-xl font-black text-slate-800">Centro de Mando</h2>
+           </div>
+           <button onClick={onClose} className="p-2 bg-white text-slate-400 rounded-full hover:bg-red-50 hover:text-red-500 transition-colors shadow-sm border border-slate-100"><Icon name="X" size={20}/></button>
+        </div>
+
+        {/* PESTAÑAS NAVEGACIÓN */}
+        <div className="flex p-4 gap-2 shrink-0 border-b border-slate-50 overflow-x-auto custom-scrollbar">
+           <button onClick={()=>setActiveTab('logs')} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all whitespace-nowrap ${activeTab==='logs'?'bg-slate-800 text-white shadow-md':'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>Activity Logs</button>
+           <button onClick={()=>setActiveTab('data')} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all whitespace-nowrap ${activeTab==='data'?'bg-slate-800 text-white shadow-md':'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>Data & Backup</button>
+           <button onClick={()=>setActiveTab('dates')} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all whitespace-nowrap ${activeTab==='dates'?'bg-slate-800 text-white shadow-md':'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>Dates & Points</button>
+           <button onClick={()=>setActiveTab('danger')} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all whitespace-nowrap ${activeTab==='danger'?'bg-red-500 text-white shadow-md':'bg-red-50 text-red-600 hover:bg-red-100'}`}>Danger Zone</button>
+        </div>
+
+        {/* CONTENEDOR CENTRAL */}
+        <div className="p-6 overflow-y-auto custom-scrollbar flex-1 bg-white">
+           
+           {/* TAB 1: LOGS (Movido desde StatsView) */}
+           {activeTab === 'logs' && (
+             <div className="space-y-4">
+                <div className="flex bg-slate-100 p-1 rounded-xl w-fit">
+                  {['hist','rewards'].map(t=>(<button key={t} onClick={()=>setLogTab(t)} className={`px-4 py-1.5 text-[10px] font-black rounded-lg uppercase transition-all ${logTab===t?'bg-white shadow-sm text-slate-800':'text-slate-400'}`}>{t==='hist'?'History':'Level Rewards'}</button>))}
+                </div>
+                {logTab === 'hist' ? (
+                  <div className="space-y-2">
+                    {actionLogs.length === 0 ? <p className="italic text-slate-300 font-bold text-center py-8">No records found.</p> : actionLogs.slice(0,50).map(l=>(
+                      <div key={l.id} className="bg-slate-50 p-3 rounded-2xl flex justify-between items-center border border-slate-100">
+                        <div className="text-left leading-tight">
+                          <p className="text-xs font-black text-slate-800 line-clamp-1">{l.description}</p>
+                          <p className="text-[8px] font-bold text-slate-400 uppercase mt-1">{new Date(l.timestamp).toLocaleString()}</p>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <span className={`text-[10px] font-black px-2 py-1 rounded-lg shadow-inner ${l.amount > 0 ? 'text-emerald-700 bg-emerald-100' : l.amount < 0 ? 'text-red-700 bg-red-100' : 'text-slate-500 bg-slate-200'}`}>{l.amount > 0 ? '+'+l.amount : l.amount}</span>
+                          <button onClick={()=>undoAction(l.id)} className="text-slate-300 hover:text-red-500 transition-colors active:scale-90"><Icon name="Undo2" size={14}/></button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {Object.entries(levelDates || {}).sort((a,b) => b[0] - a[0]).map(([lvl, date]) => (
+                      <div key={lvl} className="bg-amber-50 p-4 rounded-2xl flex justify-between items-center border border-amber-100">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 bg-amber-200 text-amber-800 rounded-full flex items-center justify-center font-black text-sm shadow-inner">{lvl}</div>
+                          <p className="text-xs font-bold text-amber-900 italic">"The legacy you leave behind..."</p>
+                        </div>
+                        <p className="text-[9px] font-black text-amber-600 uppercase bg-white px-2 py-1 rounded-lg shadow-sm border border-amber-100">{date}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+             </div>
+           )}
+
+           {/* TAB 2: DATA & BACKUP */}
+           {activeTab === 'data' && (
+             <div className="space-y-6">
+                <div className="p-5 bg-rose-50 rounded-3xl border border-rose-100 space-y-4 text-left shadow-inner">
+                   <h3 className="text-sm font-black text-rose-900 flex items-center gap-2"><Icon name="Library" size={16}/> Flashcards Library</h3>
+                   <div className="flex gap-2">
+                     <button onClick={exportDecks} className="flex-1 py-3 bg-white text-rose-700 rounded-xl font-black text-[10px] uppercase shadow-sm border border-rose-100 hover:border-rose-300 transition-all">Export JSON</button>
+                     <button onClick={importDecks} className="flex-1 py-3 bg-rose-600 text-white rounded-xl font-black text-[10px] uppercase shadow-md active:scale-95 transition-all">Import JSON</button>
+                   </div>
+                </div>
+                <div className="p-5 bg-slate-900 rounded-3xl border border-slate-800 space-y-4 text-left shadow-inner">
+                   <h3 className="text-sm font-black text-white flex items-center gap-2"><Icon name="Target" size={16}/> Vault Citations</h3>
+                   <textarea className="w-full h-24 bg-slate-800 border border-slate-700 rounded-xl p-3 text-white font-mono text-[10px] outline-none focus:border-amber-500 custom-scrollbar" placeholder='[{"category": "...", "reference": "...", "text": "..."}]' value={vaultImportTxt} onChange={e => setVaultImportTxt(e.target.value)} />
+                   <button onClick={handleVaultImport} className="w-full py-3 bg-amber-500 text-slate-900 rounded-xl font-black text-[10px] uppercase shadow-md active:scale-95 transition-all">Update Vault</button>
+                </div>
+             </div>
+           )}
+
+           {/* TAB 3: FECHAS Y PUNTOS */}
+           {activeTab === 'dates' && (
+             <div className="space-y-6 text-left">
+                <div className="p-5 bg-slate-50 rounded-3xl border border-slate-100 space-y-4 shadow-inner">
+                   <h3 className="text-sm font-black text-slate-800 flex items-center gap-2"><Icon name="Calendar" size={16}/> Fechas Clave</h3>
+                   <div className="grid grid-cols-2 gap-4">
+                     <div className="space-y-1">
+                       <label className="text-[9px] font-black uppercase text-slate-400">Examen Oposición (Temas)</label>
+                       <input type="date" value={examDate} onChange={e=>setExamDate(e.target.value)} className="w-full bg-white border border-slate-200 rounded-xl p-3 text-xs font-black text-slate-700 outline-none focus:border-amber-400" />
+                     </div>
+                     <div className="space-y-1">
+                       <label className="text-[9px] font-black uppercase text-slate-400">Entrega Programación</label>
+                       <input type="date" value={submissionDate} onChange={e=>setSubmissionDate(e.target.value)} className="w-full bg-white border border-slate-200 rounded-xl p-3 text-xs font-black text-slate-700 outline-none focus:border-teal-400" />
+                     </div>
+                   </div>
+                </div>
+                <div className="p-5 bg-emerald-50 rounded-3xl border border-emerald-100 space-y-4 shadow-inner">
+                   <h3 className="text-sm font-black text-emerald-900 flex items-center gap-2"><Icon name="Trophy" size={16}/> Ajuste Manual de Puntos</h3>
+                   <div className="grid grid-cols-4 gap-2">
+                     {[5, 10, 25, 50].map(v => (
+                       <button key={`add${v}`} onClick={() => addPoints(v, `+${v} Pts (Manual)`)} className="p-3 bg-emerald-600 text-white rounded-xl font-black text-xs shadow-md active:scale-95 transition-transform hover:bg-emerald-500">+{v}</button>
+                     ))}
+                     {[5, 10, 25, 50].map(v => (
+                       <button key={`sub${v}`} onClick={() => addPoints(-v, `-${v} Pts (Manual)`)} className="p-3 bg-red-500 text-white rounded-xl font-black text-xs shadow-md active:scale-95 transition-transform hover:bg-red-400">-{v}</button>
+                     ))}
+                   </div>
+                </div>
+             </div>
+           )}
+
+           {/* TAB 4: DANGER ZONE */}
+           {activeTab === 'danger' && (
+             <div className="space-y-4 text-left">
+                <div className="p-4 bg-red-50 rounded-2xl border border-red-100 flex justify-between items-center">
+                   <div>
+                     <p className="text-xs font-black text-red-900">Resetear Temas</p>
+                     <p className="text-[9px] font-bold text-red-600">Borra el estudio, reviews y simulacros.</p>
+                   </div>
+                   <button onClick={onResetTopics} className="px-4 py-2 bg-red-600 text-white rounded-lg text-[10px] font-black uppercase shadow-md active:scale-95 transition-transform">Reset</button>
+                </div>
+                <div className="p-4 bg-red-50 rounded-2xl border border-red-100 flex justify-between items-center">
+                   <div>
+                     <p className="text-xs font-black text-red-900">Resetear Programación</p>
+                     <p className="text-[9px] font-bold text-red-600">Devuelve todo al estado inicial "Boceto".</p>
+                   </div>
+                   <button onClick={onResetPlanning} className="px-4 py-2 bg-red-600 text-white rounded-lg text-[10px] font-black uppercase shadow-md active:scale-95 transition-transform">Reset</button>
+                </div>
+                <div className="p-4 bg-red-50 rounded-2xl border border-red-100 flex justify-between items-center">
+                   <div>
+                     <p className="text-xs font-black text-red-900">Resetear Práctico</p>
+                     <p className="text-[9px] font-bold text-red-600">Reinicia los skills y casos a 0.</p>
+                   </div>
+                   <button onClick={onResetPractico} className="px-4 py-2 bg-red-600 text-white rounded-lg text-[10px] font-black uppercase shadow-md active:scale-95 transition-transform">Reset</button>
+                </div>
+                <div className="p-4 bg-slate-900 rounded-2xl border border-slate-800 flex justify-between items-center mt-8">
+                   <div>
+                     <p className="text-xs font-black text-white">Cerrar Sesión</p>
+                     <p className="text-[9px] font-bold text-slate-400">Desconecta el dispositivo actual.</p>
+                   </div>
+                   <button onClick={onLogout} className="px-4 py-2 bg-slate-700 text-white rounded-lg text-[10px] font-black uppercase shadow-md active:scale-95 transition-transform hover:bg-red-600 flex items-center gap-1"><Icon name="LogOut" size={14}/> Salir</button>
+                </div>
+             </div>
+           )}
+        </div>
+      </div>
+    </div>
+  );
 }
