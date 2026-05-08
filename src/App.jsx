@@ -764,11 +764,6 @@ const handleLogout = () => {
               <Icon name="Settings" size={20} />
             </button>
 
-            {/* Este es tu botón actual que despliega las pestañas */}
-            <button onClick={() => setIsToolsExpanded(!isToolsExpanded)} className={`p-2 rounded-xl transition-all ml-1 ${isToolsExpanded ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-500'}`}>
-              <Icon name="ChevronDown" size={24} className={isToolsExpanded ? 'rotate-180' : ''} />
-            </button>
-
             <button onClick={() => setIsToolsExpanded(!isToolsExpanded)} className={`p-2 rounded-xl transition-all ${isToolsExpanded ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-500'}`}>
               <Icon name="ChevronDown" size={24} className={isToolsExpanded ? 'rotate-180' : ''} />
             </button>
@@ -981,7 +976,6 @@ function ProgressMap({ points, level, xp, addPoints, streak, perfectWeeks, onVau
 
 function SyllabusView({ topics, setTopics, addPoints, onOpenModal, actionLogs, onReset, touchWeekly, examDate, setExamDate }) {
   const [search, setSearch] = useState("");
-  const [showDate, setShowDate] = useState(false);
 
   const diff = new Date(examDate) - new Date();
   const days = Math.ceil(diff / 864e5);
@@ -1031,19 +1025,19 @@ function SyllabusView({ topics, setTopics, addPoints, onOpenModal, actionLogs, o
              <Icon name="BookOpen" className="text-amber-600" />
              <h2 className="text-2xl font-black text-slate-950">Temas</h2>
            </div>
-           <div className="text-right cursor-pointer relative" onClick={() => setShowDate(!showDate)}>
+           
+           {/* AQUÍ ESTÁ EL CAMBIO: El contador ya no es clickeable ni saca el calendario */}
+           <div className="text-right relative">
               <p className="text-3xl font-black text-slate-800 tabular-nums leading-none">{days}</p>
               <p className="text-[8px] font-black uppercase text-amber-600 tracking-widest mt-1">Days to End Game 🖤</p>
-              {showDate && <input type="date" value={examDate} onClick={(e) => e.stopPropagation()} onChange={e=>{setExamDate(e.target.value); setShowDate(false);}} className="absolute top-0 right-0 bg-white shadow-xl rounded-lg p-2 text-xs border z-50" />}
            </div>
+
         </div>
         <div className="flex flex-col sm:flex-row items-center gap-3 w-full">
           <div className="relative flex-1 w-full">
             <Icon name="Search" size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
             <input placeholder="Buscar temas..." value={search} onChange={e=>setSearch(e.target.value)} className="w-full bg-white border-2 border-slate-100 rounded-2xl pl-12 pr-4 py-3 text-sm font-black outline-none focus:border-amber-200 transition-all shadow-inner" />
           </div>
-          <button onClick={onReset} className="w-full sm:w-auto px-5 py-3 bg-red-50 text-red-600 font-black text-[10px] rounded-2xl hover:bg-red-100 transition-all uppercase tracking-widest active:scale-95">Reset</button>
-        </div>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1086,7 +1080,6 @@ function SyllabusView({ topics, setTopics, addPoints, onOpenModal, actionLogs, o
     </div>
   );
 }
-
 function CounterPill({ label, count, onAdd, onSub }) {
   const [open, setOpen] = useState(false);
   
@@ -1173,8 +1166,6 @@ function PlanningHub({ planning, setPlanning, units, setUnits, addPoints, submis
             <input placeholder="Añadir sección..." value={newPlan} onChange={e => setNewPlan(e.target.value)} className="flex-1 bg-white border-2 border-slate-100 rounded-2xl px-4 py-3 text-sm font-black outline-none focus:border-teal-200 transition-all shadow-inner" />
             <button type="submit" className="bg-teal-600 text-white px-5 py-3 rounded-2xl shadow-lg shadow-teal-100 active:scale-95 transition-transform"><Icon name="Plus" size={20}/></button>
           </form>
-          <button onClick={onReset} className="w-full sm:w-auto px-5 py-3 bg-red-50 text-red-600 font-black text-[10px] rounded-2xl hover:bg-red-100 transition-all uppercase tracking-widest active:scale-95">Reset</button>
-        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1218,8 +1209,6 @@ function PracticoView({ skills, setSkills, addPoints, sessions, setSessions, onR
           <Icon name="Target" className="text-indigo-600" />
           <h2 className="text-2xl font-black text-slate-950">Práctico</h2>
         </div>
-        <button onClick={onReset} className="w-full sm:w-auto px-5 py-3 bg-red-50 text-red-600 font-black text-[10px] rounded-2xl hover:bg-red-100 transition-all uppercase tracking-widest active:scale-95">Reset</button>
-      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="bento-card bg-white p-6 space-y-6 border-indigo-50 shadow-md">
@@ -1425,12 +1414,11 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam }) {
         </div>
       )}
 
-      <div className="flex flex-col sm:flex-row justify-between items-center bg-white/50 backdrop-blur px-4 py-2 rounded-2xl shadow-sm border border-white/50 gap-4">
+  <div className="flex flex-col sm:flex-row justify-between items-center bg-white/50 backdrop-blur px-4 py-2 rounded-2xl shadow-sm border border-white/50 gap-4">
         <h2 className="text-2xl font-black text-rose-950">Library</h2>
         <div className="flex items-center gap-2">
           <button onClick={()=>setShowDailyModal(true)} className="px-3 py-2 bg-amber-100 text-amber-700 rounded-xl font-black text-[10px] flex items-center gap-2 border border-amber-200 active:scale-95 transition-all shadow-sm"><Icon name="Flame" size={14} className="fill-amber-700"/> DAILY </button>
           <button onClick={()=>setShowExamModal(true)} className="px-3 py-2 bg-rose-100 text-rose-700 rounded-xl font-black text-[10px] flex items-center gap-2 border border-rose-200 active:scale-95 transition-all shadow-sm"><Icon name="Dices" size={14}/> EXAM MODE</button>
-          <button onClick={()=>setShowSettingsModal(true)} className="p-2 bg-slate-100 text-slate-500 rounded-xl hover:bg-slate-200 transition-all"><Icon name="Settings" size={18}/></button>
         </div>
       </div>
       
@@ -1670,10 +1658,8 @@ function VaultCarousel({ items, setItems, onClose }) {
   const current = items[idx];
 
   return (
-    <div className="fixed inset-0 z-[600] bg-slate-900 flex flex-col items-center justify-center p-6 sm:p-12 animate-in fade-in">
-       <div className="absolute top-6 right-6 flex gap-4">
+ <div className="absolute top-6 right-6 flex gap-4">
           <button onClick={handleShuffle} className="text-white/30 hover:text-amber-500 transition-colors"><Icon name="Shuffle" size={24}/></button>
-          <button onClick={() => setImportOpen(!importOpen)} className="text-white/30 hover:text-white transition-colors"><Icon name="Settings" size={24}/></button>
           <button onClick={onClose} className="text-white/30 hover:text-red-500 transition-colors"><Icon name="X" size={28}/></button>
        </div>
 
