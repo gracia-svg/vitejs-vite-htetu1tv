@@ -360,6 +360,20 @@ useEffect(() => {
     return all;
   }, [decks]);
 
+const dailyChallengeCards = useMemo(() => {
+    const all = [];
+    decks.forEach(d => {
+      if (d.cards) {
+        d.cards.forEach(c => {
+          if (!c.nextDate || c.nextDate <= Date.now()) {
+            all.push({ ...c, deckId: d.id });
+          }
+        });
+      }
+    });
+    return all;
+  }, [decks]);
+
   const addPoints = (amount, desc, actionData = null) => {
     let finalLogs = [...actionLogs];
     const twentyFourHoursAgo = Date.now() - 86400000;
@@ -379,7 +393,6 @@ useEffect(() => {
     
     if (newLevel > oldLevel) setLevelDates(prev => ({ ...prev, [newLevel]: new Date().toLocaleDateString() }));
     
-    // REGISTRO DE DÍA ACTIVO EN EL CALENDARIO
     if (amount > 0) {
       const today = new Date().toISOString().split('T')[0];
       setActivityDays(prev => prev.includes(today) ? prev : [...prev, today]);
@@ -398,6 +411,26 @@ useEffect(() => {
       return newData;
     });
   };
+
+  useEffect(() => {
+    if (activityDays.length === 0) { setStreak(0); return; }
+    const sorted = [...activityDays].sort((a, b) => new Date(b) - new Date(a));
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const lastDay = new Date(sorted[0]); lastDay.setHours(0, 0, 0, 0);
+    const diffDays = Math.floor((today - lastDay) / 864e5);
+    if (diffDays > 1) {
+      setStreak(0);
+    } else {
+      let currentStreak = 1;
+      for (let i = 0; i < sorted.length - 1; i++) {
+        const d1 = new Date(sorted[i]); const d2 = new Date(sorted[i+1]);
+        d1.setHours(0, 0, 0, 0); d2.setHours(0, 0, 0, 0);
+        if (Math.round((d1 - d2) / 864e5) === 1) currentStreak++; else break;
+      }
+      setStreak(currentStreak);
+      if (currentStreak > maxStreak) setMaxStreak(currentStreak);
+    }
+  }, [activityDays]);
 
   const touchWeekly = (field) => {
     setWeeklyData(prev => {
@@ -1284,25 +1317,24 @@ function NotesView({ notes, setNotes }) {
 function FlashcardsManager({ decks, setDecks, onSelect, onExam, dailyChallengeCards }) {
   const [showAddModal, setShowAddModal] = useState(false);
   const [newDeckName, setNewDeckName] = useState("");
-  const [newDeckCat, setNewDeckCat] = useState("");
+  const [newDeckCat, setNewDeckCat] = useState("General");
 
   const handleAddDeck = () => {
     if (!newDeckName.trim()) return;
     const newDeck = {
       id: Date.now().toString(),
       name: newDeckName.trim(),
-      category: newDeckCat.trim() || "General",
+      category: newDeckCat || "General",
       cards: []
     };
     setDecks([...decks, newDeck]);
     setNewDeckName("");
-    setNewDeckCat("");
+    setNewDeckCat("General");
     setShowAddModal(false);
   };
 
   return (
     <div className="space-y-6 animate-in slide-in-from-left-4 text-left">
-      {/* CABECERA CON PÍLDORAS */}
       <div className="bg-white/50 backdrop-blur p-6 rounded-[32px] border border-white/50 shadow-sm flex flex-col sm:flex-row justify-between items-center gap-4">
         <div className="flex items-center gap-3 w-full sm:w-auto">
           <Icon name="BookOpen" className="text-rose-600" />
@@ -1318,30 +1350,26 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam, dailyChallengeCa
               <Icon name="Zap" size={12}/> Challenge
             </button>
           )}
-          
           <button onClick={() => onExam({ name: "Global Exam", cards: decks.flatMap(d => d.cards || []) })} className="px-3 py-1.5 bg-rose-100 text-rose-700 rounded-xl font-black text-[10px] uppercase shadow-sm active:scale-95 transition-all flex items-center gap-2">
             <Icon name="Target" size={12}/> Exam Mode
           </button>
-
           <button onClick={() => setShowAddModal(true)} className="px-3 py-1.5 bg-slate-800 text-white rounded-xl font-black text-[10px] uppercase shadow-sm active:scale-95 transition-all flex items-center gap-2">
             <Icon name="Plus" size={12}/> New Deck
           </button>
         </div>
       </div>
 
-      {/* GRID DE MAZOS */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {decks.map(deck => (
           <div key={deck.id} onClick={() => onSelect(deck.id.toString())} className="bento-card group bg-white p-6 cursor-pointer border-slate-100 hover:border-rose-200 transition-all shadow-sm hover:shadow-xl hover:shadow-rose-500/5">
             <div className="flex justify-between items-start mb-6">
-              <div className="p-3 bg-slate-50 rounded-2xl text-slate-400 group-hover:bg-rose-50 group-hover:text-rose-600 transition-colors">
+              <div className={`p-3 rounded-2xl transition-colors ${getCategoryBadge(deck.category)}`}>
                 <Icon name="Layers" size={24} />
               </div>
               <span className="px-2 py-1 bg-slate-100 text-slate-400 rounded-lg text-[8px] font-black uppercase tracking-widest">{deck.cards?.length || 0} Cards</span>
             </div>
             <h3 className="text-lg font-black text-slate-800 mb-1 group-hover:text-rose-950 transition-colors">{deck.name}</h3>
             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">{deck.category || 'General'}</p>
-            
             <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
               <div className="h-full bg-rose-500 transition-all duration-500" style={{ width: `${Math.min(100, ((deck.cards?.filter(c => (c.interval || 0) > 0).length || 0) / (deck.cards?.length || 1)) * 100)}%` }} />
             </div>
@@ -1349,15 +1377,16 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam, dailyChallengeCa
         ))}
       </div>
 
-      {/* MODAL PARA NUEVO MAZO */}
       {showAddModal && (
         <div className="modal-overlay animate-in fade-in" onClick={() => setShowAddModal(false)}>
           <div className="bg-white rounded-[40px] p-8 max-w-sm w-full shadow-2xl animate-in zoom-in-95" onClick={e => e.stopPropagation()}>
-            <h3 className="text-xl font-black text-slate-800 mb-6">New Deck</h3>
+            <h3 className="text-xl font-black text-slate-800 mb-6 text-center">New Deck</h3>
             <div className="space-y-4">
               <input placeholder="Deck Name..." value={newDeckName} onChange={e => setNewDeckName(e.target.value)} className="w-full bg-slate-50 rounded-2xl px-4 py-3 text-sm font-bold outline-none border-2 border-transparent focus:border-rose-200" />
-              <input placeholder="Category (Optional)..." value={newDeckCat} onChange={e => setNewDeckCat(e.target.value)} className="w-full bg-slate-50 rounded-2xl px-4 py-3 text-sm font-bold outline-none border-2 border-transparent focus:border-rose-200" />
-              <button onClick={handleAddDeck} className="w-full py-4 bg-slate-800 text-white rounded-2xl font-black shadow-lg active:scale-95 transition-all uppercase tracking-widest">Create Deck</button>
+              <select value={newDeckCat} onChange={e => setNewDeckCat(e.target.value)} className="w-full bg-slate-50 rounded-2xl px-4 py-3 text-sm font-black outline-none border-2 border-transparent focus:border-rose-200 appearance-none">
+                 {DECK_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+              <button onClick={handleAddDeck} className="w-full py-4 bg-slate-800 text-white rounded-2xl font-black shadow-lg active:scale-95 transition-all uppercase tracking-widest text-xs">Create Deck</button>
             </div>
           </div>
         </div>
