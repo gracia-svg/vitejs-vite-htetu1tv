@@ -245,6 +245,7 @@ const handleLogout = () => {
   const [examDeck, setExamDeck] = useState(null);
   const [selectedTopicModal, setSelectedTopicModal] = useState(null);
   const [isModalFullscreen, setIsModalFullscreen] = useState(false);
+  const [activityDays, setActivityDays] = useState([]);
 
   useEffect(() => {
     if (!document.getElementById('tailwind-cdn')) {
@@ -275,7 +276,7 @@ const handleLogout = () => {
   }, [isLogged]);
 
   // 2. CARGA INTELIGENTE Y SEGURO DE DESBLOQUEO
-  useEffect(() => {
+useEffect(() => {
     if (!isLogged || !syncCode) return;
     const userDocRef = doc(db, 'artifacts', APP_ID_PATH, 'public', 'data', 'turtle_users', syncCode);
     const masterDocRef = doc(db, 'artifacts', APP_ID_PATH, 'public', 'master_syllabus');
@@ -284,12 +285,11 @@ const handleLogout = () => {
       try {
         if (userSnap.exists()) {
           const userData = userSnap.data();
-          // Intentamos traer títulos de la nube, si falla usamos los del código
           let masterTopics = INITIAL_TOPICS;
           try {
             const masterSnap = await getDoc(masterDocRef);
             if (masterSnap.exists()) masterTopics = masterSnap.data().master_topics;
-          } catch (e) { console.warn("Usando temas locales temporalmente"); }
+          } catch (e) { console.warn("Usando temas locales"); }
 
           const finalTopics = masterTopics.map(mT => {
             const uT = userData.topics?.find(ts => ts.id === mT.id);
@@ -324,30 +324,27 @@ const handleLogout = () => {
           setWeeklyData(userData.weeklyData || weeklyData);
           setTotalDailyChallenges(userData.totalDailyChallenges || 0);
           setVaultItems(userData.vaultItems || []);
-        } else {
-          // Si el usuario es nuevo, no lo bloqueamos
-          setTopics(INITIAL_TOPICS);
+          setActivityDays(userData.activityDays || []); // <--- IMPORTANTE
         }
-      } catch (err) {
-        console.error("Error crítico de carga:", err);
-      } finally {
-        // ESTO ES LO IMPORTANTE: Pase lo que pase, quitamos la pantalla de carga
-        setIsDataLoaded(true);
-      }
+      } catch (err) { console.error(err); } finally { setIsDataLoaded(true); }
     });
-
     return () => unsubscribe();
   }, [isLogged, syncCode]);
 
-  useEffect(() => {
+ useEffect(() => {
     if (!isDataLoaded || !isLogged) return;
     const save = async () => {
       const docRef = doc(db, 'artifacts', APP_ID_PATH, 'public', 'data', 'turtle_users', syncCode);
-      await setDoc(docRef, { points, topics, planning, units, skills, decks, todos, notes, actionLogs, examDate, submissionDate, streak, maxStreak, practicoSessions, levelDates, lastActiveDate, perfectWeeks, totalDailyChallenges, lastChallengeDate, weeklyData, vaultItems });
+      await setDoc(docRef, { 
+        points, topics, planning, units, skills, decks, todos, notes, 
+        actionLogs, examDate, submissionDate, streak, maxStreak, 
+        practicoSessions, levelDates, lastActiveDate, perfectWeeks, 
+        totalDailyChallenges, lastChallengeDate, weeklyData, vaultItems,
+        activityDays // <--- IMPORTANTE
+      });
     };
     const t = setTimeout(save, 1500); return () => clearTimeout(t);
-  }, [points, topics, planning, units, skills, decks, todos, notes, actionLogs, examDate, submissionDate, streak, maxStreak, practicoSessions, levelDates, lastActiveDate, perfectWeeks, totalDailyChallenges, lastChallengeDate, weeklyData, vaultItems, isDataLoaded]);
-
+  }, [points, topics, planning, units, skills, decks, todos, notes, actionLogs, examDate, submissionDate, streak, maxStreak, practicoSessions, levelDates, lastActiveDate, perfectWeeks, totalDailyChallenges, lastChallengeDate, weeklyData, vaultItems, activityDays, isDataLoaded]);
   const addPoints = (amount, desc, actionData = null) => {
     let finalLogs = [...actionLogs];
 
