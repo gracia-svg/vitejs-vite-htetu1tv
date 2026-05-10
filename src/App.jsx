@@ -360,20 +360,6 @@ useEffect(() => {
     return all;
   }, [decks]);
 
-const dailyChallengeCards = useMemo(() => {
-    const all = [];
-    decks.forEach(d => {
-      if (d.cards) {
-        d.cards.forEach(c => {
-          if (!c.nextDate || c.nextDate <= Date.now()) {
-            all.push({ ...c, deckId: d.id });
-          }
-        });
-      }
-    });
-    return all;
-  }, [decks]);
-
   const addPoints = (amount, desc, actionData = null) => {
     let finalLogs = [...actionLogs];
     const twentyFourHoursAgo = Date.now() - 86400000;
