@@ -1305,6 +1305,11 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam, dailyChallengeCa
   const [newDeckName, setNewDeckName] = useState("");
   const [newDeckCat, setNewDeckCat] = useState("General");
 
+  // ORDEN ALFABÉTICO: Ordenamos los mazos por nombre antes de dibujarlos
+  const sortedDecks = useMemo(() => {
+    return [...decks].sort((a, b) => a.name.localeCompare(b.name));
+  }, [decks]);
+
   const handleAddDeck = () => {
     if (!newDeckName.trim()) return;
     const newDeck = {
@@ -1321,6 +1326,7 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam, dailyChallengeCa
 
   return (
     <div className="space-y-6 animate-in slide-in-from-left-4 text-left">
+      {/* CABECERA */}
       <div className="bg-white/50 backdrop-blur p-6 rounded-[32px] border border-white/50 shadow-sm flex flex-col sm:flex-row justify-between items-center gap-4">
         <div className="flex items-center gap-3 w-full sm:w-auto">
           <Icon name="BookOpen" className="text-rose-600" />
@@ -1345,31 +1351,50 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam, dailyChallengeCa
         </div>
       </div>
 
+      {/* GRID DE MAZOS */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {decks.map(deck => (
+        {sortedDecks.map(deck => (
           <div key={deck.id} onClick={() => onSelect(deck.id.toString())} className="bento-card group bg-white p-6 cursor-pointer border-slate-100 hover:border-rose-200 transition-all shadow-sm hover:shadow-xl hover:shadow-rose-500/5">
             <div className="flex justify-between items-start mb-6">
-              <div className={`p-3 rounded-2xl transition-colors ${getCategoryBadge(deck.category)}`}>
-                <Icon name="Layers" size={24} />
-              </div>
-              <span className="px-2 py-1 bg-slate-100 text-slate-400 rounded-lg text-[8px] font-black uppercase tracking-widest">{deck.cards?.length || 0} Cards</span>
+              {/* PÍLDORA DE CATEGORÍA: Con nombre y color dinámico */}
+              <span className={`px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border ${getCategoryBadge(deck.category)}`}>
+                {deck.category || 'General'}
+              </span>
+              <span className="px-2 py-1 bg-slate-100 text-slate-400 rounded-lg text-[8px] font-black uppercase tracking-widest">
+                {deck.cards?.length || 0} Cards
+              </span>
             </div>
-            <h3 className="text-lg font-black text-slate-800 mb-1 group-hover:text-rose-950 transition-colors">{deck.name}</h3>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">{deck.category || 'General'}</p>
+            
+            <h3 className="text-lg font-black text-slate-800 mb-4 group-hover:text-rose-950 transition-colors leading-tight">{deck.name}</h3>
+            
+            {/* BARRA DE PROGRESO */}
             <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
-              <div className="h-full bg-rose-500 transition-all duration-500" style={{ width: `${Math.min(100, ((deck.cards?.filter(c => (c.interval || 0) > 0).length || 0) / (deck.cards?.length || 1)) * 100)}%` }} />
+              <div 
+                className="h-full bg-rose-500 transition-all duration-500" 
+                style={{ width: `${Math.min(100, ((deck.cards?.filter(c => (c.interval || 0) > 0).length || 0) / (deck.cards?.length || 1)) * 100)}%` }} 
+              />
             </div>
           </div>
         ))}
       </div>
 
+      {/* MODAL PARA NUEVO MAZO */}
       {showAddModal && (
         <div className="modal-overlay animate-in fade-in" onClick={() => setShowAddModal(false)}>
           <div className="bg-white rounded-[40px] p-8 max-w-sm w-full shadow-2xl animate-in zoom-in-95" onClick={e => e.stopPropagation()}>
             <h3 className="text-xl font-black text-slate-800 mb-6 text-center">New Deck</h3>
             <div className="space-y-4">
-              <input placeholder="Deck Name..." value={newDeckName} onChange={e => setNewDeckName(e.target.value)} className="w-full bg-slate-50 rounded-2xl px-4 py-3 text-sm font-bold outline-none border-2 border-transparent focus:border-rose-200" />
-              <select value={newDeckCat} onChange={e => setNewDeckCat(e.target.value)} className="w-full bg-slate-50 rounded-2xl px-4 py-3 text-sm font-black outline-none border-2 border-transparent focus:border-rose-200 appearance-none">
+              <input 
+                placeholder="Deck Name..." 
+                value={newDeckName} 
+                onChange={e => setNewDeckName(e.target.value)} 
+                className="w-full bg-slate-50 rounded-2xl px-4 py-3 text-sm font-bold outline-none border-2 border-transparent focus:border-rose-200" 
+              />
+              <select 
+                value={newDeckCat} 
+                onChange={e => setNewDeckCat(e.target.value)} 
+                className="w-full bg-slate-50 rounded-2xl px-4 py-3 text-sm font-black outline-none border-2 border-transparent focus:border-rose-200 appearance-none"
+              >
                  {DECK_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
               <button onClick={handleAddDeck} className="w-full py-4 bg-slate-800 text-white rounded-2xl font-black shadow-lg active:scale-95 transition-all uppercase tracking-widest text-xs">Create Deck</button>
