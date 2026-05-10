@@ -345,10 +345,23 @@ useEffect(() => {
     };
     const t = setTimeout(save, 1500); return () => clearTimeout(t);
   }, [points, topics, planning, units, skills, decks, todos, notes, actionLogs, examDate, submissionDate, streak, maxStreak, practicoSessions, levelDates, lastActiveDate, perfectWeeks, totalDailyChallenges, lastChallengeDate, weeklyData, vaultItems, activityDays, isDataLoaded]);
+// --- CÁLCULO DE TARJETAS PARA EL RETO DIARIO ---
+  const dailyChallengeCards = useMemo(() => {
+    const all = [];
+    decks.forEach(d => {
+      if (d.cards) {
+        d.cards.forEach(c => {
+          if (!c.nextDate || c.nextDate <= Date.now()) {
+            all.push({ ...c, deckId: d.id });
+          }
+        });
+      }
+    });
+    return all;
+  }, [decks]);
+
   const addPoints = (amount, desc, actionData = null) => {
     let finalLogs = [...actionLogs];
-
-    // Payload Cleanup 24h
     const twentyFourHoursAgo = Date.now() - 86400000;
     finalLogs = finalLogs.map(log => {
       if (log.actionData && log.timestamp < twentyFourHoursAgo) {
@@ -366,20 +379,15 @@ useEffect(() => {
     
     if (newLevel > oldLevel) setLevelDates(prev => ({ ...prev, [newLevel]: new Date().toLocaleDateString() }));
     
+    // REGISTRO DE DÍA ACTIVO EN EL CALENDARIO
     if (amount > 0) {
-      const today = new Date().toDateString();
-      if (lastActiveDate !== today) {
-        const newStreak = lastActiveDate ? (Math.round((new Date(today) - new Date(lastActiveDate)) / 864e5) === 1 ? streak + 1 : 1) : 1;
-        setStreak(newStreak);
-        if (newStreak > maxStreak) setMaxStreak(newStreak);
-        setLastActiveDate(today);
-      }
+      const today = new Date().toISOString().split('T')[0];
+      setActivityDays(prev => prev.includes(today) ? prev : [...prev, today]);
     }
 
     finalLogs.unshift({ id: Date.now().toString(), amount, description: desc, timestamp: Date.now(), actionData });
     setActionLogs(finalLogs);
 
-    // Sumar a Misiones Semanales
     const currentWeekId = getWeekId();
     setWeeklyData(prev => {
       let newData = { ...prev };
@@ -868,7 +876,15 @@ useEffect(() => {
         )}
         {activeTab === 'planning' && <PlanningHub planning={planning} setPlanning={setPlanning} units={units} setUnits={setUnits} addPoints={addPoints} submissionDate={submissionDate} setSubmissionDate={setSubmissionDate} actionLogs={actionLogs} onOpenModal={setSelectedTopicModal} onReset={handleResetPlanning} touchWeekly={touchWeekly} />}
         {activeTab === 'practico' && <PracticoView skills={skills} setSkills={setSkills} addPoints={addPoints} sessions={practicoSessions} setSessions={setPracticoSessions} onReset={handleResetPractico} touchWeekly={touchWeekly} />}
-        {activeTab === 'flashcards' && !activeDeckId && !examDeck && <FlashcardsManager decks={decks} setDecks={setDecks} onSelect={setActiveDeckId} onExam={setExamDeck} />}
+        {activeTab === 'flashcards' && !activeDeckId && !examDeck && (
+          <FlashcardsManager 
+            decks={decks} 
+            setDecks={setDecks} 
+            onSelect={setActiveDeckId} 
+            onExam={setExamDeck} 
+            dailyChallengeCards={dailyChallengeCards} 
+          />
+        )}
         {activeTab === 'flashcards' && (activeDeckId || examDeck) && <DeckStudyView deck={examDeck || decks.find(d=>d.id.toString()===activeDeckId)} onBack={()=>{setActiveDeckId(null); setExamDeck(null);}} addPoints={addPoints} onUpdateCard={handleUpdateCard} onFinishChallenge={handleChallengeFinish} />}
         {activeTab === 'todo' && <TodoView todos={todos} setTodos={setTodos} addPoints={addPoints} />}
         {activeTab === 'notes' && <NotesView notes={notes} setNotes={setNotes} />}
@@ -1265,9 +1281,7 @@ function NotesView({ notes, setNotes }) {
   );
 }
 
-function FlashcardsManager({ decks, setDecks, addPoints, dailyChallengeCards }) {
-  const [view, setView] = useState('list');
-  const [selectedDeck, setSelectedDeck] = useState(null);
+function FlashcardsManager({ decks, setDecks, onSelect, onExam, dailyChallengeCards }) {
   const [showAddModal, setShowAddModal] = useState(false);
   const [newDeckName, setNewDeckName] = useState("");
   const [newDeckCat, setNewDeckCat] = useState("");
@@ -1286,28 +1300,6 @@ function FlashcardsManager({ decks, setDecks, addPoints, dailyChallengeCards }) 
     setShowAddModal(false);
   };
 
-  const updateCardInDeck = (deckId, cardId, updates) => {
-    setDecks(prev => prev.map(d => {
-      if (d.id.toString() !== deckId.toString()) return d;
-      return {
-        ...d,
-        cards: d.cards.map(c => c.id.toString() === cardId.toString() ? { ...c, ...updates } : c)
-      };
-    }));
-  };
-
-  if (view === 'study' && selectedDeck) {
-    return (
-      <DeckStudyView 
-        deck={selectedDeck} 
-        onBack={() => { setView('list'); setSelectedDeck(null); }}
-        addPoints={addPoints}
-        onUpdateCard={updateCardInDeck}
-        onFinishChallenge={() => { setView('list'); setSelectedDeck(null); }}
-      />
-    );
-  }
-
   return (
     <div className="space-y-6 animate-in slide-in-from-left-4 text-left">
       {/* CABECERA CON PÍLDORAS */}
@@ -1318,23 +1310,20 @@ function FlashcardsManager({ decks, setDecks, addPoints, dailyChallengeCards }) 
         </div>
         
         <div className="flex gap-2 flex-wrap justify-center sm:justify-end">
-          {dailyChallengeCards.length > 0 && (
+          {dailyChallengeCards && dailyChallengeCards.length > 0 && (
             <button 
-              onClick={() => { setSelectedDeck({ name: "Daily Challenge", cards: dailyChallengeCards, isChallenge: true }); setView('study'); }} 
+              onClick={() => onExam({ name: "Daily Challenge", cards: dailyChallengeCards, isChallenge: true })} 
               className="px-3 py-1.5 bg-emerald-100 text-emerald-700 rounded-xl font-black text-[10px] uppercase shadow-sm active:scale-95 transition-all flex items-center gap-2"
             >
               <Icon name="Zap" size={12}/> Challenge
             </button>
           )}
           
-          <button className="px-3 py-1.5 bg-rose-100 text-rose-700 rounded-xl font-black text-[10px] uppercase shadow-sm active:scale-95 transition-all flex items-center gap-2">
+          <button onClick={() => onExam({ name: "Global Exam", cards: decks.flatMap(d => d.cards || []) })} className="px-3 py-1.5 bg-rose-100 text-rose-700 rounded-xl font-black text-[10px] uppercase shadow-sm active:scale-95 transition-all flex items-center gap-2">
             <Icon name="Target" size={12}/> Exam Mode
           </button>
 
-          <button 
-            onClick={() => setShowAddModal(true)} 
-            className="px-3 py-1.5 bg-slate-800 text-white rounded-xl font-black text-[10px] uppercase shadow-sm active:scale-95 transition-all flex items-center gap-2"
-          >
+          <button onClick={() => setShowAddModal(true)} className="px-3 py-1.5 bg-slate-800 text-white rounded-xl font-black text-[10px] uppercase shadow-sm active:scale-95 transition-all flex items-center gap-2">
             <Icon name="Plus" size={12}/> New Deck
           </button>
         </div>
@@ -1343,7 +1332,7 @@ function FlashcardsManager({ decks, setDecks, addPoints, dailyChallengeCards }) 
       {/* GRID DE MAZOS */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {decks.map(deck => (
-          <div key={deck.id} onClick={() => { setSelectedDeck(deck); setView('study'); }} className="bento-card group bg-white p-6 cursor-pointer border-slate-100 hover:border-rose-200 transition-all shadow-sm hover:shadow-xl hover:shadow-rose-500/5">
+          <div key={deck.id} onClick={() => onSelect(deck.id.toString())} className="bento-card group bg-white p-6 cursor-pointer border-slate-100 hover:border-rose-200 transition-all shadow-sm hover:shadow-xl hover:shadow-rose-500/5">
             <div className="flex justify-between items-start mb-6">
               <div className="p-3 bg-slate-50 rounded-2xl text-slate-400 group-hover:bg-rose-50 group-hover:text-rose-600 transition-colors">
                 <Icon name="Layers" size={24} />
@@ -1360,14 +1349,14 @@ function FlashcardsManager({ decks, setDecks, addPoints, dailyChallengeCards }) 
         ))}
       </div>
 
-      {/* MODAL */}
+      {/* MODAL PARA NUEVO MAZO */}
       {showAddModal && (
         <div className="modal-overlay animate-in fade-in" onClick={() => setShowAddModal(false)}>
           <div className="bg-white rounded-[40px] p-8 max-w-sm w-full shadow-2xl animate-in zoom-in-95" onClick={e => e.stopPropagation()}>
             <h3 className="text-xl font-black text-slate-800 mb-6">New Deck</h3>
             <div className="space-y-4">
               <input placeholder="Deck Name..." value={newDeckName} onChange={e => setNewDeckName(e.target.value)} className="w-full bg-slate-50 rounded-2xl px-4 py-3 text-sm font-bold outline-none border-2 border-transparent focus:border-rose-200" />
-              <input placeholder="Category..." value={newDeckCat} onChange={e => setNewDeckCat(e.target.value)} className="w-full bg-slate-50 rounded-2xl px-4 py-3 text-sm font-bold outline-none border-2 border-transparent focus:border-rose-200" />
+              <input placeholder="Category (Optional)..." value={newDeckCat} onChange={e => setNewDeckCat(e.target.value)} className="w-full bg-slate-50 rounded-2xl px-4 py-3 text-sm font-bold outline-none border-2 border-transparent focus:border-rose-200" />
               <button onClick={handleAddDeck} className="w-full py-4 bg-slate-800 text-white rounded-2xl font-black shadow-lg active:scale-95 transition-all uppercase tracking-widest">Create Deck</button>
             </div>
           </div>
