@@ -1266,7 +1266,7 @@ function NotesView({ notes, setNotes }) {
 }
 
 function FlashcardsManager({ decks, setDecks, addPoints, dailyChallengeCards }) {
-  const [view, setView] = useState('list'); // 'list', 'study'
+  const [view, setView] = useState('list');
   const [selectedDeck, setSelectedDeck] = useState(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [newDeckName, setNewDeckName] = useState("");
@@ -1327,14 +1327,10 @@ function FlashcardsManager({ decks, setDecks, addPoints, dailyChallengeCards }) 
             </button>
           )}
           
-          <button 
-            onClick={() => { /* Lógica de examen */ }} 
-            className="px-3 py-1.5 bg-rose-100 text-rose-700 rounded-xl font-black text-[10px] uppercase shadow-sm active:scale-95 transition-all flex items-center gap-2"
-          >
+          <button className="px-3 py-1.5 bg-rose-100 text-rose-700 rounded-xl font-black text-[10px] uppercase shadow-sm active:scale-95 transition-all flex items-center gap-2">
             <Icon name="Target" size={12}/> Exam Mode
           </button>
 
-          {/* Botón New Deck unificado */}
           <button 
             onClick={() => setShowAddModal(true)} 
             className="px-3 py-1.5 bg-slate-800 text-white rounded-xl font-black text-[10px] uppercase shadow-sm active:scale-95 transition-all flex items-center gap-2"
@@ -1344,7 +1340,7 @@ function FlashcardsManager({ decks, setDecks, addPoints, dailyChallengeCards }) 
         </div>
       </div>
 
-      {/* GRID DE MAZOS LIMPIO */}
+      {/* GRID DE MAZOS */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {decks.map(deck => (
           <div key={deck.id} onClick={() => { setSelectedDeck(deck); setView('study'); }} className="bento-card group bg-white p-6 cursor-pointer border-slate-100 hover:border-rose-200 transition-all shadow-sm hover:shadow-xl hover:shadow-rose-500/5">
@@ -1364,15 +1360,15 @@ function FlashcardsManager({ decks, setDecks, addPoints, dailyChallengeCards }) 
         ))}
       </div>
 
-      {/* MODAL DE CREACIÓN */}
+      {/* MODAL */}
       {showAddModal && (
         <div className="modal-overlay animate-in fade-in" onClick={() => setShowAddModal(false)}>
           <div className="bg-white rounded-[40px] p-8 max-w-sm w-full shadow-2xl animate-in zoom-in-95" onClick={e => e.stopPropagation()}>
             <h3 className="text-xl font-black text-slate-800 mb-6">New Deck</h3>
             <div className="space-y-4">
               <input placeholder="Deck Name..." value={newDeckName} onChange={e => setNewDeckName(e.target.value)} className="w-full bg-slate-50 rounded-2xl px-4 py-3 text-sm font-bold outline-none border-2 border-transparent focus:border-rose-200" />
-              <input placeholder="Category (Optional)..." value={newDeckCat} onChange={e => setNewDeckCat(e.target.value)} className="w-full bg-slate-50 rounded-2xl px-4 py-3 text-sm font-bold outline-none border-2 border-transparent focus:border-rose-200" />
-              <button onClick={handleAddDeck} className="w-full py-4 bg-slate-800 text-white rounded-2xl font-black shadow-lg active:scale-95 transition-all">CREATE DECK</button>
+              <input placeholder="Category..." value={newDeckCat} onChange={e => setNewDeckCat(e.target.value)} className="w-full bg-slate-50 rounded-2xl px-4 py-3 text-sm font-bold outline-none border-2 border-transparent focus:border-rose-200" />
+              <button onClick={handleAddDeck} className="w-full py-4 bg-slate-800 text-white rounded-2xl font-black shadow-lg active:scale-95 transition-all uppercase tracking-widest">Create Deck</button>
             </div>
           </div>
         </div>
@@ -1385,21 +1381,21 @@ function FlashcardUI({ card, isFlipped, setIsFlipped }) {
     <div className="h-80 w-full relative" style={{ perspective: '1000px' }} onClick={() => setIsFlipped(!isFlipped)}>
       <div className={`relative w-full h-full transition-transform duration-500 rounded-[40px] shadow-2xl cursor-pointer ${isFlipped ? '[transform:rotateY(180deg)]' : ''}`} style={{ transformStyle: 'preserve-3d' }}>
         
-        {/* CARA A: PREGUNTA */}
-        <div className="absolute inset-0 bg-white border-8 border-rose-50 rounded-[40px] flex flex-col items-center justify-center p-8 text-center [backface-visibility:hidden] shadow-inner">
-          <div className={`absolute top-0 left-0 right-0 h-4 ${getCategoryBadge(card.category).split(' ')[0]}`} title={card.category} />
-          <div className="w-full max-h-full overflow-y-auto custom-scrollbar pr-2">
+        {/* FRONT: QUESTION */}
+        <div className="absolute inset-0 bg-white border-8 border-rose-50 rounded-[40px] flex flex-col items-center justify-center p-8 text-center [backface-visibility:hidden] shadow-inner overflow-hidden">
+          <div className="absolute top-0 left-0 right-0 h-4 bg-rose-200" />
+          <div className="w-full overflow-y-auto max-h-full pr-1 custom-scrollbar">
             <p className="text-xl font-black text-slate-800 leading-tight">{card.q}</p>
           </div>
-          <p className="mt-4 text-[7px] font-black uppercase text-slate-300 tracking-widest">Tap to reveal answer</p>
+          <p className="mt-4 text-[7px] font-black uppercase text-slate-300 tracking-widest shrink-0">Tap to reveal answer</p>
         </div>
 
-        {/* CARA B: RESPUESTA */}
-        <div className="absolute inset-0 bg-rose-600 text-white rounded-[40px] flex flex-col items-center justify-center p-8 text-center [transform:rotateY(180deg)] [backface-visibility:hidden] shadow-xl shadow-rose-200">
-          <div className="w-full max-h-full overflow-y-auto custom-scrollbar pr-2">
+        {/* BACK: ANSWER */}
+        <div className="absolute inset-0 bg-rose-600 text-white rounded-[40px] flex flex-col items-center justify-center p-8 text-center [transform:rotateY(180deg)] [backface-visibility:hidden] shadow-xl shadow-rose-200 overflow-hidden">
+          <div className="w-full overflow-y-auto max-h-full pr-1 custom-scrollbar">
             <p className="text-lg font-medium italic leading-relaxed">{card.a}</p>
           </div>
-          <p className="mt-4 text-[7px] font-black uppercase text-rose-300 tracking-widest">Tap to see question</p>
+          <p className="mt-4 text-[7px] font-black uppercase text-rose-300 tracking-widest shrink-0">Tap to see question</p>
         </div>
 
       </div>
