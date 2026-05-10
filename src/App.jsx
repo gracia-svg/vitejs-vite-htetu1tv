@@ -1309,8 +1309,8 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam, dailyChallengeCa
   const [newCardQ, setNewCardQ] = useState("");
   const [newCardA, setNewCardA] = useState("");
 
-  const sortedDecks = useMemo(() => [...decks].sort((a, b) => a.name.localeCompare(b.name)), [decks]);
-
+  const sortedDecks = useMemo(() => [...decks].sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' })), [decks]);
+  
   const handleAddDeck = () => {
     if (!newDeckName.trim()) return;
     setDecks([...decks, { id: Date.now().toString(), name: newDeckName.trim(), category: newDeckCat || "General", cards: [], topicIds: [] }]);
