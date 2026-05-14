@@ -1309,6 +1309,7 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam, dailyChallengeCa
   const [newCardQ, setNewCardQ] = useState("");
   const [newCardA, setNewCardA] = useState("");
 
+  // Orden alfabético natural (Topic 2 antes que Topic 10)
   const sortedDecks = useMemo(() => [...decks].sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' })), [decks]);
   
   const handleAddDeck = () => {
@@ -1347,24 +1348,43 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam, dailyChallengeCa
 
   return (
     <div className="space-y-6 animate-in slide-in-from-left-4 text-left">
+      {/* CABECERA CON MODOS RETO Y EXAMEN RECUPERADOS */}
       <div className="bg-white/50 backdrop-blur p-6 rounded-[32px] border border-white/50 shadow-sm flex flex-col sm:flex-row justify-between items-center gap-4">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 w-full sm:w-auto">
           <Icon name="BookOpen" className="text-rose-600" />
           <h2 className="text-2xl font-black text-slate-950">Flashcards</h2>
         </div>
-        <div className="flex gap-2">
-          <button onClick={() => setShowAddModal(true)} className="px-4 py-2 bg-slate-800 text-white rounded-xl font-black text-xs uppercase shadow-md active:scale-95 transition-all flex items-center gap-2">
-            <Icon name="Plus" size={14}/> New Deck
+        
+        <div className="flex gap-2 flex-wrap justify-center sm:justify-end">
+          {dailyChallengeCards && dailyChallengeCards.length > 0 && (
+            <button 
+              onClick={() => onExam({ name: "Daily Challenge", cards: dailyChallengeCards, isChallenge: true })} 
+              className="px-3 py-1.5 bg-emerald-100 text-emerald-700 rounded-xl font-black text-[10px] uppercase shadow-sm active:scale-95 transition-all flex items-center gap-2"
+            >
+              <Icon name="Zap" size={12}/> Challenge
+            </button>
+          )}
+          
+          <button onClick={() => onExam({ name: "Global Exam", cards: decks.flatMap(d => d.cards || []) })} className="px-3 py-1.5 bg-rose-100 text-rose-700 rounded-xl font-black text-[10px] uppercase shadow-sm active:scale-95 transition-all flex items-center gap-2">
+            <Icon name="Target" size={12}/> Exam Mode
+          </button>
+
+          <button 
+            onClick={() => setShowAddModal(true)} 
+            className="px-3 py-1.5 bg-slate-800 text-white rounded-xl font-black text-[10px] uppercase shadow-sm active:scale-95 transition-all flex items-center gap-2"
+          >
+            <Icon name="Plus" size={12}/> New Deck
           </button>
         </div>
       </div>
 
+      {/* GRID DE MAZOS */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {sortedDecks.map(deck => (
           <div key={deck.id} className="bento-card group bg-white p-6 border-slate-100 hover:border-rose-200 transition-all shadow-sm hover:shadow-xl relative">
             <button 
               onClick={(e) => { e.stopPropagation(); setEditingDeck(deck); }}
-              className="absolute top-4 right-4 p-2 text-slate-300 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all"
+              className="absolute top-4 right-4 p-2 text-slate-300 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all z-10"
             >
               <Icon name="Settings" size={18} />
             </button>
@@ -1402,11 +1422,11 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam, dailyChallengeCa
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 overflow-y-auto pr-2 custom-scrollbar">
-              <div className="space-y-6">
+              <div className="space-y-6 text-left">
                 <div>
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Settings</label>
-                  <input value={editingDeck.name} onChange={e => updateDeckMetadata(editingDeck.id, 'name', e.target.value)} className="w-full bg-slate-50 rounded-2xl px-4 py-3 text-sm font-bold border-2 border-transparent focus:border-rose-200 mt-2" />
-                  <select value={editingDeck.category} onChange={e => updateDeckMetadata(editingDeck.id, 'category', e.target.value)} className="w-full bg-slate-50 rounded-2xl px-4 py-3 text-sm font-black mt-2 appearance-none">
+                  <input value={editingDeck.name} onChange={e => updateDeckMetadata(editingDeck.id, 'name', e.target.value)} className="w-full bg-slate-50 rounded-2xl px-4 py-3 text-sm font-bold border-2 border-transparent focus:border-rose-200 mt-2 outline-none" />
+                  <select value={editingDeck.category} onChange={e => updateDeckMetadata(editingDeck.id, 'category', e.target.value)} className="w-full bg-slate-50 rounded-2xl px-4 py-3 text-sm font-black mt-2 appearance-none outline-none">
                     {DECK_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
                 </div>
@@ -1414,7 +1434,7 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam, dailyChallengeCa
                 <div>
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Linked Topics</label>
                   <div className="grid grid-cols-4 gap-2 mt-2">
-                    {topics.map(t => (
+                    {topics.slice(0, 69).map(t => (
                       <button 
                         key={t.id} 
                         onClick={() => toggleTopicInDeck(editingDeck.id, t.id)}
@@ -1434,7 +1454,7 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam, dailyChallengeCa
                 </button>
               </div>
 
-              <div className="space-y-6">
+              <div className="space-y-6 text-left">
                 <div>
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">New Card</label>
                   <div className="bg-slate-50 p-4 rounded-3xl space-y-2 mt-2">
@@ -1459,7 +1479,7 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam, dailyChallengeCa
         </div>
       )}
 
-      {/* MODAL CREAR MAZO (Simplificado para no repetir código) */}
+      {/* MODAL CREAR MAZO */}
       {showAddModal && (
         <div className="modal-overlay animate-in fade-in" onClick={() => setShowAddModal(false)}>
           <div className="bg-white rounded-[40px] p-8 max-w-sm w-full shadow-2xl animate-in zoom-in-95" onClick={e => e.stopPropagation()}>
