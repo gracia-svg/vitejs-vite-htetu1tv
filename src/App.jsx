@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { initializeApp } from 'firebase/app';
 import { getFirestore, doc, setDoc, onSnapshot, collection, getDoc } from 'firebase/firestore';
 import { getAuth, signInAnonymously } from 'firebase/auth';
@@ -1342,13 +1342,13 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam, dailyChallengeCo
   const [examCats, setExamCategoryFilter] = useState([]); 
   const [showChallengeIntro, setShowChallengeIntro] = useState(false);
 
+  // REFERENCIA PARA EL AUTO-SCROLL
+  const filtersRef = useRef(null);
+
   const [newDeckName, setNewDeckName] = useState("");
   const [newDeckCat, setNewDeckCat] = useState("General");
   const [newDeckTopics, setNewDeckTopics] = useState([]);
   const [bulkText, setBulkText] = useState("");
-
-  const [newCardQ, setNewCardQ] = useState("");
-  const [newCardA, setNewCardA] = useState("");
 
   const sortedDecks = useMemo(() => 
     [...decks].sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' })), 
@@ -1362,6 +1362,13 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam, dailyChallengeCo
     const sum = scoredCards.reduce((acc, c) => acc + (c.lastScore || 0), 0);
     return ((sum / scoredCards.length) * 2.5).toFixed(1);
   };
+
+  // EFECTO DE AUTO-SCROLL
+  useEffect(() => {
+    if (showExamFilters && filtersRef.current) {
+      filtersRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  }, [showExamFilters]);
 
   const handleStartChallenge = () => {
     const cards = generateChallenge();
@@ -1402,17 +1409,14 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam, dailyChallengeCo
   };
 
   return (
-    <div className="space-y-6 animate-in slide-in-from-left-4 text-left">
-      {/* PANTALLA SWIFTIE (INTRO RETO) */}
+    <div className="space-y-6 animate-in slide-in-from-left-4 text-left pb-10">
       {showChallengeIntro && (
         <div className="modal-overlay animate-in fade-in z-[600]">
           <div className="bg-gradient-to-br from-emerald-50 via-teal-50 to-emerald-100 rounded-[40px] p-12 max-w-lg w-full shadow-2xl text-center relative border-4 border-white animate-in zoom-in-95">
             <button onClick={() => setShowChallengeIntro(false)} className="absolute top-6 right-6 p-2 text-teal-300 hover:text-teal-600 transition-colors">
               <Icon name="X" size={28} />
             </button>
-            <div className="mb-8 flex justify-center">
-              <div className="p-4 bg-white rounded-3xl shadow-sm"><Icon name="Zap" size={48} className="text-emerald-500" /></div>
-            </div>
+            <div className="mb-8 flex justify-center"><div className="p-4 bg-white rounded-3xl shadow-sm"><Icon name="Zap" size={48} className="text-emerald-500" /></div></div>
             <h3 className="text-3xl font-black text-slate-800 leading-tight mb-4">Do you have 10 minutes to spare?</h3>
             <p className="text-sm font-bold text-teal-700/60 uppercase tracking-[0.2em] mb-10">30 random cards • Priority Focus</p>
             <button onClick={handleStartChallenge} className="w-full py-5 bg-slate-900 text-white rounded-3xl font-black text-sm uppercase tracking-widest shadow-xl active:scale-95 transition-all">I'm ready for it.</button>
@@ -1420,7 +1424,6 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam, dailyChallengeCo
         </div>
       )}
 
-      {/* CABECERA: Título, Crear y Modos */}
       <div className="bg-white/70 backdrop-blur p-6 rounded-[32px] border border-white/50 shadow-sm space-y-4">
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-3">
@@ -1441,8 +1444,9 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam, dailyChallengeCo
           </button>
         </div>
 
+        {/* CONTENEDOR DE FILTROS CON REFERENCIA */}
         {showExamFilters && (
-          <div className="pt-4 border-t border-slate-100 animate-in slide-in-from-top-2 text-left">
+          <div ref={filtersRef} className="pt-4 border-t border-slate-100 animate-in slide-in-from-top-2 text-left">
             <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-3 ml-1">Selecciona categorías para el examen (15 tarjetas):</p>
             <div className="flex flex-wrap gap-2 mb-4">
               {DECK_CATEGORIES.map(cat => (
@@ -1458,7 +1462,6 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam, dailyChallengeCo
         )}
       </div>
 
-      {/* GRID DE MAZOS */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {sortedDecks.map(deck => (
           <div key={deck.id} className="bento-card group bg-white p-6 border-slate-100 hover:border-rose-200 transition-all shadow-sm hover:shadow-xl relative flex flex-col min-h-[200px]">
@@ -1485,7 +1488,7 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam, dailyChallengeCo
         ))}
       </div>
 
-      {/* MODALES DE CREAR Y EDITAR */}
+      {/* (Mantén los modales showAddModal y editingDeck aquí como los tenías) */}
       {showAddModal && (
         <div className="modal-overlay animate-in fade-in" onClick={() => setShowAddModal(false)}>
           <div className="bg-white rounded-[40px] p-8 max-w-3xl w-full shadow-2xl animate-in zoom-in-95 max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
@@ -1544,26 +1547,29 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam, dailyChallengeCo
     </div>
   );
 }
-
 function FlashcardUI({ card, isFlipped, setIsFlipped }) {
   if (!card) return null;
 
+  // CÁLCULO DINÁMICO DE TAMAÑO DE FUENTE BASADO EN LA LONGITUD
+  const getQSize = (text) => text.length > 150 ? "text-lg" : text.length > 80 ? "text-xl" : "text-2xl md:text-3xl";
+  const getASize = (text) => text.length > 300 ? "text-sm" : text.length > 150 ? "text-base" : "text-xl";
+
   return (
     <div 
-      className="w-full min-h-[400px] cursor-pointer flex"
+      className="w-full h-[60vh] min-h-[350px] max-h-[500px] cursor-pointer flex"
       onClick={() => setIsFlipped(!isFlipped)}
     >
       {isFlipped ? (
-        <div className="w-full flex-1 bg-slate-50 rounded-[48px] p-10 border-2 border-emerald-100 shadow-inner flex flex-col justify-center items-center text-center animate-in fade-in zoom-in-95 duration-200">
-          <span className="text-[10px] font-black text-emerald-500 uppercase tracking-[0.3em] mb-6">Answer</span>
-          <p className="text-xl font-bold text-slate-700 leading-relaxed whitespace-pre-wrap">
+        <div className="w-full flex-1 bg-slate-50 rounded-[40px] p-6 sm:p-10 border-2 border-emerald-100 shadow-inner flex flex-col justify-center items-center text-center animate-in fade-in zoom-in-95 duration-200 overflow-y-auto custom-scrollbar">
+          <span className="text-[10px] font-black text-emerald-500 uppercase tracking-[0.3em] mb-4 shrink-0">Answer</span>
+          <p className={`${getASize(card.a)} font-bold text-slate-700 leading-relaxed whitespace-pre-wrap my-auto`}>
             {card.a}
           </p>
         </div>
       ) : (
-        <div className="w-full flex-1 bg-white rounded-[48px] p-10 border-2 border-slate-100 shadow-sm flex flex-col justify-center items-center text-center animate-in fade-in zoom-in-95 duration-200">
-          <span className="text-[10px] font-black text-rose-500 uppercase tracking-[0.3em] mb-6">Question</span>
-          <p className="text-2xl font-black text-slate-800 leading-tight">
+        <div className="w-full flex-1 bg-white rounded-[40px] p-6 sm:p-10 border-2 border-slate-100 shadow-sm flex flex-col justify-center items-center text-center animate-in fade-in zoom-in-95 duration-200 overflow-y-auto custom-scrollbar">
+          <span className="text-[10px] font-black text-rose-500 uppercase tracking-[0.3em] mb-4 shrink-0">Question</span>
+          <p className={`${getQSize(card.q)} font-black text-slate-800 leading-tight my-auto`}>
             {card.q}
           </p>
         </div>
@@ -1576,7 +1582,6 @@ function DeckStudyView({ deck, onBack, addPoints, onUpdateCard, onFinishChalleng
   const [idx, setIdx] = useState(0);
   const [flipped, setFlipped] = useState(false);
   
-  // Forzamos que siempre empiece por la pregunta al cambiar de tarjeta o de mazo
   useEffect(() => {
     setFlipped(false);
   }, [idx, deck]);
@@ -1588,7 +1593,7 @@ function DeckStudyView({ deck, onBack, addPoints, onUpdateCard, onFinishChalleng
     return deck.cards;
   }, [deck]);
 
-  const handleAnki = (score) => {
+  const handleAnki = useCallback((score) => {
     if (!cardsToStudy[idx]) return;
     const card = cardsToStudy[idx];
     const targetDeckId = (card.deckId || deck.id)?.toString();
@@ -1599,29 +1604,38 @@ function DeckStudyView({ deck, onBack, addPoints, onUpdateCard, onFinishChalleng
     let newInterval = 0;
     let newEase = ease;
 
-    if (score === 1) { 
-      newInterval = 0;
-      newEase = Math.max(1.3, ease - 0.2);
-    } else if (score === 2) { 
-      newInterval = interval === 0 ? 1 : interval * 1.2;
-      newEase = Math.max(1.3, ease - 0.15);
-    } else if (score === 3) { 
-      newInterval = interval === 0 ? 3 : interval * ease;
-    } else if (score === 4) { 
-      newInterval = interval === 0 ? 7 : interval * ease * 1.3;
-      newEase += 0.15;
-    }
+    if (score === 1) { newInterval = 0; newEase = Math.max(1.3, ease - 0.2); } 
+    else if (score === 2) { newInterval = interval === 0 ? 1 : interval * 1.2; newEase = Math.max(1.3, ease - 0.15); } 
+    else if (score === 3) { newInterval = interval === 0 ? 3 : interval * ease; } 
+    else if (score === 4) { newInterval = interval === 0 ? 7 : interval * ease * 1.3; newEase += 0.15; }
 
     onUpdateCard(targetDeckId, card.id, { 
-      interval: newInterval, 
-      ease: newEase, 
-      lastScore: score,
+      interval: newInterval, ease: newEase, lastScore: score,
       nextDate: score === 1 ? 0 : Date.now() + (newInterval * 86400000) 
     });
 
     setFlipped(false);
     setIdx(p => p + 1);
-  };
+  }, [idx, cardsToStudy, deck.id, addPoints, onUpdateCard]);
+
+  // ATAJOS DE TECLADO
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (idx >= cardsToStudy.length) return;
+      if (e.code === 'Space') {
+        e.preventDefault();
+        setFlipped(prev => !prev);
+      }
+      if (flipped) {
+        if (e.key === '1') handleAnki(1);
+        if (e.key === '2') handleAnki(2);
+        if (e.key === '3') handleAnki(3);
+        if (e.key === '4') handleAnki(4);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [flipped, idx, cardsToStudy.length, handleAnki]);
 
   if (!cardsToStudy || cardsToStudy.length === 0) {
     return (
@@ -1634,56 +1648,56 @@ function DeckStudyView({ deck, onBack, addPoints, onUpdateCard, onFinishChalleng
 
   if (idx >= cardsToStudy.length) {
     return (
-      <div className="max-w-xl mx-auto py-10 text-center space-y-8 animate-in zoom-in-95">
-        <div className="flex justify-center">
-          <div className="p-6 bg-white rounded-[40px] shadow-sm">
-            <Icon name="Award" size={64} className="text-amber-500" />
-          </div>
+      <div className="max-w-xl mx-auto py-10 text-center space-y-8 animate-in zoom-in-95 h-[70vh] flex flex-col justify-center">
+        <div className="flex justify-center mb-4">
+          <div className="p-6 bg-white rounded-[40px] shadow-sm"><Icon name="Award" size={64} className="text-amber-500" /></div>
         </div>
         <h2 className="text-3xl font-black text-slate-800">Session Finished!</h2>
         <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">
           {deck.name} • {cardsToStudy.length} cards reviewed
         </p>
-        <button onClick={onFinishChallenge || onBack} className="w-full py-5 bg-slate-900 text-white rounded-[24px] font-black shadow-lg uppercase text-xs tracking-widest active:scale-95 transition-all">
+        <button onClick={onFinishChallenge || onBack} className="w-full py-5 bg-slate-900 text-white rounded-[24px] font-black shadow-lg uppercase text-xs tracking-widest active:scale-95 transition-all mt-8">
           Return to Manager
         </button>
       </div>
     );
   }
 
-  const card = cardsToStudy[idx];
-
   return (
-    <div className="max-w-xl mx-auto py-10 space-y-8 text-left">
+    <div className="max-w-xl mx-auto py-6 space-y-4 text-left">
       <div className="flex justify-between items-center px-2">
         <button onClick={onBack} className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-rose-600 transition-all">
-          <Icon name="ChevronRight" className="rotate-180" size={16}/> Quit Session
+          <Icon name="ChevronRight" className="rotate-180" size={16}/> Quit
         </button>
         <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">
           {idx + 1} / {cardsToStudy.length}
         </span>
       </div>
       
-      <FlashcardUI card={card} isFlipped={flipped} setIsFlipped={setFlipped} />
+      <FlashcardUI card={cardsToStudy[idx]} isFlipped={flipped} setIsFlipped={setFlipped} />
       
       {flipped ? (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 animate-in slide-in-from-bottom-2 px-1">
-          <button onClick={() => handleAnki(1)} className="p-4 bg-red-50 text-red-600 rounded-3xl border-2 border-red-100 font-black flex flex-col items-center hover:bg-red-100 transition-all">
-            <span className="text-[10px] uppercase">Again</span><span className="text-[8px] opacity-60">0d</span>
+        <div className="grid grid-cols-4 gap-2 animate-in slide-in-from-bottom-2 px-1">
+          <button onClick={() => handleAnki(1)} className="py-4 bg-red-50 text-red-600 rounded-2xl border-2 border-red-100 font-black flex flex-col items-center hover:bg-red-100 transition-all active:scale-95">
+            <span className="text-lg leading-none mb-1">✖️</span>
+            <span className="text-[8px] opacity-60 uppercase tracking-widest hidden sm:block">Again</span>
           </button>
-          <button onClick={() => handleAnki(2)} className="p-4 bg-orange-50 text-orange-600 rounded-3xl border-2 border-orange-100 font-black flex flex-col items-center hover:bg-orange-100 transition-all">
-            <span className="text-[10px] uppercase">Hard</span><span className="text-[8px] opacity-60">1.2x</span>
+          <button onClick={() => handleAnki(2)} className="py-4 bg-orange-50 text-orange-600 rounded-2xl border-2 border-orange-100 font-black flex flex-col items-center hover:bg-orange-100 transition-all active:scale-95">
+            <span className="text-lg leading-none mb-1">⚠️</span>
+            <span className="text-[8px] opacity-60 uppercase tracking-widest hidden sm:block">Hard</span>
           </button>
-          <button onClick={() => handleAnki(3)} className="p-4 bg-emerald-50 text-emerald-600 rounded-3xl border-2 border-emerald-100 font-black flex flex-col items-center hover:bg-emerald-100 transition-all">
-            <span className="text-[10px] uppercase">Good</span><span className="text-[8px] opacity-60">SRS</span>
+          <button onClick={() => handleAnki(3)} className="py-4 bg-emerald-50 text-emerald-600 rounded-2xl border-2 border-emerald-100 font-black flex flex-col items-center hover:bg-emerald-100 transition-all active:scale-95">
+            <span className="text-lg leading-none mb-1">✔️</span>
+            <span className="text-[8px] opacity-60 uppercase tracking-widest hidden sm:block">Good</span>
           </button>
-          <button onClick={() => handleAnki(4)} className="p-4 bg-blue-50 text-blue-600 rounded-3xl border-2 border-blue-100 font-black flex flex-col items-center hover:bg-blue-100 transition-all">
-            <span className="text-[10px] uppercase">Easy</span><span className="text-[8px] opacity-60">Max</span>
+          <button onClick={() => handleAnki(4)} className="py-4 bg-blue-50 text-blue-600 rounded-2xl border-2 border-blue-100 font-black flex flex-col items-center hover:bg-blue-100 transition-all active:scale-95">
+            <span className="text-lg leading-none mb-1">🚀</span>
+            <span className="text-[8px] opacity-60 uppercase tracking-widest hidden sm:block">Easy</span>
           </button>
         </div>
       ) : (
         <div className="px-1">
-          <button onClick={() => setFlipped(true)} className="w-full py-6 bg-rose-600 text-white rounded-[32px] font-black shadow-xl shadow-rose-100 uppercase text-xs tracking-widest active:scale-95 transition-all">
+          <button onClick={() => setFlipped(true)} className="w-full py-5 bg-rose-600 text-white rounded-2xl font-black shadow-xl shadow-rose-100 uppercase text-xs tracking-widest active:scale-95 transition-all">
             Reveal Answer
           </button>
         </div>
