@@ -346,34 +346,36 @@ useEffect(() => {
     const t = setTimeout(save, 1500); return () => clearTimeout(t);
   }, [points, topics, planning, units, skills, decks, todos, notes, actionLogs, examDate, submissionDate, streak, maxStreak, practicoSessions, levelDates, lastActiveDate, perfectWeeks, totalDailyChallenges, lastChallengeDate, weeklyData, vaultItems, activityDays, isDataLoaded]);
 // --- 1. LÓGICA DE SELECCIÓN Y CONTADOR (RETO) ---
-  const dailyChallengeCards = useMemo(() => {
-    const due = [];
-    decks.forEach(d => d.cards?.forEach(c => {
-      if (!c.nextDate || c.nextDate <= Date.now()) due.push({ ...c, deckId: d.id });
-    }));
-    return due;
-  }, [decks]);
-
-  const generateChallenge = useCallback(() => {
-    let pool = [];
+  const dailyChallengeCount = useMemo(() => {
+    let count = 0;
+    const now = Date.now();
     decks.forEach(d => {
       if (d.cards) {
         d.cards.forEach(c => {
-          pool.push({ ...c, deckId: d.id, deckName: d.name });
+          if (!c.nextDate || c.nextDate <= now) count++;
+        });
+      }
+    });
+    return count > 30 ? 30 : count;
+  }, [decks]);
+
+  const generateChallenge = useCallback(() => {
+    let allCardsPool = [];
+    decks.forEach(d => {
+      if (d.cards) {
+        d.cards.forEach(c => {
+          allCardsPool.push({ ...c, deckId: d.id, deckName: d.name });
         });
       }
     });
 
-    // Barajado inicial para romper empates de prioridad
-    const shuffledPool = pool.sort(() => Math.random() - 0.5);
+    if (allCardsPool.length === 0) return [];
 
-    // Prioridad Anki: Intervalos bajos y notas bajas primero
+    const shuffledPool = [...allCardsPool].sort(() => Math.random() - 0.5);
     shuffledPool.sort((a, b) => (a.interval || 0) - (b.interval || 0) || (a.lastScore || 0) - (b.lastScore || 0));
 
-    // Tomamos las 100 con más prioridad
-    let topCandidates = shuffledPool.slice(0, 100);
+    let topCandidates = shuffledPool.slice(0, 100).sort(() => Math.random() - 0.5);
 
-    // Algoritmo de Intercalado: Evitar rachas del mismo mazo
     const groupedByDeck = topCandidates.reduce((acc, card) => {
       acc[card.deckId] = acc[card.deckId] || [];
       acc[card.deckId].push(card);
@@ -383,6 +385,7 @@ useEffect(() => {
     const interleavedSelection = [];
     const deckIds = Object.keys(groupedByDeck);
     let pointer = 0;
+    
     while (interleavedSelection.length < 30 && deckIds.some(id => groupedByDeck[id].length > 0)) {
       const currentDeckId = deckIds[pointer % deckIds.length];
       if (groupedByDeck[currentDeckId].length > 0) {
@@ -390,6 +393,7 @@ useEffect(() => {
       }
       pointer++;
     }
+
     return interleavedSelection;
   }, [decks]);
 
@@ -921,16 +925,20 @@ useEffect(() => {
         )}
         {activeTab === 'planning' && <PlanningHub planning={planning} setPlanning={setPlanning} units={units} setUnits={setUnits} addPoints={addPoints} submissionDate={submissionDate} setSubmissionDate={setSubmissionDate} actionLogs={actionLogs} onOpenModal={setSelectedTopicModal} onReset={handleResetPlanning} touchWeekly={touchWeekly} />}
         {activeTab === 'practico' && <PracticoView skills={skills} setSkills={setSkills} addPoints={addPoints} sessions={practicoSessions} setSessions={setPracticoSessions} onReset={handleResetPractico} touchWeekly={touchWeekly} />}
+        
+        {/* LLAMADA A FLASHCARDS MANAGER ACTUALIZADA */}
         {activeTab === 'flashcards' && !activeDeckId && !examDeck && (
-     <FlashcardsManager 
+          <FlashcardsManager 
             decks={decks} 
             setDecks={setDecks} 
             onSelect={setActiveDeckId} 
             onExam={setExamDeck} 
-            dailyChallengeCards={dailyChallengeCards}
+            dailyChallengeCount={dailyChallengeCount}
+            generateChallenge={generateChallenge}
             topics={topics}
           />
         )}
+        
         {activeTab === 'flashcards' && (activeDeckId || examDeck) && <DeckStudyView deck={examDeck || decks.find(d=>d.id.toString()===activeDeckId)} onBack={()=>{setActiveDeckId(null); setExamDeck(null);}} addPoints={addPoints} onUpdateCard={handleUpdateCard} onFinishChallenge={handleChallengeFinish} />}
         {activeTab === 'todo' && <TodoView todos={todos} setTodos={setTodos} addPoints={addPoints} />}
         {activeTab === 'notes' && <NotesView notes={notes} setNotes={setNotes} />}
@@ -950,6 +958,7 @@ useEffect(() => {
     </div>
   );
 }
+
 // ==========================================
 // 5. COMPONENTES DE VISTA (COMPLETOS)
 // ==========================================
@@ -1326,7 +1335,7 @@ function NotesView({ notes, setNotes }) {
     </div>
   );
 }
-function FlashcardsManager({ decks, setDecks, onSelect, onExam, dailyChallengeCards, generateChallenge, topics }) {
+function FlashcardsManager({ decks, setDecks, onSelect, onExam, dailyChallengeCount, generateChallenge, topics }) {
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingDeck, setEditingDeck] = useState(null);
   const [showExamFilters, setShowExamFilters] = useState(false);
@@ -1354,12 +1363,15 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam, dailyChallengeCa
     return ((sum / scoredCards.length) * 2.5).toFixed(1);
   };
 
-  const dailyChallengeCount = dailyChallengeCards?.length > 30 ? 30 : (dailyChallengeCards?.length || 0);
-
   const handleStartChallenge = () => {
     const cards = generateChallenge();
-    onExam({ name: "Daily Challenge", cards: cards, isChallenge: true });
-    setShowChallengeIntro(false);
+    if (cards.length > 0) {
+      onExam({ name: "Daily Challenge", cards: cards, isChallenge: true });
+      setShowChallengeIntro(false);
+    } else {
+      alert("No hay tarjetas para el reto. ¡Añade algunas primero!");
+      setShowChallengeIntro(false);
+    }
   };
 
   const handleAddDeck = () => {
@@ -1437,7 +1449,11 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam, dailyChallengeCa
                 <button key={cat} onClick={() => setExamCategoryFilter(prev => prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat])} className={`px-3 py-1.5 rounded-xl text-[9px] font-black uppercase border transition-all ${examCats.includes(cat) ? 'bg-rose-600 border-rose-600 text-white' : 'bg-white text-slate-400 border-slate-100'}`}>{cat}</button>
               ))}
             </div>
-            <button onClick={() => onExam({ name: "Exam Mode", cards: decks.filter(d => examCats.includes(d.category)).flatMap(d => (d.cards || []).map(c => ({...c, deckId: d.id}))).sort(() => Math.random() - 0.5).slice(0, 15), isExam: true })} className="w-full py-3 bg-rose-600 text-white rounded-2xl font-black text-[11px] uppercase shadow-lg active:scale-95 transition-all">Comenzar Examen</button>
+            <button onClick={() => {
+              if (examCats.length === 0) { alert("Selecciona al menos una categoría."); return; }
+              const pool = decks.filter(d => examCats.includes(d.category)).flatMap(d => (d.cards || []).map(c => ({...c, deckId: d.id}))).sort(() => Math.random() - 0.5).slice(0, 15);
+              onExam({ name: "Exam Mode", cards: pool, isExam: true });
+            }} className="w-full py-3 bg-rose-600 text-white rounded-2xl font-black text-[11px] uppercase shadow-lg active:scale-95 transition-all">Comenzar Examen</button>
           </div>
         )}
       </div>
@@ -1528,6 +1544,7 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam, dailyChallengeCa
     </div>
   );
 }
+
 function FlashcardUI({ card, isFlipped, setIsFlipped }) {
   return (
     <div 
@@ -1560,20 +1577,25 @@ function FlashcardUI({ card, isFlipped, setIsFlipped }) {
     </div>
   );
 }
- function DeckStudyView({ deck, onBack, addPoints, onUpdateCard, onFinishChallenge }) {
+
+function DeckStudyView({ deck, onBack, addPoints, onUpdateCard, onFinishChallenge }) {
   const [idx, setIdx] = useState(0);
   const [flipped, setFlipped] = useState(false);
   
-  // Determinamos el pool de tarjetas según el modo
+  // SOLUCIÓN AL BUG DE LA RESPUESTA: Forzamos el false al montar y al cambiar de tarjeta
+  useEffect(() => {
+    setFlipped(false);
+  }, [idx, deck]);
+
   const cardsToStudy = useMemo(() => {
     if (deck.isChallenge) return deck.cards.slice(0, 30);
     if (deck.isExam) return deck.cards.slice(0, 15);
-    return deck.cards;
+    return deck.cards || [];
   }, [deck]);
 
   const handleAnki = (score) => {
+    if (!cardsToStudy[idx]) return;
     const card = cardsToStudy[idx];
-    // Recuperamos el ID del mazo de la tarjeta (para retos/exámenes) o del mazo actual
     const targetDeckId = (card.deckId || deck.id)?.toString();
     
     addPoints(1, `Evaluated card: ${score}`);
@@ -1582,16 +1604,15 @@ function FlashcardUI({ card, isFlipped, setIsFlipped }) {
     let newInterval = 0;
     let newEase = ease;
 
-    // Lógica Anki (Sistema de 4 botones)
-    if (score === 1) { // AGAIN
+    if (score === 1) { 
       newInterval = 0;
       newEase = Math.max(1.3, ease - 0.2);
-    } else if (score === 2) { // HARD
+    } else if (score === 2) { 
       newInterval = interval === 0 ? 1 : interval * 1.2;
       newEase = Math.max(1.3, ease - 0.15);
-    } else if (score === 3) { // GOOD
+    } else if (score === 3) { 
       newInterval = interval === 0 ? 3 : interval * ease;
-    } else if (score === 4) { // EASY
+    } else if (score === 4) { 
       newInterval = interval === 0 ? 7 : interval * ease * 1.3;
       newEase += 0.15;
     }
@@ -1607,6 +1628,15 @@ function FlashcardUI({ card, isFlipped, setIsFlipped }) {
     setIdx(p => p + 1);
   };
 
+  if (!cardsToStudy || cardsToStudy.length === 0) {
+    return (
+      <div className="max-w-xl mx-auto py-10 text-center space-y-8 animate-in zoom-in-95">
+        <h2 className="text-xl font-black text-slate-800">No hay tarjetas disponibles.</h2>
+        <button onClick={onBack} className="px-6 py-3 bg-slate-900 text-white rounded-xl font-black shadow-lg">Volver</button>
+      </div>
+    );
+  }
+
   if (idx >= cardsToStudy.length) {
     return (
       <div className="max-w-xl mx-auto py-10 text-center space-y-8 animate-in zoom-in-95">
@@ -1619,10 +1649,7 @@ function FlashcardUI({ card, isFlipped, setIsFlipped }) {
         <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">
           {deck.name} • {cardsToStudy.length} cards reviewed
         </p>
-        <button 
-          onClick={onFinishChallenge || onBack} 
-          className="w-full py-5 bg-slate-900 text-white rounded-[24px] font-black shadow-lg uppercase text-xs tracking-widest active:scale-95 transition-all"
-        >
+        <button onClick={onFinishChallenge || onBack} className="w-full py-5 bg-slate-900 text-white rounded-[24px] font-black shadow-lg uppercase text-xs tracking-widest active:scale-95 transition-all">
           Return to Manager
         </button>
       </div>
@@ -1634,10 +1661,7 @@ function FlashcardUI({ card, isFlipped, setIsFlipped }) {
   return (
     <div className="max-w-xl mx-auto py-10 space-y-8 text-left">
       <div className="flex justify-between items-center px-2">
-        <button 
-          onClick={onBack} 
-          className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-rose-600 transition-all"
-        >
+        <button onClick={onBack} className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-rose-600 transition-all">
           <Icon name="ChevronRight" className="rotate-180" size={16}/> Quit Session
         </button>
         <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">
@@ -1650,28 +1674,21 @@ function FlashcardUI({ card, isFlipped, setIsFlipped }) {
       {flipped ? (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 animate-in slide-in-from-bottom-2 px-1">
           <button onClick={() => handleAnki(1)} className="p-4 bg-red-50 text-red-600 rounded-3xl border-2 border-red-100 font-black flex flex-col items-center hover:bg-red-100 transition-all">
-            <span className="text-[10px] uppercase">Again</span>
-            <span className="text-[8px] opacity-60">0d</span>
+            <span className="text-[10px] uppercase">Again</span><span className="text-[8px] opacity-60">0d</span>
           </button>
           <button onClick={() => handleAnki(2)} className="p-4 bg-orange-50 text-orange-600 rounded-3xl border-2 border-orange-100 font-black flex flex-col items-center hover:bg-orange-100 transition-all">
-            <span className="text-[10px] uppercase">Hard</span>
-            <span className="text-[8px] opacity-60">1.2x</span>
+            <span className="text-[10px] uppercase">Hard</span><span className="text-[8px] opacity-60">1.2x</span>
           </button>
           <button onClick={() => handleAnki(3)} className="p-4 bg-emerald-50 text-emerald-600 rounded-3xl border-2 border-emerald-100 font-black flex flex-col items-center hover:bg-emerald-100 transition-all">
-            <span className="text-[10px] uppercase">Good</span>
-            <span className="text-[8px] opacity-60">SRS</span>
+            <span className="text-[10px] uppercase">Good</span><span className="text-[8px] opacity-60">SRS</span>
           </button>
           <button onClick={() => handleAnki(4)} className="p-4 bg-blue-50 text-blue-600 rounded-3xl border-2 border-blue-100 font-black flex flex-col items-center hover:bg-blue-100 transition-all">
-            <span className="text-[10px] uppercase">Easy</span>
-            <span className="text-[8px] opacity-60">Max</span>
+            <span className="text-[10px] uppercase">Easy</span><span className="text-[8px] opacity-60">Max</span>
           </button>
         </div>
       ) : (
         <div className="px-1">
-          <button 
-            onClick={() => setFlipped(true)} 
-            className="w-full py-6 bg-rose-600 text-white rounded-[32px] font-black shadow-xl shadow-rose-100 uppercase text-xs tracking-widest active:scale-95 transition-all"
-          >
+          <button onClick={() => setFlipped(true)} className="w-full py-6 bg-rose-600 text-white rounded-[32px] font-black shadow-xl shadow-rose-100 uppercase text-xs tracking-widest active:scale-95 transition-all">
             Reveal Answer
           </button>
         </div>
@@ -1679,7 +1696,6 @@ function FlashcardUI({ card, isFlipped, setIsFlipped }) {
     </div>
   );
 }
-
 function BadgesView({ points, streak, maxStreak, topics, planning, units, skills, perfectWeeks, totalDailyChallenges }) {
   const doneTopics = topics.filter(t=>t.finished).length;
   const studiedTopics = topics.filter(t=>t.estudiado > 0).length;
