@@ -1304,47 +1304,69 @@ function NotesView({ notes, setNotes }) {
 function FlashcardsManager({ decks, setDecks, onSelect, onExam, dailyChallengeCards, topics }) {
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingDeck, setEditingDeck] = useState(null);
+  const [examCats, setExamCategoryFilter] = useState(DECK_CATEGORIES);
+  
+  // Estados para la creación del nuevo mazo
   const [newDeckName, setNewDeckName] = useState("");
   const [newDeckCat, setNewDeckCat] = useState("General");
-  const [newDeckTopics, setNewDeckTopics] = useState([]); // Temas para el nuevo mazo
-  const [pastedCards, setPastedCards] = useState(""); // Campo para pegar texto de NotebookLM
+  const [newDeckTopics, setNewDeckTopics] = useState([]);
+  const [bulkText, setBulkText] = useState("");
+
+  // Estados para añadir tarjetas individuales en edición
   const [newCardQ, setNewCardQ] = useState("");
   const [newCardA, setNewCardA] = useState("");
 
-  const sortedDecks = useMemo(() => [...decks].sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' })), [decks]);
-  
+  // Orden alfabético natural (Topic 2 antes que Topic 10)
+  const sortedDecks = useMemo(() => 
+    [...decks].sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' })), 
+    [decks]
+  );
+
+  // Cálculo de nota media del mazo
+  const getAverageGrade = (deck) => {
+    if (!deck.cards || deck.cards.length === 0) return 0;
+    const scoredCards = deck.cards.filter(c => c.lastScore !== undefined);
+    if (scoredCards.length === 0) return 0;
+    const sum = scoredCards.reduce((acc, c) => acc + c.lastScore, 0);
+    return (sum / scoredCards.length).toFixed(1);
+  };
+
   const handleAddDeck = () => {
     if (!newDeckName.trim()) return;
 
-    // Procesar las tarjetas pegadas (Formato Pregunta : Respuesta)
-    const cardLines = pastedCards.split('\n').filter(line => line.includes(':'));
-    const parsedCards = cardLines.map((line, index) => {
-      const [q, a] = line.split(':').map(s => s.trim());
-      return { 
-        id: (Date.now() + index).toString(), 
-        q: q || "Empty Question", 
-        a: a || "Empty Answer", 
-        interval: 0, 
-        ease: 2.5 
-      };
-    });
+    const importedCards = bulkText.split('\n')
+      .filter(line => line.includes(':'))
+      .map(line => {
+        const [q, a] = line.split(':');
+        return { 
+          id: (Date.now() + Math.random()).toString(), 
+          q: q.trim(), 
+          a: a.trim(), 
+          interval: 0, 
+          ease: 2.5 
+        };
+      });
 
     const newDeck = {
       id: Date.now().toString(),
       name: newDeckName.trim(),
       category: newDeckCat || "General",
-      cards: parsedCards,
+      cards: importedCards,
       topicIds: newDeckTopics
     };
 
     setDecks([...decks, newDeck]);
+    setNewDeckName(""); setNewDeckCat("General"); setNewDeckTopics([]); setBulkText(""); setShowAddModal(false);
+  };
+
+  const startExamMode = () => {
+    const pool = decks
+      .filter(d => examCats.includes(d.category))
+      .flatMap(d => d.cards || [])
+      .sort(() => Math.random() - 0.5)
+      .slice(0, 15);
     
-    // Resetear estados
-    setNewDeckName("");
-    setNewDeckCat("General");
-    setNewDeckTopics([]);
-    setPastedCards("");
-    setShowAddModal(false);
+    onExam({ name: "Exam Mode (15)", cards: pool, isExam: true });
   };
 
   const updateDeckMetadata = (id, field, value) => {
@@ -1352,18 +1374,14 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam, dailyChallengeCa
     if (editingDeck) setEditingDeck(prev => ({ ...prev, [field]: value }));
   };
 
-  const toggleTopicInDeck = (deckId, topicId, isNewDeck = false) => {
-    if (isNewDeck) {
-      setNewDeckTopics(prev => prev.includes(topicId) ? prev.filter(id => id !== topicId) : [...prev, topicId]);
-    } else {
-      setDecks(prev => prev.map(d => {
-        if (d.id !== deckId) return d;
-        const ids = d.topicIds || [];
-        const newIds = ids.includes(topicId) ? ids.filter(id => id !== topicId) : [...ids, topicId];
-        if (editingDeck) setEditingDeck(prev => ({ ...prev, topicIds: newIds }));
-        return { ...d, topicIds: newIds };
-      }));
-    }
+  const toggleTopicInDeck = (deckId, topicId) => {
+    setDecks(prev => prev.map(d => {
+      if (d.id !== deckId) return d;
+      const ids = d.topicIds || [];
+      const newIds = ids.includes(topicId) ? ids.filter(id => id !== topicId) : [...ids, topicId];
+      if (editingDeck) setEditingDeck(prev => ({ ...prev, topicIds: newIds }));
+      return { ...d, topicIds: newIds };
+    }));
   };
 
   const addCardToDeck = (deckId) => {
@@ -1381,46 +1399,77 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam, dailyChallengeCa
 
   return (
     <div className="space-y-6 animate-in slide-in-from-left-4 text-left">
-      <div className="bg-white/50 backdrop-blur p-6 rounded-[32px] border border-white/50 shadow-sm flex flex-col sm:flex-row justify-between items-center gap-4">
-        <div className="flex items-center gap-3 w-full sm:w-auto">
-          <Icon name="BookOpen" className="text-rose-600" />
-          <h2 className="text-2xl font-black text-slate-950">Flashcards</h2>
-        </div>
-        
-        <div className="flex gap-2 flex-wrap justify-center sm:justify-end">
-          {dailyChallengeCards && dailyChallengeCards.length > 0 && (
-            <button onClick={() => onExam({ name: "Daily Challenge", cards: dailyChallengeCards, isChallenge: true })} className="px-3 py-1.5 bg-emerald-100 text-emerald-700 rounded-xl font-black text-[10px] uppercase shadow-sm active:scale-95 transition-all flex items-center gap-2">
-              <Icon name="Zap" size={12}/> Challenge
+      {/* CABECERA Y FILTROS */}
+      <div className="bg-white/50 backdrop-blur p-6 rounded-[32px] border border-white/50 shadow-sm flex flex-col gap-6">
+        <div className="flex justify-between items-center">
+          <div className="flex items-center gap-3">
+            <Icon name="BookOpen" className="text-rose-600" />
+            <h2 className="text-2xl font-black text-slate-950">Flashcards</h2>
+          </div>
+          <div className="flex gap-2">
+            {dailyChallengeCards && dailyChallengeCards.length > 0 && (
+              <button 
+                onClick={() => onExam({ name: "Daily Challenge", cards: dailyChallengeCards, isChallenge: true })} 
+                className="px-3 py-1.5 bg-emerald-100 text-emerald-700 rounded-xl font-black text-[10px] uppercase shadow-sm flex items-center gap-2"
+              >
+                <Icon name="Zap" size={12}/> Challenge (30)
+              </button>
+            )}
+            <button onClick={() => setShowAddModal(true)} className="px-3 py-1.5 bg-slate-800 text-white rounded-xl font-black text-[10px] uppercase shadow-sm flex items-center gap-2">
+              <Icon name="Plus" size={12}/> New Deck
             </button>
-          )}
-          <button onClick={() => onExam({ name: "Global Exam", cards: decks.flatMap(d => d.cards || []) })} className="px-3 py-1.5 bg-rose-100 text-rose-700 rounded-xl font-black text-[10px] uppercase shadow-sm active:scale-95 transition-all flex items-center gap-2">
-            <Icon name="Target" size={12}/> Exam Mode
-          </button>
-          <button onClick={() => setShowAddModal(true)} className="px-3 py-1.5 bg-slate-800 text-white rounded-xl font-black text-[10px] uppercase shadow-sm active:scale-95 transition-all flex items-center gap-2">
-            <Icon name="Plus" size={12}/> New Deck
+          </div>
+        </div>
+
+        <div className="pt-4 border-t flex flex-wrap items-center gap-4">
+          <p className="text-[10px] font-black uppercase text-slate-400">Exam Categories Filter:</p>
+          <div className="flex flex-wrap gap-1">
+            {DECK_CATEGORIES.map(cat => (
+              <button 
+                key={cat} 
+                onClick={() => setExamCategoryFilter(prev => prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat])}
+                className={`px-2 py-1 rounded-lg text-[8px] font-black uppercase border transition-all ${examCats.includes(cat) ? 'bg-rose-600 border-rose-600 text-white' : 'bg-white text-slate-400 border-slate-100'}`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+          <button onClick={startExamMode} className="ml-auto px-4 py-1.5 bg-rose-100 text-rose-700 rounded-xl font-black text-[10px] uppercase flex items-center gap-2">
+            <Icon name="Target" size={12}/> Start Exam (15)
           </button>
         </div>
       </div>
 
+      {/* GRID DE MAZOS */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {sortedDecks.map(deck => (
           <div key={deck.id} className="bento-card group bg-white p-6 border-slate-100 hover:border-rose-200 transition-all shadow-sm hover:shadow-xl relative">
-            <button onClick={(e) => { e.stopPropagation(); setEditingDeck(deck); }} className="absolute top-4 right-4 p-2 text-slate-300 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all z-10">
+            <button 
+              onClick={(e) => { e.stopPropagation(); setEditingDeck(deck); }}
+              className="absolute top-4 right-4 p-2 text-slate-300 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all z-10"
+            >
               <Icon name="Settings" size={18} />
             </button>
+            
             <div onClick={() => onSelect(deck.id.toString())} className="cursor-pointer">
-              <div className="flex flex-col gap-2 mb-4">
-                <span className={`px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border self-start ${getCategoryBadge(deck.category)}`}>
-                  {deck.category || 'General'}
+              <div className="flex justify-between items-start mb-4">
+                <span className={`px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border ${getCategoryBadge(deck.category)}`}>
+                  {deck.category}
                 </span>
-                <h3 className="text-lg font-black text-slate-800 leading-tight pr-8">{deck.name}</h3>
+                <div className="text-right">
+                  <p className="text-sm font-black text-slate-800 leading-none">{getAverageGrade(deck)}</p>
+                  <p className="text-[7px] font-bold text-slate-400 uppercase">Avg Grade</p>
+                </div>
               </div>
+
+              <h3 className="text-lg font-black text-slate-800 leading-tight mb-4 pr-6">{deck.name}</h3>
+              
               <div className="flex flex-wrap gap-1 mb-4">
-                {deck.topicIds?.map(tid => {
-                  const t = topics.find(topic => topic.id === tid);
-                  return t ? <span key={tid} className="px-1.5 py-0.5 bg-slate-50 text-slate-400 border rounded text-[7px] font-bold">T{t.id}</span> : null;
-                })}
+                {deck.topicIds?.map(tid => (
+                  <span key={tid} className="px-1.5 py-0.5 bg-slate-50 text-slate-400 border rounded text-[7px] font-bold">T{tid}</span>
+                ))}
               </div>
+
               <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
                 <div className="h-full bg-rose-500 transition-all duration-500" style={{ width: `${Math.min(100, ((deck.cards?.filter(c => (c.interval || 0) > 0).length || 0) / (deck.cards?.length || 1)) * 100)}%` }} />
               </div>
@@ -1429,106 +1478,111 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam, dailyChallengeCa
         ))}
       </div>
 
-      {/* MODAL EDICIÓN (Se mantiene igual pero con mejoras de estilo) */}
-      {editingDeck && (
-        <div className="modal-overlay animate-in fade-in" onClick={() => setEditingDeck(null)}>
-          <div className="bg-white rounded-[40px] p-8 max-w-2xl w-full shadow-2xl flex flex-col max-h-[90vh] animate-in zoom-in-95" onClick={e => e.stopPropagation()}>
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-black text-slate-800">Edit Deck</h3>
-              <button onClick={() => setEditingDeck(null)} className="p-2 bg-slate-50 text-slate-400 rounded-full hover:text-red-500"><Icon name="X" size={20}/></button>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 overflow-y-auto pr-2 custom-scrollbar">
-              <div className="space-y-6 text-left">
-                <div>
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Settings</label>
-                  <input value={editingDeck.name} onChange={e => updateDeckMetadata(editingDeck.id, 'name', e.target.value)} className="w-full bg-slate-50 rounded-2xl px-4 py-3 text-sm font-bold border-2 border-transparent focus:border-rose-200 mt-2 outline-none" />
-                  <select value={editingDeck.category} onChange={e => updateDeckMetadata(editingDeck.id, 'category', e.target.value)} className="w-full bg-slate-50 rounded-2xl px-4 py-3 text-sm font-black mt-2 appearance-none outline-none">
-                    {DECK_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Linked Topics</label>
-                  <div className="grid grid-cols-5 gap-2 mt-2">
-                    {topics.slice(0, 69).map(t => (
-                      <button key={t.id} onClick={() => toggleTopicInDeck(editingDeck.id, t.id)} className={`p-2 rounded-xl text-[10px] font-black border-2 transition-all ${editingDeck.topicIds?.includes(t.id) ? 'bg-rose-600 border-rose-600 text-white' : 'bg-slate-50 border-transparent text-slate-400'}`}>
-                        {t.id}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <button onClick={() => { if(window.confirm("Delete this deck?")) { setDecks(prev => prev.filter(d => d.id !== editingDeck.id)); setEditingDeck(null); } }} className="w-full py-3 bg-red-50 text-red-600 rounded-2xl font-black text-[10px] uppercase tracking-widest">Delete Deck</button>
-              </div>
-              <div className="space-y-6 text-left">
-                <div>
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">New Card</label>
-                  <div className="bg-slate-50 p-4 rounded-3xl space-y-2 mt-2">
-                    <input placeholder="Question..." value={newCardQ} onChange={e => setNewCardQ(e.target.value)} className="w-full bg-white rounded-xl px-3 py-2 text-xs font-bold outline-none border border-slate-100" />
-                    <textarea placeholder="Answer..." value={newCardA} onChange={e => setNewCardA(e.target.value)} className="w-full bg-white rounded-xl px-3 py-2 text-xs font-bold outline-none border border-slate-100 resize-none h-16" />
-                    <button onClick={() => addCardToDeck(editingDeck.id)} className="w-full py-2 bg-slate-800 text-white rounded-xl font-black text-[10px] uppercase">Add Card</button>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Current Cards ({editingDeck.cards?.length})</label>
-                  {editingDeck.cards?.map(c => (
-                    <div key={c.id} className="bg-white border rounded-2xl p-3 flex justify-between items-center group">
-                      <p className="text-[10px] font-bold text-slate-600 truncate mr-4">{c.q}</p>
-                      <button onClick={() => removeCard(editingDeck.id, c.id)} className="text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"><Icon name="Trash2" size={14}/></button>
-                    </div>
+      {/* MODAL CREAR MAZO (CON VINCULACIÓN Y BULK IMPORT) */}
+      {showAddModal && (
+        <div className="modal-overlay animate-in fade-in" onClick={() => setShowAddModal(false)}>
+          <div className="bg-white rounded-[40px] p-8 max-w-3xl w-full shadow-2xl animate-in zoom-in-95 max-h-[90vh] overflow-y-auto custom-scrollbar" onClick={e => e.stopPropagation()}>
+            <h3 className="text-xl font-black text-slate-800 mb-6 text-center">New Deck</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
+              <div className="space-y-4">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Deck Details</label>
+                <input placeholder="Deck Name..." value={newDeckName} onChange={e => setNewDeckName(e.target.value)} className="w-full bg-slate-50 rounded-2xl px-4 py-3 text-sm font-bold border-2 border-transparent focus:border-rose-200 outline-none" />
+                <select value={newDeckCat} onChange={e => setNewDeckCat(e.target.value)} className="w-full bg-slate-50 rounded-2xl px-4 py-3 text-sm font-black appearance-none outline-none">
+                   {DECK_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 block mt-4">Link Topics (1-69)</label>
+                <div className="grid grid-cols-5 gap-1 max-h-48 overflow-y-auto p-2 bg-slate-50 rounded-2xl custom-scrollbar">
+                  {topics.slice(0, 69).map(t => (
+                    <button 
+                      key={t.id} 
+                      onClick={() => setNewDeckTopics(prev => prev.includes(t.id) ? prev.filter(id => id !== t.id) : [...prev, t.id])}
+                      className={`p-1.5 rounded-lg text-[9px] font-black border transition-all ${newDeckTopics.includes(t.id) ? 'bg-rose-600 text-white border-rose-600' : 'bg-white text-slate-400 border-transparent'}`}
+                    >
+                      {t.id}
+                    </button>
                   ))}
                 </div>
+              </div>
+
+              <div className="space-y-4">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Bulk Import Cards (English prompt format)</label>
+                <textarea 
+                  placeholder="Question : Answer&#10;Question 2 : Answer 2..." 
+                  value={bulkText} 
+                  onChange={e => setBulkText(e.target.value)} 
+                  className="w-full h-64 bg-slate-50 rounded-2xl p-4 text-xs font-bold outline-none border-2 border-transparent focus:border-rose-200 resize-none custom-scrollbar"
+                />
+                <button onClick={handleAddDeck} className="w-full py-4 bg-slate-800 text-white rounded-2xl font-black shadow-lg uppercase tracking-widest text-xs active:scale-95 transition-all">Create Deck</button>
               </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* MODAL CREAR (NUEVA VERSIÓN COMPLETA) */}
-      {showAddModal && (
-        <div className="modal-overlay animate-in fade-in" onClick={() => setShowAddModal(false)}>
-          <div className="bg-white rounded-[40px] p-8 max-w-4xl w-full shadow-2xl animate-in zoom-in-95 max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
+      {/* MODAL EDICIÓN DE MAZO */}
+      {editingDeck && (
+        <div className="modal-overlay animate-in fade-in" onClick={() => setEditingDeck(null)}>
+          <div className="bg-white rounded-[40px] p-8 max-w-2xl w-full shadow-2xl flex flex-col max-h-[90vh] animate-in zoom-in-95" onClick={e => e.stopPropagation()}>
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-black text-slate-800">New Study Deck</h3>
-              <button onClick={() => setShowAddModal(false)} className="p-2 bg-slate-50 text-slate-400 rounded-full hover:text-red-500"><Icon name="X" size={20}/></button>
+              <h3 className="text-xl font-black text-slate-800">Edit Deck</h3>
+              <button onClick={() => setEditingDeck(null)} className="p-2 bg-slate-50 text-slate-400 rounded-full hover:text-red-500 transition-colors"><Icon name="X" size={20}/></button>
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 overflow-y-auto pr-2 custom-scrollbar">
-              {/* COLUMNA IZQUIERDA: CONFIGURACIÓN */}
               <div className="space-y-6 text-left">
                 <div>
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">General Info</label>
-                  <input placeholder="Deck Name (e.g. Topic 5 Vocabulary)..." value={newDeckName} onChange={e => setNewDeckName(e.target.value)} className="w-full bg-slate-50 rounded-2xl px-4 py-3 text-sm font-bold border-2 border-transparent focus:border-rose-200 mt-2 outline-none" />
-                  <select value={newDeckCat} onChange={e => setNewDeckCat(e.target.value)} className="w-full bg-slate-50 rounded-2xl px-4 py-3 text-sm font-black mt-2 appearance-none outline-none">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Metadata</label>
+                  <input value={editingDeck.name} onChange={e => updateDeckMetadata(editingDeck.id, 'name', e.target.value)} className="w-full bg-slate-50 rounded-2xl px-4 py-3 text-sm font-bold border-2 border-transparent focus:border-rose-200 mt-2 outline-none" />
+                  <select value={editingDeck.category} onChange={e => updateDeckMetadata(editingDeck.id, 'category', e.target.value)} className="w-full bg-slate-50 rounded-2xl px-4 py-3 text-sm font-black mt-2 appearance-none outline-none">
                     {DECK_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
                 </div>
-                
+
                 <div>
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Link to Topics</label>
-                  <div className="grid grid-cols-5 gap-2 mt-2">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Linked Topics</label>
+                  <div className="grid grid-cols-4 gap-2 mt-2">
                     {topics.slice(0, 69).map(t => (
-                      <button key={t.id} onClick={() => toggleTopicInDeck(null, t.id, true)} className={`p-2 rounded-xl text-[10px] font-black border-2 transition-all ${newDeckTopics.includes(t.id) ? 'bg-rose-600 border-rose-600 text-white' : 'bg-slate-50 border-transparent text-slate-400'}`}>
+                      <button 
+                        key={t.id} 
+                        onClick={() => toggleTopicInDeck(editingDeck.id, t.id)}
+                        className={`p-2 rounded-xl text-[10px] font-black border-2 transition-all ${editingDeck.topicIds?.includes(t.id) ? 'bg-rose-600 border-rose-600 text-white' : 'bg-slate-50 border-transparent text-slate-400'}`}
+                      >
                         {t.id}
                       </button>
                     ))}
                   </div>
                 </div>
+
+                <button 
+                  onClick={() => { if(window.confirm("Delete entire deck?")) { setDecks(prev => prev.filter(d => d.id !== editingDeck.id)); setEditingDeck(null); } }} 
+                  className="w-full py-3 bg-red-50 text-red-600 rounded-2xl font-black text-[10px] uppercase tracking-widest"
+                >
+                  Delete Deck
+                </button>
               </div>
 
-              {/* COLUMNA DERECHA: IMPORTACIÓN DE CONTENIDO */}
               <div className="space-y-6 text-left">
                 <div>
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Import Flashcards</label>
-                  <p className="text-[9px] text-slate-400 mb-2 font-medium">Paste from NotebookLM (Format: Question : Answer)</p>
-                  <textarea 
-                    placeholder="Example:&#10;Phonetics : The study of speech sounds&#10;Morphology : The study of word formation" 
-                    value={pastedCards} 
-                    onChange={e => setPastedCards(e.target.value)} 
-                    className="w-full bg-slate-50 rounded-3xl px-4 py-4 text-xs font-bold border-2 border-transparent focus:border-rose-200 outline-none h-[250px] resize-none custom-scrollbar"
-                  />
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Add Single Card</label>
+                  <div className="bg-slate-50 p-4 rounded-3xl space-y-2 mt-2 border border-slate-100">
+                    <input placeholder="Question..." value={newCardQ} onChange={e => setNewCardQ(e.target.value)} className="w-full bg-white rounded-xl px-3 py-2 text-xs font-bold outline-none border border-slate-100" />
+                    <textarea placeholder="Answer..." value={newCardA} onChange={e => setNewCardA(e.target.value)} className="w-full bg-white rounded-xl px-3 py-2 text-xs font-bold outline-none border border-slate-100 resize-none h-16" />
+                    <button onClick={() => addCardToDeck(editingDeck.id)} className="w-full py-2 bg-slate-800 text-white rounded-xl font-black text-[10px] uppercase">Add Card</button>
+                  </div>
                 </div>
-                <button onClick={handleAddDeck} className="w-full py-4 bg-slate-950 text-white rounded-[24px] font-black shadow-xl active:scale-95 transition-all uppercase tracking-widest text-xs">
-                  Create Deck with {pastedCards.split('\n').filter(l => l.includes(':')).length} Cards
-                </button>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Cards List ({editingDeck.cards?.length})</label>
+                  <div className="space-y-2 max-h-64 overflow-y-auto custom-scrollbar pr-1">
+                    {editingDeck.cards?.map(c => (
+                      <div key={c.id} className="bg-white border rounded-2xl p-3 flex justify-between items-center group">
+                        <p className="text-[10px] font-bold text-slate-600 truncate mr-4">{c.q}</p>
+                        <button onClick={() => removeCard(editingDeck.id, c.id)} className="text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"><Icon name="Trash2" size={14}/></button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
