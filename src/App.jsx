@@ -1546,34 +1546,28 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam, dailyChallengeCo
 }
 
 function FlashcardUI({ card, isFlipped, setIsFlipped }) {
+  if (!card) return null;
+
   return (
     <div 
-      className="relative w-full h-[400px] cursor-pointer perspective-1000"
+      className="w-full min-h-[400px] cursor-pointer flex"
       onClick={() => setIsFlipped(!isFlipped)}
     >
-      <div className={`relative w-full h-full transition-all duration-500 preserve-3d ${isFlipped ? 'rotate-y-180' : ''}`}>
-        
-        {/* CARA DELANTERA (Pregunta) */}
-        <div className="absolute w-full h-full backface-hidden">
-          <div className="w-full h-full bg-white rounded-[48px] p-10 border-2 border-slate-100 shadow-sm flex flex-col justify-center items-center text-center">
-            <span className="text-[10px] font-black text-rose-500 uppercase tracking-[0.3em] mb-6">Question</span>
-            <p className="text-2xl font-black text-slate-800 leading-tight">
-              {card.q}
-            </p>
-          </div>
+      {isFlipped ? (
+        <div className="w-full flex-1 bg-slate-50 rounded-[48px] p-10 border-2 border-emerald-100 shadow-inner flex flex-col justify-center items-center text-center animate-in fade-in zoom-in-95 duration-200">
+          <span className="text-[10px] font-black text-emerald-500 uppercase tracking-[0.3em] mb-6">Answer</span>
+          <p className="text-xl font-bold text-slate-700 leading-relaxed whitespace-pre-wrap">
+            {card.a}
+          </p>
         </div>
-
-        {/* CARA TRASERA (Respuesta) */}
-        <div className="absolute w-full h-full backface-hidden rotate-y-180">
-          <div className="w-full h-full bg-slate-50 rounded-[48px] p-10 border-2 border-rose-100 shadow-inner flex flex-col justify-center items-center text-center">
-            <span className="text-[10px] font-black text-emerald-500 uppercase tracking-[0.3em] mb-6">Answer</span>
-            <p className="text-xl font-bold text-slate-700 leading-relaxed whitespace-pre-wrap">
-              {card.a}
-            </p>
-          </div>
+      ) : (
+        <div className="w-full flex-1 bg-white rounded-[48px] p-10 border-2 border-slate-100 shadow-sm flex flex-col justify-center items-center text-center animate-in fade-in zoom-in-95 duration-200">
+          <span className="text-[10px] font-black text-rose-500 uppercase tracking-[0.3em] mb-6">Question</span>
+          <p className="text-2xl font-black text-slate-800 leading-tight">
+            {card.q}
+          </p>
         </div>
-
-      </div>
+      )}
     </div>
   );
 }
@@ -1582,15 +1576,16 @@ function DeckStudyView({ deck, onBack, addPoints, onUpdateCard, onFinishChalleng
   const [idx, setIdx] = useState(0);
   const [flipped, setFlipped] = useState(false);
   
-  // SOLUCIÓN AL BUG DE LA RESPUESTA: Forzamos el false al montar y al cambiar de tarjeta
+  // Forzamos que siempre empiece por la pregunta al cambiar de tarjeta o de mazo
   useEffect(() => {
     setFlipped(false);
   }, [idx, deck]);
 
   const cardsToStudy = useMemo(() => {
+    if (!deck || !deck.cards) return [];
     if (deck.isChallenge) return deck.cards.slice(0, 30);
     if (deck.isExam) return deck.cards.slice(0, 15);
-    return deck.cards || [];
+    return deck.cards;
   }, [deck]);
 
   const handleAnki = (score) => {
