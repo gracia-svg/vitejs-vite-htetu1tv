@@ -579,58 +579,67 @@ useEffect(() => {
   return (
     <div className="min-h-screen pb-32 font-sans relative overflow-x-hidden">
 <style>{`
-        /* Fondo Animado Mesh Gradient (Sublime y no distrae) */
+        /* Fondo con textura sutil tipo papel/lienzo */
         body { 
-          background: linear-gradient(120deg, #f0f4f2 0%, #e0f2fe 50%, #f0fdf4 100%);
-          background-size: 200% 200%;
-          animation: gradientShift 15s ease infinite;
+          background-color: #f0f4f2;
+          background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.04'/%3E%3C/svg%3E");
           font-family: 'Inter', system-ui, sans-serif; 
         }
-        @keyframes gradientShift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
         
         .bento-card { border-radius: 32px; border: 2px solid #e2e8e5; background: white; box-shadow: 4px 4px 0px rgba(226, 232, 229, 0.5); transition: all 0.2s ease; }
         .bento-card:hover { transform: translateY(-2px); box-shadow: 6px 6px 0px rgba(94, 234, 212, 0.2); }
         
         .map-bubble { width: 80px; height: 80px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; border: 4px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-        .modal-overlay { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); position: fixed; inset: 0; z-index: 500; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+        .modal-overlay { background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(6px); position: fixed; inset: 0; z-index: 500; display: flex; align-items: center; justify-content: center; padding: 1rem; }
         .modal-content { background: white; width: 100%; max-width: 600px; max-height: 85vh; border-radius: 40px; overflow-y: auto; position: relative; box-shadow: 0 20px 40px -10px rgba(0,0,0,0.1); border: 2px solid #e2e8e5; }
         .modal-fullscreen { max-width: 100vw !important; max-height: 100vh !important; height: 100vh !important; border-radius: 0 !important; }
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        .vault-pill { background: white; color: #334155; border: 2px solid #e2e8e5; box-shadow: 3px 3px 0px rgba(226, 232, 229, 0.8); }
+        
+        /* Píldora del Vault Restaurada (Oscura y Elegante) */
+        .vault-pill { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); color: #cbd5e1; border: 1px solid #334155; box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.4); }
+        .vault-pill:hover { border-color: #475569; }
 
-        /* UTILIDADES 3D PARA ANIMACIÓN DE TARJETAS (BLINDADO) */
+        /* UTILIDADES 3D PARA ANIMACIÓN DE TARJETAS */
         .perspective-1000 { perspective: 1000px; }
         .preserve-3d { transform-style: preserve-3d; }
         .backface-hidden { backface-visibility: hidden; -webkit-backface-visibility: hidden; }
         .rotate-y-180 { transform: rotateY(180deg); }
       `}</style>
 
-      {/* MODALES DEL VAULT */}
+      {/* MODALES DEL VAULT (ESTÉTICA MUSEO) */}
       {showVaultModal && (
         <div className="modal-overlay animate-in fade-in" onClick={() => setShowVaultModal(false)}>
-          <div className="bg-white rounded-[40px] p-8 max-w-sm w-full text-center shadow-2xl relative animate-in zoom-in-95" onClick={e => e.stopPropagation()}>
-             <button onClick={() => setShowVaultModal(false)} className="absolute top-4 right-4 text-slate-300 hover:text-red-500 transition-colors">
+          <div className="bg-[#fcfbf9] rounded-sm p-12 max-w-lg w-full text-left shadow-[0_20px_50px_rgba(0,0,0,0.2)] relative animate-in zoom-in-95 border border-[#e2e0d8]" onClick={e => e.stopPropagation()}>
+             <button onClick={() => setShowVaultModal(false)} className="absolute top-6 right-6 text-slate-300 hover:text-slate-800 transition-colors">
                <Icon name="X" size={24}/>
              </button>
-             <p className="text-[10px] font-black uppercase text-teal-600 tracking-[0.3em] mb-4">Daily Wisdom From The Vault 🗝️</p>
+             
+             <p className="text-[9px] font-black uppercase text-slate-400 tracking-[0.4em] mb-12 border-b border-slate-200 pb-4">The Vault <span className="mx-2">•</span> Exhibition</p>
+             
              {vaultItems.length > 0 ? (
-               <div className="space-y-4">
-                 <p className="text-xl font-black text-slate-800 leading-tight italic">"{vaultItems[Math.floor(Math.random() * vaultItems.length)].text}"</p>
-                 <p className="text-xs font-bold text-slate-400">— {vaultItems[Math.floor(Math.random() * vaultItems.length)].reference}</p>
+               <div className="space-y-8">
+                 <p className="text-2xl text-slate-800 leading-loose font-serif italic selection:bg-teal-100">
+                   "{vaultItems[Math.floor(Math.random() * vaultItems.length)].text}"
+                 </p>
+                 <div className="flex items-center gap-4">
+                   <div className="w-8 h-[1px] bg-slate-300"></div>
+                   <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">{vaultItems[Math.floor(Math.random() * vaultItems.length)].reference}</p>
+                 </div>
                </div>
              ) : (
-               <p className="text-sm font-bold text-slate-400 italic">Vault is empty. Import citations in settings.</p>
+               <p className="text-sm font-serif italic text-slate-400">The exhibition is empty. Import citations in settings.</p>
              )}
-             <div onClick={() => { setShowVaultModal(false); setShowVaultCarousel(true); }} className="mt-8 pt-4 border-t border-slate-50 cursor-pointer group">
-               <p className="text-[8px] font-black text-slate-300 uppercase animate-pulse group-hover:text-teal-600 transition-colors">Touch to enter full carousel</p>
+
+             <div onClick={() => { setShowVaultModal(false); setShowVaultCarousel(true); }} className="mt-16 pt-6 border-t border-slate-200 cursor-pointer group flex justify-between items-center">
+               <p className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] group-hover:text-slate-800 transition-colors">Enter Full Gallery</p>
+               <Icon name="ChevronRight" size={14} className="text-slate-300 group-hover:text-slate-800 transition-colors" />
              </div>
           </div>
         </div>
       )}
 
       {showVaultCarousel && <VaultCarousel items={vaultItems} setItems={setVaultItems} onClose={() => setShowVaultCarousel(false)} />}
-
       {/* MODAL GLOBAL DE TEMA (Mantenido intacto por seguridad) */}
       {selectedTopicModal && (
         <div className="modal-overlay animate-in fade-in duration-300" onClick={() => { setSelectedTopicModal(null); setIsModalFullscreen(false); }}>
@@ -901,30 +910,33 @@ function ProgressMap({ points, level, xp, addPoints, streak, perfectWeeks, onVau
   const getEraStyle = (lvl) => {
     const era = Math.floor((lvl - 1) / 10);
     const styles = [
-      'border-teal-400 text-teal-600 bg-teal-50',       // Niveles 1-10, 101-110...
-      'border-cyan-400 text-cyan-600 bg-cyan-50',       // Niveles 11-20, 111-120...
-      'border-blue-400 text-blue-600 bg-blue-50',       // Niveles 21-30, 121-130...
-      'border-indigo-400 text-indigo-600 bg-indigo-50', // Niveles 31-40...
-      'border-violet-400 text-violet-600 bg-violet-50', // Niveles 41-50...
-      'border-fuchsia-400 text-fuchsia-600 bg-fuchsia-50',// Niveles 51-60...
-      'border-rose-400 text-rose-600 bg-rose-50',       // Niveles 61-70...
-      'border-orange-400 text-orange-600 bg-orange-50', // Niveles 71-80...
-      'border-amber-400 text-amber-600 bg-amber-50',    // Niveles 81-90...
-      'border-slate-800 text-slate-800 bg-slate-100',   // Niveles 91-100...
+      'border-teal-400 text-teal-600 bg-teal-50',       
+      'border-cyan-400 text-cyan-600 bg-cyan-50',       
+      'border-blue-400 text-blue-600 bg-blue-50',       
+      'border-indigo-400 text-indigo-600 bg-indigo-50', 
+      'border-violet-400 text-violet-600 bg-violet-50', 
+      'border-fuchsia-400 text-fuchsia-600 bg-fuchsia-50',
+      'border-rose-400 text-rose-600 bg-rose-50',       
+      'border-orange-400 text-orange-600 bg-orange-50', 
+      'border-amber-400 text-amber-600 bg-amber-50',    
+      'border-slate-800 text-slate-800 bg-slate-100',   
     ];
-    // El operador % reinicia el ciclo cromático al pasar del último estilo
     return styles[era % styles.length];
   };
 
   const activeEraStyle = getEraStyle(level);
-  // Extraemos el color de texto (ej: text-teal-600) para pintar la barra superior
   const barColorClass = activeEraStyle.split(' ')[1].replace('text-', 'bg-');
 
   return (
-    <div className="space-y-8 max-w-xl mx-auto py-8 text-center animate-in fade-in">
+    <div className="space-y-8 max-w-xl mx-auto py-8 text-center animate-in fade-in relative">
+      
+      {/* ACUARELAS DINÁMICAS (Blobs difuminados) */}
+      <div className="absolute top-0 left-0 w-64 h-64 bg-teal-200/30 rounded-full blur-3xl -z-10 mix-blend-multiply animate-pulse" style={{animationDuration: '8s'}}></div>
+      <div className="absolute bottom-20 right-0 w-72 h-72 bg-emerald-200/20 rounded-full blur-3xl -z-10 mix-blend-multiply animate-pulse" style={{animationDuration: '12s'}}></div>
+
       <div className="grid grid-cols-2 gap-4">
         <div className="relative">
-          <div onClick={() => setPtsMenu(ptsMenu === 'closed' ? 'main' : 'closed')} className="bento-card p-6 cursor-pointer h-full flex flex-col items-center justify-center">
+          <div onClick={() => setPtsMenu(ptsMenu === 'closed' ? 'main' : 'closed')} className="bento-card p-6 cursor-pointer h-full flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm">
             <div className="flex justify-between items-end w-full mb-2">
               <span className={`text-sm font-black uppercase ${activeEraStyle.split(' ')[1]}`}>Lvl {level}</span>
               <span className="text-[10px] font-black text-slate-400 tabular-nums">{xp || 0}/200</span>
@@ -962,7 +974,7 @@ function ProgressMap({ points, level, xp, addPoints, streak, perfectWeeks, onVau
           )}
         </div>
 
-        <div className="bento-card p-4 flex items-center justify-between">
+        <div className="bento-card p-4 flex items-center justify-between bg-white/80 backdrop-blur-sm">
            <div className="flex-1 flex flex-col items-center border-r border-slate-100">
               <Icon name="Flame" size={24} className="text-orange-400" />
               <p className="text-lg font-black text-slate-800 leading-none mt-1">{streak}</p>
@@ -977,20 +989,20 @@ function ProgressMap({ points, level, xp, addPoints, streak, perfectWeeks, onVau
       </div>
 
       <div className="flex justify-center">
-        <button onClick={onVaultOpen} className="vault-pill py-2 px-6 rounded-full flex items-center gap-2 active:scale-95 transition-all">
+        <button onClick={onVaultOpen} className="vault-pill py-3 px-8 rounded-full flex items-center gap-3 active:scale-95 transition-all">
           <span className="text-sm">🗝️</span>
-          <span className="text-[9px] font-black uppercase tracking-widest text-slate-600">The Vault</span>
+          <span className="text-[10px] font-black uppercase tracking-widest">The Vault</span>
         </button>
       </div>
 
       <div className="flex flex-col items-center gap-16 relative mt-12">
-        <div className="absolute top-0 bottom-0 w-1.5 bg-slate-200 rounded-full -z-10" />
+        <div className="absolute top-0 bottom-0 w-1.5 bg-slate-200/50 rounded-full -z-10" />
         {[level+1, level, level-1, level-2].filter(l=>l>0).map(l => {
           const isCurrent = l === level;
           const style = getEraStyle(l);
           
           return (
-            <div key={l} className={`w-20 h-20 rounded-full border-[3px] flex flex-col items-center justify-center transition-all relative ${isCurrent ? `bg-white scale-110 shadow-[0_0_0_8px_rgba(255,255,255,0.5)] ${style.split(' ')[0]}` : 'bg-white/50 border-slate-300 text-slate-400 opacity-70'}`}>
+            <div key={l} className={`w-20 h-20 rounded-full border-[3px] flex flex-col items-center justify-center transition-all relative ${isCurrent ? `bg-white scale-110 shadow-[0_0_0_8px_rgba(255,255,255,0.5)] ${style.split(' ')[0]}` : 'bg-white/40 backdrop-blur-sm border-slate-300 text-slate-400 opacity-70'}`}>
               <span className={`text-2xl font-black tabular-nums ${isCurrent ? style.split(' ')[1] : ''}`}>{l}</span>
               {isCurrent && <Icon name="Turtle" size={24} className={`absolute -top-8 animate-bounce ${style.split(' ')[1]}`} />}
             </div>
@@ -1000,6 +1012,7 @@ function ProgressMap({ points, level, xp, addPoints, streak, perfectWeeks, onVau
     </div>
   );
 }
+
 function SyllabusView({ topics, setTopics, addPoints, onOpenModal, actionLogs, touchWeekly, examDate, setExamDate }) {
   const [search, setSearch] = useState("");
   const diff = new Date(examDate) - new Date();
@@ -1527,18 +1540,18 @@ function FlashcardUI({ card, isFlipped, setIsFlipped }) {
       className="relative w-full h-[60vh] min-h-[350px] max-h-[500px] cursor-pointer perspective-1000"
       onClick={() => setIsFlipped(!isFlipped)}
     >
-      <div className={`relative w-full h-full transition-all duration-700 preserve-3d ${isFlipped ? 'rotate-y-180' : ''}`}>
+      <div className={`relative w-full h-full transition-transform duration-700 preserve-3d ${isFlipped ? 'rotate-y-180' : ''}`}>
         
-        {/* CARA DELANTERA (Pregunta) */}
-        <div className="absolute w-full h-full backface-hidden bg-white rounded-[40px] p-6 sm:p-10 border-2 border-slate-200 shadow-sm flex flex-col justify-center items-center text-center overflow-y-auto custom-scrollbar">
-          <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4 shrink-0">Question</span>
+        {/* CARA DELANTERA (Pregunta - Efecto Elevado) */}
+        <div className="absolute w-full h-full backface-hidden bg-white rounded-[40px] p-6 sm:p-10 border border-slate-100 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] flex flex-col justify-center items-center text-center overflow-y-auto custom-scrollbar">
+          <span className="text-[10px] font-black text-slate-300 uppercase tracking-[0.3em] mb-4 shrink-0">Question</span>
           <p className={`${getQSize(card.q)} font-black text-slate-800 leading-tight my-auto`}>
             {renderFormattedText(card.q)}
           </p>
         </div>
 
-        {/* CARA TRASERA (Respuesta) */}
-        <div className="absolute w-full h-full backface-hidden rotate-y-180 bg-slate-50 rounded-[40px] p-6 sm:p-10 border-2 border-teal-100 shadow-inner flex flex-col justify-center items-center text-center overflow-y-auto custom-scrollbar">
+        {/* CARA TRASERA (Respuesta - Efecto Hundido y Texturizado) */}
+        <div className="absolute w-full h-full backface-hidden rotate-y-180 bg-[#eef2f0] rounded-[40px] p-6 sm:p-10 border border-[#d1e0d7] shadow-[inset_0_8px_30px_rgba(0,0,0,0.04)] flex flex-col justify-center items-center text-center overflow-y-auto custom-scrollbar">
           <span className="text-[10px] font-black text-teal-600 uppercase tracking-[0.3em] mb-4 shrink-0">Answer</span>
           <p className={`${getASize(card.a)} font-bold text-slate-700 leading-relaxed whitespace-pre-wrap my-auto`}>
             {renderFormattedText(card.a)}
@@ -1549,6 +1562,7 @@ function FlashcardUI({ card, isFlipped, setIsFlipped }) {
     </div>
   );
 }
+
 function DeckStudyView({ deck, onBack, addPoints, onUpdateCard, onFinishChallenge }) {
   const [idx, setIdx] = useState(0);
   const [flipped, setFlipped] = useState(false);
@@ -1589,7 +1603,6 @@ function DeckStudyView({ deck, onBack, addPoints, onUpdateCard, onFinishChalleng
     setIdx(p => p + 1);
   }, [idx, cardsToStudy, deck.id, addPoints, onUpdateCard]);
 
-  // ATAJOS DE TECLADO
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (idx >= cardsToStudy.length) return;
@@ -1635,9 +1648,9 @@ function DeckStudyView({ deck, onBack, addPoints, onUpdateCard, onFinishChalleng
   }
 
   return (
-    <div className="max-w-xl mx-auto py-6 space-y-4 text-left">
+    <div className="max-w-xl mx-auto py-6 space-y-6 text-left">
       <div className="flex justify-between items-center px-2">
-        <button onClick={onBack} className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-rose-600 transition-all">
+        <button onClick={onBack} className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-teal-600 transition-colors">
           <Icon name="ChevronRight" className="rotate-180" size={16}/> Quit
         </button>
         <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">
@@ -1647,32 +1660,33 @@ function DeckStudyView({ deck, onBack, addPoints, onUpdateCard, onFinishChalleng
       
       <FlashcardUI card={cardsToStudy[idx]} isFlipped={flipped} setIsFlipped={setFlipped} />
       
-      {flipped ? (
-        <div className="grid grid-cols-4 gap-2 animate-in slide-in-from-bottom-2 px-1">
-          <button onClick={() => handleAnki(1)} className="py-4 bg-red-50 text-red-600 rounded-2xl border-2 border-red-100 font-black flex flex-col items-center hover:bg-red-100 transition-all active:scale-95">
-            <span className="text-lg leading-none mb-1">✖️</span>
-            <span className="text-[8px] opacity-60 uppercase tracking-widest hidden sm:block">Again</span>
-          </button>
-          <button onClick={() => handleAnki(2)} className="py-4 bg-orange-50 text-orange-600 rounded-2xl border-2 border-orange-100 font-black flex flex-col items-center hover:bg-orange-100 transition-all active:scale-95">
-            <span className="text-lg leading-none mb-1">⚠️</span>
-            <span className="text-[8px] opacity-60 uppercase tracking-widest hidden sm:block">Hard</span>
-          </button>
-          <button onClick={() => handleAnki(3)} className="py-4 bg-emerald-50 text-emerald-600 rounded-2xl border-2 border-emerald-100 font-black flex flex-col items-center hover:bg-emerald-100 transition-all active:scale-95">
-            <span className="text-lg leading-none mb-1">✔️</span>
-            <span className="text-[8px] opacity-60 uppercase tracking-widest hidden sm:block">Good</span>
-          </button>
-          <button onClick={() => handleAnki(4)} className="py-4 bg-blue-50 text-blue-600 rounded-2xl border-2 border-blue-100 font-black flex flex-col items-center hover:bg-blue-100 transition-all active:scale-95">
-            <span className="text-lg leading-none mb-1">🚀</span>
-            <span className="text-[8px] opacity-60 uppercase tracking-widest hidden sm:block">Easy</span>
-          </button>
-        </div>
-      ) : (
-        <div className="px-1">
-          <button onClick={() => setFlipped(true)} className="w-full py-5 bg-rose-600 text-white rounded-2xl font-black shadow-xl shadow-rose-100 uppercase text-xs tracking-widest active:scale-95 transition-all">
-            Reveal Answer
-          </button>
-        </div>
-      )}
+      {/* Botonera de la misma altura siempre, sin botón extra Reveal */}
+      <div className="h-[76px] px-1 relative">
+        {flipped ? (
+          <div className="grid grid-cols-4 gap-2 animate-in fade-in zoom-in-95 duration-200 absolute inset-0 px-1">
+            <button onClick={() => handleAnki(1)} className="h-full bg-white text-red-500 rounded-2xl border-2 border-red-100 font-black flex flex-col items-center justify-center hover:bg-red-50 hover:border-red-200 transition-all active:scale-95 shadow-sm">
+              <span className="text-lg leading-none mb-1">✖️</span>
+              <span className="text-[8px] opacity-60 uppercase tracking-widest hidden sm:block">Again</span>
+            </button>
+            <button onClick={() => handleAnki(2)} className="h-full bg-white text-orange-500 rounded-2xl border-2 border-orange-100 font-black flex flex-col items-center justify-center hover:bg-orange-50 hover:border-orange-200 transition-all active:scale-95 shadow-sm">
+              <span className="text-lg leading-none mb-1">⚠️</span>
+              <span className="text-[8px] opacity-60 uppercase tracking-widest hidden sm:block">Hard</span>
+            </button>
+            <button onClick={() => handleAnki(3)} className="h-full bg-white text-emerald-500 rounded-2xl border-2 border-emerald-100 font-black flex flex-col items-center justify-center hover:bg-emerald-50 hover:border-emerald-200 transition-all active:scale-95 shadow-sm">
+              <span className="text-lg leading-none mb-1">✔️</span>
+              <span className="text-[8px] opacity-60 uppercase tracking-widest hidden sm:block">Good</span>
+            </button>
+            <button onClick={() => handleAnki(4)} className="h-full bg-white text-blue-500 rounded-2xl border-2 border-blue-100 font-black flex flex-col items-center justify-center hover:bg-blue-50 hover:border-blue-200 transition-all active:scale-95 shadow-sm">
+              <span className="text-lg leading-none mb-1">🚀</span>
+              <span className="text-[8px] opacity-60 uppercase tracking-widest hidden sm:block">Easy</span>
+            </button>
+          </div>
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-300 animate-pulse">Tap the card to flip</p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
