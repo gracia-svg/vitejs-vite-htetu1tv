@@ -578,16 +578,21 @@ useEffect(() => {
 
   return (
     <div className="min-h-screen pb-32 font-sans relative overflow-x-hidden">
-      <style>{`
-        body { background-color: #f8fafc; background-image: radial-gradient(#fbbf24 2px, transparent 2px), radial-gradient(#f472b6 2px, transparent 2px), radial-gradient(#60a5fa 2px, transparent 2px), radial-gradient(#34d399 2px, transparent 2px); background-size: 80px 80px; background-position: 0 0, 40px 40px, 20px 60px, 60px 20px; }
-        .bento-card { border-radius: 28px; border: 2px solid #f1f5f9; box-shadow: 0 4px 15px rgba(0,0,0,0.05); transition: all 0.3s ease; background: white; }
-        .map-bubble { width: 80px; height: 80px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; border: 6px solid white; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
-        .modal-overlay { background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(8px); position: fixed; inset: 0; z-index: 500; display: flex; align-items: center; justify-content: center; padding: 1rem; }
-        .modal-content { background: white; width: 100%; max-width: 600px; max-height: 85vh; border-radius: 40px; overflow-y: auto; position: relative; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+     <style>{`
+        /* Fondo Verde Salvia Muy Suave y Diseño Plano (Flat Vector) */
+        body { background-color: #f0f4f2; font-family: 'Inter', system-ui, sans-serif; }
+        
+        /* Tarjetas Bento sin sombras pesadas, solo borde fino */
+        .bento-card { border-radius: 32px; border: 2px solid #e2e8e5; background: white; box-shadow: 4px 4px 0px rgba(226, 232, 229, 0.5); transition: all 0.2s ease; }
+        .bento-card:hover { border-color: #5eead4; transform: translateY(-2px); box-shadow: 6px 6px 0px rgba(94, 234, 212, 0.2); }
+        
+        .map-bubble { width: 80px; height: 80px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; border: 4px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .modal-overlay { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); position: fixed; inset: 0; z-index: 500; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+        .modal-content { background: white; width: 100%; max-width: 600px; max-height: 85vh; border-radius: 40px; overflow-y: auto; position: relative; box-shadow: 0 20px 40px -10px rgba(0,0,0,0.1); border: 2px solid #e2e8e5; }
         .modal-fullscreen { max-width: 100vw !important; max-height: 100vh !important; height: 100vh !important; border-radius: 0 !important; }
-        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
-        .vault-pill { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); color: #cbd5e1; border: 1px solid #334155; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .vault-pill { background: white; color: #334155; border: 2px solid #e2e8e5; box-shadow: 3px 3px 0px rgba(226, 232, 229, 0.8); }
       `}</style>
 
       {/* MODALES DEL VAULT */}
@@ -966,32 +971,46 @@ useEffect(() => {
 function ProgressMap({ points, level, xp, addPoints, streak, perfectWeeks, onVaultOpen }) {
   const [ptsMenu, setPtsMenu] = useState('closed');
 
+  // Cálculo de la "Era" actual (cada 10 niveles es una era nueva)
+  const currentEra = Math.floor((level - 1) / 10) + 1;
+  const eraNames = ["The Genesis", "Foundation", "Momentum", "Deep Focus", "Mastery", "Resilience", "The Grind", "Elevation", "Ascension", "End Game"];
+
   return (
     <div className="space-y-8 max-w-xl mx-auto py-8 text-center animate-in fade-in">
+      
+      {/* Banner de la Era Actual */}
+      <div className="bg-gradient-to-r from-teal-50 to-cyan-50 border-2 border-teal-100 rounded-[32px] p-6 text-left relative overflow-hidden">
+        <div className="relative z-10">
+          <p className="text-[10px] font-black uppercase text-teal-600 tracking-widest mb-1">Current Era • {currentEra}/10</p>
+          <h3 className="text-2xl font-black text-teal-950">{eraNames[currentEra - 1] || "The Legacy"}</h3>
+        </div>
+        <Icon name="Target" size={100} className="absolute -right-4 -bottom-8 text-teal-500 opacity-10 rotate-12" />
+      </div>
+
       <div className="grid grid-cols-2 gap-4">
         <div className="relative">
-          <div onClick={() => setPtsMenu(ptsMenu === 'closed' ? 'main' : 'closed')} className="bento-card p-6 border-emerald-100 shadow-md cursor-pointer h-full flex flex-col items-center justify-center hover:border-emerald-300">
-            <div className="flex justify-between items-end w-full mb-1">
-              <span className="text-sm font-black text-emerald-600 uppercase">Lvl {level}</span>
-              <span className="text-[10px] font-black text-emerald-500 tabular-nums">{xp || 0}/200</span>
+          <div onClick={() => setPtsMenu(ptsMenu === 'closed' ? 'main' : 'closed')} className="bento-card p-6 cursor-pointer h-full flex flex-col items-center justify-center">
+            <div className="flex justify-between items-end w-full mb-2">
+              <span className="text-sm font-black text-cyan-700 uppercase">Lvl {level}</span>
+              <span className="text-[10px] font-black text-cyan-500 tabular-nums">{xp || 0}/200</span>
             </div>
-            <div className="w-full h-3 bg-slate-50 rounded-full overflow-hidden border shadow-inner">
-              <div className="h-full bg-emerald-500 transition-all duration-1000 shadow-lg" style={{width:`${((xp||0)/200)*100}%`}}/>
+            <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
+              <div className="h-full bg-cyan-400 transition-all duration-1000" style={{width:`${((xp||0)/200)*100}%`}}/>
             </div>
           </div>
           
           {ptsMenu !== 'closed' && (
-            <div className="absolute top-full left-0 right-0 mt-2 bg-white border-2 border-emerald-100 rounded-2xl p-3 shadow-2xl z-50 flex flex-col gap-2 animate-in zoom-in-95">
+            <div className="absolute top-full left-0 right-0 mt-2 bg-white border-2 border-cyan-100 rounded-2xl p-3 shadow-lg z-50 flex flex-col gap-2 animate-in zoom-in-95">
               {ptsMenu === 'main' && (
                 <div className="flex gap-2">
-                  <button onClick={(e) => { e.stopPropagation(); setPtsMenu('add'); }} className="flex-1 py-3 bg-emerald-50 text-emerald-600 rounded-xl font-black hover:bg-emerald-100 transition-colors"><Icon name="Plus" size={20} className="mx-auto" /></button>
-                  <button onClick={(e) => { e.stopPropagation(); setPtsMenu('sub'); }} className="flex-1 py-3 bg-red-50 text-red-600 rounded-xl font-black hover:bg-red-100 transition-colors"><Icon name="Minus" size={20} className="mx-auto" /></button>
+                  <button onClick={(e) => { e.stopPropagation(); setPtsMenu('add'); }} className="flex-1 py-3 bg-cyan-50 text-cyan-600 rounded-xl font-black hover:bg-cyan-100 transition-colors"><Icon name="Plus" size={20} className="mx-auto" /></button>
+                  <button onClick={(e) => { e.stopPropagation(); setPtsMenu('sub'); }} className="flex-1 py-3 bg-slate-50 text-slate-500 rounded-xl font-black hover:bg-slate-100 transition-colors"><Icon name="Minus" size={20} className="mx-auto" /></button>
                 </div>
               )}
               {ptsMenu === 'add' && (
                 <div className="grid grid-cols-2 gap-2">
                   {[5, 10, 15, 25].map(v => (
-                    <button key={v} onClick={(e) => { e.stopPropagation(); addPoints(v, `+${v} Pts (Manual)`); setPtsMenu('closed'); }} className="p-2 bg-emerald-500 text-white rounded-xl font-black text-xs hover:bg-emerald-600 transition-colors">+{v}</button>
+                    <button key={v} onClick={(e) => { e.stopPropagation(); addPoints(v, `+${v} Pts (Manual)`); setPtsMenu('closed'); }} className="p-2 bg-cyan-500 text-white rounded-xl font-black text-xs hover:bg-cyan-600 transition-colors">+{v}</button>
                   ))}
                   <button onClick={(e) => { e.stopPropagation(); setPtsMenu('main'); }} className="col-span-2 p-2 bg-slate-100 text-slate-500 rounded-xl text-[10px] font-black uppercase hover:bg-slate-200 transition-colors">Volver</button>
                 </div>
@@ -999,7 +1018,7 @@ function ProgressMap({ points, level, xp, addPoints, streak, perfectWeeks, onVau
               {ptsMenu === 'sub' && (
                 <div className="grid grid-cols-2 gap-2">
                   {[5, 10, 15, 25].map(v => (
-                    <button key={v} onClick={(e) => { e.stopPropagation(); addPoints(-v, `-${v} Pts (Manual)`); setPtsMenu('closed'); }} className="p-2 bg-red-500 text-white rounded-xl font-black text-xs hover:bg-red-600 transition-colors">-{v}</button>
+                    <button key={v} onClick={(e) => { e.stopPropagation(); addPoints(-v, `-${v} Pts (Manual)`); setPtsMenu('closed'); }} className="p-2 bg-slate-200 text-slate-600 rounded-xl font-black text-xs hover:bg-slate-300 transition-colors">-{v}</button>
                   ))}
                   <button onClick={(e) => { e.stopPropagation(); setPtsMenu('main'); }} className="col-span-2 p-2 bg-slate-100 text-slate-500 rounded-xl text-[10px] font-black uppercase hover:bg-slate-200 transition-colors">Volver</button>
                 </div>
@@ -1008,40 +1027,39 @@ function ProgressMap({ points, level, xp, addPoints, streak, perfectWeeks, onVau
           )}
         </div>
 
-        <div className="bento-card p-4 border-orange-100 shadow-md flex items-center justify-between">
+        <div className="bento-card p-4 flex items-center justify-between">
            <div className="flex-1 flex flex-col items-center border-r border-slate-100">
-              <Icon name="Flame" size={24} className="fill-orange-500 text-orange-500" />
+              <Icon name="Flame" size={24} className="text-orange-400" />
               <p className="text-lg font-black text-slate-800 leading-none mt-1">{streak}</p>
               <p className="text-[7px] font-black uppercase text-slate-400">Days</p>
            </div>
            <div className="flex-1 flex flex-col items-center">
               <span className="text-2xl leading-none">👑</span>
-              <p className="text-lg font-black text-amber-600 leading-none mt-1">{perfectWeeks}</p>
+              <p className="text-lg font-black text-amber-500 leading-none mt-1">{perfectWeeks}</p>
               <p className="text-[7px] font-black uppercase text-slate-400">Weeks</p>
            </div>
         </div>
       </div>
 
       <div className="flex justify-center">
-        <button onClick={onVaultOpen} className="vault-pill py-2 px-5 rounded-full flex items-center gap-2 shadow-lg active:scale-95 transition-all border border-slate-700/50">
+        <button onClick={onVaultOpen} className="vault-pill py-2 px-6 rounded-full flex items-center gap-2 active:scale-95 transition-all">
           <span className="text-sm">🗝️</span>
-          <span className="text-[9px] font-black uppercase tracking-[0.2em] opacity-80">Vault</span>
+          <span className="text-[9px] font-black uppercase tracking-widest text-slate-600">The Vault</span>
         </button>
       </div>
 
       <div className="flex flex-col items-center gap-16 relative mt-12">
-        <div className="absolute top-0 bottom-0 w-2 bg-emerald-50 rounded-full -z-10" />
+        <div className="absolute top-0 bottom-0 w-1.5 bg-slate-200 rounded-full -z-10" />
         {[level+1, level, level-1, level-2].filter(l=>l>0).map(l => (
-          <div key={l} className={`w-20 h-20 rounded-full border-4 flex flex-col items-center justify-center transition-all relative ${l === level ? 'bg-white border-emerald-500 scale-125 shadow-xl ring-8 ring-emerald-50' : 'bg-slate-50 border-slate-200 text-slate-300 opacity-60'}`}>
+          <div key={l} className={`w-20 h-20 rounded-full border-[3px] flex flex-col items-center justify-center transition-all relative ${l === level ? 'bg-white border-cyan-400 scale-110 shadow-[0_0_0_8px_rgba(34,211,238,0.1)]' : 'bg-[#f0f4f2] border-slate-300 text-slate-400 opacity-70'}`}>
             <span className="text-2xl font-black tabular-nums">{l}</span>
-            {l === level && <Icon name="Turtle" size={24} className="absolute -top-8 text-emerald-600 animate-bounce" />}
+            {l === level && <Icon name="Turtle" size={24} className="absolute -top-8 text-cyan-600 animate-bounce" />}
           </div>
         ))}
       </div>
     </div>
   );
 }
-
 function SyllabusView({ topics, setTopics, addPoints, onOpenModal, actionLogs, touchWeekly, examDate, setExamDate }) {
   const [search, setSearch] = useState("");
   const diff = new Date(examDate) - new Date();
@@ -1550,9 +1568,20 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam, dailyChallengeCo
 function FlashcardUI({ card, isFlipped, setIsFlipped }) {
   if (!card) return null;
 
-  // CÁLCULO DINÁMICO DE TAMAÑO DE FUENTE BASADO EN LA LONGITUD
   const getQSize = (text) => text.length > 150 ? "text-lg" : text.length > 80 ? "text-xl" : "text-2xl md:text-3xl";
   const getASize = (text) => text.length > 300 ? "text-sm" : text.length > 150 ? "text-base" : "text-xl";
+
+  // Función para procesar palabras entre asteriscos y resaltarlas
+  const renderFormattedText = (text) => {
+    if (!text) return "";
+    const parts = text.split(/(\*[^*]+\*)/g);
+    return parts.map((part, i) => {
+      if (part.startsWith('*') && part.endsWith('*')) {
+        return <span key={i} className="text-cyan-600 bg-cyan-50 px-1 rounded-md border border-cyan-100">{part.slice(1, -1)}</span>;
+      }
+      return part;
+    });
+  };
 
   return (
     <div 
@@ -1560,24 +1589,23 @@ function FlashcardUI({ card, isFlipped, setIsFlipped }) {
       onClick={() => setIsFlipped(!isFlipped)}
     >
       {isFlipped ? (
-        <div className="w-full flex-1 bg-slate-50 rounded-[40px] p-6 sm:p-10 border-2 border-emerald-100 shadow-inner flex flex-col justify-center items-center text-center animate-in fade-in zoom-in-95 duration-200 overflow-y-auto custom-scrollbar">
-          <span className="text-[10px] font-black text-emerald-500 uppercase tracking-[0.3em] mb-4 shrink-0">Answer</span>
+        <div className="w-full flex-1 bg-slate-50 rounded-[40px] p-6 sm:p-10 border-2 border-cyan-100 flex flex-col justify-center items-center text-center animate-in fade-in zoom-in-95 duration-200 overflow-y-auto custom-scrollbar">
+          <span className="text-[10px] font-black text-cyan-600 uppercase tracking-[0.3em] mb-4 shrink-0">Answer</span>
           <p className={`${getASize(card.a)} font-bold text-slate-700 leading-relaxed whitespace-pre-wrap my-auto`}>
-            {card.a}
+            {renderFormattedText(card.a)}
           </p>
         </div>
       ) : (
-        <div className="w-full flex-1 bg-white rounded-[40px] p-6 sm:p-10 border-2 border-slate-100 shadow-sm flex flex-col justify-center items-center text-center animate-in fade-in zoom-in-95 duration-200 overflow-y-auto custom-scrollbar">
-          <span className="text-[10px] font-black text-rose-500 uppercase tracking-[0.3em] mb-4 shrink-0">Question</span>
+        <div className="w-full flex-1 bg-white rounded-[40px] p-6 sm:p-10 border-2 border-slate-200 flex flex-col justify-center items-center text-center animate-in fade-in zoom-in-95 duration-200 overflow-y-auto custom-scrollbar">
+          <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4 shrink-0">Question</span>
           <p className={`${getQSize(card.q)} font-black text-slate-800 leading-tight my-auto`}>
-            {card.q}
+            {renderFormattedText(card.q)}
           </p>
         </div>
       )}
     </div>
   );
 }
-
 function DeckStudyView({ deck, onBack, addPoints, onUpdateCard, onFinishChallenge }) {
   const [idx, setIdx] = useState(0);
   const [flipped, setFlipped] = useState(false);
