@@ -579,26 +579,29 @@ useEffect(() => {
   return (
     <div className="min-h-screen pb-32 font-sans relative overflow-x-hidden">
 <style>{`
-        /* Fondo con textura sutil tipo papel/lienzo */
+        /* Fondo Alegre Original Restaurado */
         body { 
-          background-color: #f0f4f2;
-          background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.04'/%3E%3C/svg%3E");
+          background-color: #f8fafc; 
+          background-image: radial-gradient(#fbbf24 2.5px, transparent 2.5px), radial-gradient(#f472b6 2.5px, transparent 2.5px), radial-gradient(#60a5fa 2.5px, transparent 2.5px), radial-gradient(#34d399 2.5px, transparent 2.5px); 
+          background-size: 80px 80px; 
+          background-position: 0 0, 40px 40px, 20px 60px, 60px 20px;
           font-family: 'Inter', system-ui, sans-serif; 
         }
         
-        .bento-card { border-radius: 32px; border: 2px solid #e2e8e5; background: white; box-shadow: 4px 4px 0px rgba(226, 232, 229, 0.5); transition: all 0.2s ease; }
-        .bento-card:hover { transform: translateY(-2px); box-shadow: 6px 6px 0px rgba(94, 234, 212, 0.2); }
+        /* Tarjetas con efecto cristal para no pelear con los puntos */
+        .bento-card { border-radius: 32px; border: 2px solid white; background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(8px); box-shadow: 0 10px 30px rgba(0,0,0,0.05); transition: all 0.3s ease; }
+        .bento-card:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(0,0,0,0.08); border-color: #fce7f3; }
         
         .map-bubble { width: 80px; height: 80px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; border: 4px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-        .modal-overlay { background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(6px); position: fixed; inset: 0; z-index: 500; display: flex; align-items: center; justify-content: center; padding: 1rem; }
-        .modal-content { background: white; width: 100%; max-width: 600px; max-height: 85vh; border-radius: 40px; overflow-y: auto; position: relative; box-shadow: 0 20px 40px -10px rgba(0,0,0,0.1); border: 2px solid #e2e8e5; }
+        .modal-overlay { background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(8px); position: fixed; inset: 0; z-index: 500; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+        .modal-content { background: white; width: 100%; max-width: 600px; max-height: 85vh; border-radius: 40px; overflow-y: auto; position: relative; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); border: 4px solid white; }
         .modal-fullscreen { max-width: 100vw !important; max-height: 100vh !important; height: 100vh !important; border-radius: 0 !important; }
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         
-        /* Píldora del Vault Restaurada (Oscura y Elegante) */
-        .vault-pill { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); color: #cbd5e1; border: 1px solid #334155; box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.4); }
-        .vault-pill:hover { border-color: #475569; }
+        /* Píldora del Vault */
+        .vault-pill { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); color: #cbd5e1; border: 2px solid #334155; box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.5); }
+        .vault-pill:hover { border-color: #fbbf24; color: white; }
 
         /* UTILIDADES 3D PARA ANIMACIÓN DE TARJETAS */
         .perspective-1000 { perspective: 1000px; }
@@ -607,38 +610,38 @@ useEffect(() => {
         .rotate-y-180 { transform: rotateY(180deg); }
       `}</style>
 
-      {/* MODALES DEL VAULT (ESTÉTICA MUSEO) */}
+      {/* MODAL DEL VAULT (TAMAÑO REDUCIDO Y MÁS ALEGRE) */}
       {showVaultModal && (
-        <div className="modal-overlay animate-in fade-in" onClick={() => setShowVaultModal(false)}>
-          <div className="bg-[#fcfbf9] rounded-sm p-12 max-w-lg w-full text-left shadow-[0_20px_50px_rgba(0,0,0,0.2)] relative animate-in zoom-in-95 border border-[#e2e0d8]" onClick={e => e.stopPropagation()}>
-             <button onClick={() => setShowVaultModal(false)} className="absolute top-6 right-6 text-slate-300 hover:text-slate-800 transition-colors">
+        <div className="modal-overlay animate-in fade-in z-[600]" onClick={() => setShowVaultModal(false)}>
+          <div className="bg-white rounded-[32px] p-8 max-w-sm w-full text-center shadow-2xl relative animate-in zoom-in-95 border-4 border-amber-100" onClick={e => e.stopPropagation()}>
+             <button onClick={() => setShowVaultModal(false)} className="absolute top-4 right-4 text-slate-300 hover:text-rose-500 transition-colors">
                <Icon name="X" size={24}/>
              </button>
              
-             <p className="text-[9px] font-black uppercase text-slate-400 tracking-[0.4em] mb-12 border-b border-slate-200 pb-4">The Vault <span className="mx-2">•</span> Exhibition</p>
+             <div className="mx-auto w-12 h-12 bg-amber-100 text-amber-500 rounded-full flex items-center justify-center mb-4 shadow-inner">
+                <Icon name="Quote" size={20} />
+             </div>
+             <p className="text-[10px] font-black uppercase text-amber-500 tracking-[0.2em] mb-6">Daily Vault</p>
              
              {vaultItems.length > 0 ? (
-               <div className="space-y-8">
-                 <p className="text-2xl text-slate-800 leading-loose font-serif italic selection:bg-teal-100">
+               <div className="space-y-6">
+                 <p className="text-xl text-slate-800 leading-tight font-black italic">
                    "{vaultItems[Math.floor(Math.random() * vaultItems.length)].text}"
                  </p>
-                 <div className="flex items-center gap-4">
-                   <div className="w-8 h-[1px] bg-slate-300"></div>
-                   <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">{vaultItems[Math.floor(Math.random() * vaultItems.length)].reference}</p>
+                 <div className="inline-block px-3 py-1 bg-slate-50 rounded-lg border border-slate-100">
+                   <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{vaultItems[Math.floor(Math.random() * vaultItems.length)].reference}</p>
                  </div>
                </div>
              ) : (
-               <p className="text-sm font-serif italic text-slate-400">The exhibition is empty. Import citations in settings.</p>
+               <p className="text-sm font-bold italic text-slate-400">Vault is empty. Import citations.</p>
              )}
 
-             <div onClick={() => { setShowVaultModal(false); setShowVaultCarousel(true); }} className="mt-16 pt-6 border-t border-slate-200 cursor-pointer group flex justify-between items-center">
-               <p className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] group-hover:text-slate-800 transition-colors">Enter Full Gallery</p>
-               <Icon name="ChevronRight" size={14} className="text-slate-300 group-hover:text-slate-800 transition-colors" />
-             </div>
+             <button onClick={() => { setShowVaultModal(false); setShowVaultCarousel(true); }} className="mt-8 w-full py-3 bg-slate-900 text-white rounded-xl font-black text-xs uppercase tracking-widest shadow-lg active:scale-95 transition-all hover:bg-slate-800">
+               Open Gallery
+             </button>
           </div>
         </div>
       )}
-
       {showVaultCarousel && <VaultCarousel items={vaultItems} setItems={setVaultItems} onClose={() => setShowVaultCarousel(false)} />}
       {/* MODAL GLOBAL DE TEMA (Mantenido intacto por seguridad) */}
       {selectedTopicModal && (
@@ -906,7 +909,6 @@ useEffect(() => {
 function ProgressMap({ points, level, xp, addPoints, streak, perfectWeeks, onVaultOpen }) {
   const [ptsMenu, setPtsMenu] = useState('closed');
 
-  // Sistema Visual Sutil de Eras (Bucle infinito cada 10 niveles)
   const getEraStyle = (lvl) => {
     const era = Math.floor((lvl - 1) / 10);
     const styles = [
@@ -930,13 +932,11 @@ function ProgressMap({ points, level, xp, addPoints, streak, perfectWeeks, onVau
   return (
     <div className="space-y-8 max-w-xl mx-auto py-8 text-center animate-in fade-in relative">
       
-      {/* ACUARELAS DINÁMICAS (Blobs difuminados) */}
-      <div className="absolute top-0 left-0 w-64 h-64 bg-teal-200/30 rounded-full blur-3xl -z-10 mix-blend-multiply animate-pulse" style={{animationDuration: '8s'}}></div>
-      <div className="absolute bottom-20 right-0 w-72 h-72 bg-emerald-200/20 rounded-full blur-3xl -z-10 mix-blend-multiply animate-pulse" style={{animationDuration: '12s'}}></div>
+      {/* Eliminadas las acuarelas para dejar brillar los puntitos de fondo */}
 
       <div className="grid grid-cols-2 gap-4">
         <div className="relative">
-          <div onClick={() => setPtsMenu(ptsMenu === 'closed' ? 'main' : 'closed')} className="bento-card p-6 cursor-pointer h-full flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm">
+          <div onClick={() => setPtsMenu(ptsMenu === 'closed' ? 'main' : 'closed')} className="bento-card p-6 cursor-pointer h-full flex flex-col items-center justify-center">
             <div className="flex justify-between items-end w-full mb-2">
               <span className={`text-sm font-black uppercase ${activeEraStyle.split(' ')[1]}`}>Lvl {level}</span>
               <span className="text-[10px] font-black text-slate-400 tabular-nums">{xp || 0}/200</span>
@@ -974,7 +974,7 @@ function ProgressMap({ points, level, xp, addPoints, streak, perfectWeeks, onVau
           )}
         </div>
 
-        <div className="bento-card p-4 flex items-center justify-between bg-white/80 backdrop-blur-sm">
+        <div className="bento-card p-4 flex items-center justify-between">
            <div className="flex-1 flex flex-col items-center border-r border-slate-100">
               <Icon name="Flame" size={24} className="text-orange-400" />
               <p className="text-lg font-black text-slate-800 leading-none mt-1">{streak}</p>
@@ -1002,7 +1002,7 @@ function ProgressMap({ points, level, xp, addPoints, streak, perfectWeeks, onVau
           const style = getEraStyle(l);
           
           return (
-            <div key={l} className={`w-20 h-20 rounded-full border-[3px] flex flex-col items-center justify-center transition-all relative ${isCurrent ? `bg-white scale-110 shadow-[0_0_0_8px_rgba(255,255,255,0.5)] ${style.split(' ')[0]}` : 'bg-white/40 backdrop-blur-sm border-slate-300 text-slate-400 opacity-70'}`}>
+            <div key={l} className={`w-20 h-20 rounded-full border-[3px] flex flex-col items-center justify-center transition-all relative ${isCurrent ? `bg-white scale-110 shadow-[0_0_0_8px_rgba(255,255,255,0.5)] ${style.split(' ')[0]}` : 'bg-white/60 backdrop-blur-sm border-slate-300 text-slate-400 opacity-70'}`}>
               <span className={`text-2xl font-black tabular-nums ${isCurrent ? style.split(' ')[1] : ''}`}>{l}</span>
               {isCurrent && <Icon name="Turtle" size={24} className={`absolute -top-8 animate-bounce ${style.split(' ')[1]}`} />}
             </div>
@@ -1012,7 +1012,6 @@ function ProgressMap({ points, level, xp, addPoints, streak, perfectWeeks, onVau
     </div>
   );
 }
-
 function SyllabusView({ topics, setTopics, addPoints, onOpenModal, actionLogs, touchWeekly, examDate, setExamDate }) {
   const [search, setSearch] = useState("");
   const diff = new Date(examDate) - new Date();
@@ -1521,15 +1520,16 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam, dailyChallengeCo
 function FlashcardUI({ card, isFlipped, setIsFlipped }) {
   if (!card) return null;
 
-  const getQSize = (text) => text.length > 150 ? "text-lg" : text.length > 80 ? "text-xl" : "text-2xl md:text-3xl";
-  const getASize = (text) => text.length > 300 ? "text-sm" : text.length > 150 ? "text-base" : "text-xl";
+  // Tamaños ajustados para una tarjeta más contenida
+  const getQSize = (text) => text.length > 150 ? "text-base" : text.length > 80 ? "text-lg" : "text-xl md:text-2xl";
+  const getASize = (text) => text.length > 300 ? "text-xs" : text.length > 150 ? "text-sm" : "text-lg";
 
-  const renderFormattedText = (text) => {
+  const renderFormattedText = (text, isBack) => {
     if (!text) return "";
     const parts = text.split(/(\*[^*]+\*)/g);
     return parts.map((part, i) => {
       if (part.startsWith('*') && part.endsWith('*')) {
-        return <span key={i} className="text-teal-600 bg-teal-50 px-1 rounded-md border border-teal-100">{part.slice(1, -1)}</span>;
+        return <span key={i} className={`px-1.5 py-0.5 rounded-md border ${isBack ? 'text-emerald-700 bg-emerald-100 border-emerald-200' : 'text-rose-600 bg-rose-50 border-rose-100'}`}>{part.slice(1, -1)}</span>;
       }
       return part;
     });
@@ -1537,24 +1537,24 @@ function FlashcardUI({ card, isFlipped, setIsFlipped }) {
 
   return (
     <div 
-      className="relative w-full h-[60vh] min-h-[350px] max-h-[500px] cursor-pointer perspective-1000"
+      className="relative w-full h-[50vh] min-h-[300px] max-h-[420px] cursor-pointer perspective-1000"
       onClick={() => setIsFlipped(!isFlipped)}
     >
       <div className={`relative w-full h-full transition-transform duration-700 preserve-3d ${isFlipped ? 'rotate-y-180' : ''}`}>
         
-        {/* CARA DELANTERA (Pregunta - Efecto Elevado) */}
-        <div className="absolute w-full h-full backface-hidden bg-white rounded-[40px] p-6 sm:p-10 border border-slate-100 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] flex flex-col justify-center items-center text-center overflow-y-auto custom-scrollbar">
-          <span className="text-[10px] font-black text-slate-300 uppercase tracking-[0.3em] mb-4 shrink-0">Question</span>
+        {/* CARA DELANTERA (Pregunta - Colorida y Alegre) */}
+        <div className="absolute w-full h-full backface-hidden bg-white rounded-[36px] p-6 sm:p-8 border-4 border-rose-100 shadow-[0_15px_35px_rgba(225,29,72,0.15)] flex flex-col justify-center items-center text-center overflow-y-auto custom-scrollbar">
+          <span className="text-[10px] font-black text-rose-500 uppercase tracking-[0.3em] mb-4 shrink-0 bg-rose-50 px-3 py-1 rounded-full">Question</span>
           <p className={`${getQSize(card.q)} font-black text-slate-800 leading-tight my-auto`}>
-            {renderFormattedText(card.q)}
+            {renderFormattedText(card.q, false)}
           </p>
         </div>
 
-        {/* CARA TRASERA (Respuesta - Efecto Hundido y Texturizado) */}
-        <div className="absolute w-full h-full backface-hidden rotate-y-180 bg-[#eef2f0] rounded-[40px] p-6 sm:p-10 border border-[#d1e0d7] shadow-[inset_0_8px_30px_rgba(0,0,0,0.04)] flex flex-col justify-center items-center text-center overflow-y-auto custom-scrollbar">
-          <span className="text-[10px] font-black text-teal-600 uppercase tracking-[0.3em] mb-4 shrink-0">Answer</span>
+        {/* CARA TRASERA (Respuesta - Degradado Alegre) */}
+        <div className="absolute w-full h-full backface-hidden rotate-y-180 bg-gradient-to-br from-emerald-50 to-teal-50 rounded-[36px] p-6 sm:p-8 border-4 border-emerald-200 shadow-[inset_0_10px_20px_rgba(4,120,87,0.08)] flex flex-col justify-center items-center text-center overflow-y-auto custom-scrollbar">
+          <span className="text-[10px] font-black text-emerald-600 uppercase tracking-[0.3em] mb-4 shrink-0 bg-white px-3 py-1 rounded-full shadow-sm">Answer</span>
           <p className={`${getASize(card.a)} font-bold text-slate-700 leading-relaxed whitespace-pre-wrap my-auto`}>
-            {renderFormattedText(card.a)}
+            {renderFormattedText(card.a, true)}
           </p>
         </div>
 
@@ -1562,7 +1562,6 @@ function FlashcardUI({ card, isFlipped, setIsFlipped }) {
     </div>
   );
 }
-
 function DeckStudyView({ deck, onBack, addPoints, onUpdateCard, onFinishChallenge }) {
   const [idx, setIdx] = useState(0);
   const [flipped, setFlipped] = useState(false);
