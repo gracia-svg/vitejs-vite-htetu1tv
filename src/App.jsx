@@ -578,13 +578,18 @@ useEffect(() => {
 
   return (
     <div className="min-h-screen pb-32 font-sans relative overflow-x-hidden">
-     <style>{`
-        /* Fondo Verde Salvia Muy Suave y Diseño Plano (Flat Vector) */
-        body { background-color: #f0f4f2; font-family: 'Inter', system-ui, sans-serif; }
+<style>{`
+        /* Fondo Animado Mesh Gradient (Sublime y no distrae) */
+        body { 
+          background: linear-gradient(120deg, #f0f4f2 0%, #e0f2fe 50%, #f0fdf4 100%);
+          background-size: 200% 200%;
+          animation: gradientShift 15s ease infinite;
+          font-family: 'Inter', system-ui, sans-serif; 
+        }
+        @keyframes gradientShift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
         
-        /* Tarjetas Bento sin sombras pesadas, solo borde fino */
         .bento-card { border-radius: 32px; border: 2px solid #e2e8e5; background: white; box-shadow: 4px 4px 0px rgba(226, 232, 229, 0.5); transition: all 0.2s ease; }
-        .bento-card:hover { border-color: #5eead4; transform: translateY(-2px); box-shadow: 6px 6px 0px rgba(94, 234, 212, 0.2); }
+        .bento-card:hover { transform: translateY(-2px); box-shadow: 6px 6px 0px rgba(94, 234, 212, 0.2); }
         
         .map-bubble { width: 80px; height: 80px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; border: 4px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
         .modal-overlay { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); position: fixed; inset: 0; z-index: 500; display: flex; align-items: center; justify-content: center; padding: 1rem; }
@@ -593,19 +598,22 @@ useEffect(() => {
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         .vault-pill { background: white; color: #334155; border: 2px solid #e2e8e5; box-shadow: 3px 3px 0px rgba(226, 232, 229, 0.8); }
+
+        /* UTILIDADES 3D PARA ANIMACIÓN DE TARJETAS (BLINDADO) */
+        .perspective-1000 { perspective: 1000px; }
+        .preserve-3d { transform-style: preserve-3d; }
+        .backface-hidden { backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+        .rotate-y-180 { transform: rotateY(180deg); }
       `}</style>
 
       {/* MODALES DEL VAULT */}
       {showVaultModal && (
         <div className="modal-overlay animate-in fade-in" onClick={() => setShowVaultModal(false)}>
           <div className="bg-white rounded-[40px] p-8 max-w-sm w-full text-center shadow-2xl relative animate-in zoom-in-95" onClick={e => e.stopPropagation()}>
-             {/* La X ahora SOLO cierra el modal y te deja en el mapa */}
              <button onClick={() => setShowVaultModal(false)} className="absolute top-4 right-4 text-slate-300 hover:text-red-500 transition-colors">
                <Icon name="X" size={24}/>
              </button>
-
-             <p className="text-[10px] font-black uppercase text-amber-500 tracking-[0.3em] mb-4">Daily Wisdom From The Vault 🗝️</p>
-             
+             <p className="text-[10px] font-black uppercase text-teal-600 tracking-[0.3em] mb-4">Daily Wisdom From The Vault 🗝️</p>
              {vaultItems.length > 0 ? (
                <div className="space-y-4">
                  <p className="text-xl font-black text-slate-800 leading-tight italic">"{vaultItems[Math.floor(Math.random() * vaultItems.length)].text}"</p>
@@ -614,30 +622,21 @@ useEffect(() => {
              ) : (
                <p className="text-sm font-bold text-slate-400 italic">Vault is empty. Import citations in settings.</p>
              )}
-
-             {/* Tocar esta sección ahora CERRARÁ el modal y ABRIRÁ el carrusel */}
-             <div 
-               onClick={() => { setShowVaultModal(false); setShowVaultCarousel(true); }} 
-               className="mt-8 pt-4 border-t border-slate-50 cursor-pointer group"
-             >
-               <p className="text-[8px] font-black text-slate-300 uppercase animate-pulse group-hover:text-amber-500 transition-colors">
-                 Touch to enter full carousel
-               </p>
+             <div onClick={() => { setShowVaultModal(false); setShowVaultCarousel(true); }} className="mt-8 pt-4 border-t border-slate-50 cursor-pointer group">
+               <p className="text-[8px] font-black text-slate-300 uppercase animate-pulse group-hover:text-teal-600 transition-colors">Touch to enter full carousel</p>
              </div>
           </div>
         </div>
       )}
 
-      {showVaultCarousel && (
-        <VaultCarousel items={vaultItems} setItems={setVaultItems} onClose={() => setShowVaultCarousel(false)} />
-      )}
+      {showVaultCarousel && <VaultCarousel items={vaultItems} setItems={setVaultItems} onClose={() => setShowVaultCarousel(false)} />}
 
-      {/* MODAL GLOBAL */}
+      {/* MODAL GLOBAL DE TEMA (Mantenido intacto por seguridad) */}
       {selectedTopicModal && (
         <div className="modal-overlay animate-in fade-in duration-300" onClick={() => { setSelectedTopicModal(null); setIsModalFullscreen(false); }}>
           <div className={`modal-content p-8 custom-scrollbar animate-in zoom-in-95 duration-300 ${isModalFullscreen ? 'modal-fullscreen' : ''}`} onClick={e => e.stopPropagation()}>
             <div className="absolute top-6 right-6 flex gap-2">
-              <button onClick={() => setIsModalFullscreen(!isModalFullscreen)} className="p-2 bg-slate-100 text-slate-400 rounded-full hover:bg-emerald-50 hover:text-emerald-500 transition-colors">
+              <button onClick={() => setIsModalFullscreen(!isModalFullscreen)} className="p-2 bg-slate-100 text-slate-400 rounded-full hover:bg-teal-50 hover:text-teal-500 transition-colors">
                 <Icon name={isModalFullscreen ? "Minimize" : "Maximize"} size={20} />
               </button>
               <button onClick={() => { setSelectedTopicModal(null); setIsModalFullscreen(false); }} className="p-2 bg-slate-100 text-slate-400 rounded-full hover:bg-red-50 hover:text-red-500 transition-colors">
@@ -663,20 +662,12 @@ useEffect(() => {
                 />
               </div>
 
-              {/* CURRICULAR ALIGNMENT */}
               {selectedTopicModal.id.toString().startsWith('ud') ? (
                 <div className="flex flex-wrap justify-center gap-2 px-4 border-b border-slate-50 pb-6">
                   {['ce', 'sb', 'do', 'cr', 'leg'].map(key => (
                     <div key={key} className="flex flex-col items-center">
                       <span className="text-[7px] font-black uppercase text-slate-400 mb-1">{key}</span>
-                      <EditableText 
-                        value={selectedTopicModal[key]} 
-                        onSave={(nv) => { 
-                          setUnits(prev => prev.map(u => u.id === selectedTopicModal.id ? { ...u, [key]: nv } : u)); 
-                          setSelectedTopicModal({...selectedTopicModal, [key]: nv}); 
-                        }} 
-                        className="px-2 py-1 bg-slate-50 text-slate-600 rounded-lg text-[9px] font-black border border-slate-100" 
-                      />
+                      <EditableText value={selectedTopicModal[key]} onSave={(nv) => { setUnits(prev => prev.map(u => u.id === selectedTopicModal.id ? { ...u, [key]: nv } : u)); setSelectedTopicModal({...selectedTopicModal, [key]: nv}); }} className="px-2 py-1 bg-slate-50 text-slate-600 rounded-lg text-[9px] font-black border border-slate-100" />
                     </div>
                   ))}
                 </div>
@@ -684,14 +675,7 @@ useEffect(() => {
                 <div className="flex justify-center gap-2 px-4 border-b border-slate-50 pb-6">
                   <div className="flex flex-col items-center">
                     <span className="text-[7px] font-black uppercase text-slate-400 mb-1">Legislación</span>
-                    <EditableText 
-                      value={selectedTopicModal.leg || "LOMLOE"} 
-                      onSave={(nv) => { 
-                        setPlanning(prev => prev.map(p => p.id === selectedTopicModal.id ? { ...p, leg: nv } : p)); 
-                        setSelectedTopicModal({...selectedTopicModal, leg: nv}); 
-                      }} 
-                      className="px-2 py-1 bg-blue-50 text-blue-600 rounded-lg text-[9px] font-black border border-blue-100" 
-                    />
+                    <EditableText value={selectedTopicModal.leg || "LOMLOE"} onSave={(nv) => { setPlanning(prev => prev.map(p => p.id === selectedTopicModal.id ? { ...p, leg: nv } : p)); setSelectedTopicModal({...selectedTopicModal, leg: nv}); }} className="px-2 py-1 bg-blue-50 text-blue-600 rounded-lg text-[9px] font-black border border-blue-100" />
                   </div>
                 </div>
               ) : (
@@ -699,32 +683,9 @@ useEffect(() => {
                   {['ce', 'do', 'sb', 'cr', 'leg'].map(key => (
                     <div key={key} className="flex flex-col items-center">
                       <span className="text-[7px] font-black uppercase text-slate-400 mb-1">{key}</span>
-                      <EditableText 
-                        value={selectedTopicModal[key]} 
-                        onSave={(nv) => { 
-                          setTopics(prev => prev.map(t => t.id === selectedTopicModal.id ? { ...t, [key]: nv } : t)); 
-                          setSelectedTopicModal({...selectedTopicModal, [key]: nv}); 
-                        }} 
-                        className={`px-2 py-1 rounded-lg text-[9px] font-black border ${
-                          key==='ce' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
-                          key==='do' ? 'bg-blue-50 text-blue-600 border-blue-100' :
-                          key==='sb' ? 'bg-violet-50 text-violet-600 border-violet-100' :
-                          key==='cr' ? 'bg-pink-50 text-pink-600 border-pink-100' :
-                          'bg-amber-50 text-amber-600 border-amber-100'
-                        }`} 
-                      />
+                      <EditableText value={selectedTopicModal[key]} onSave={(nv) => { setTopics(prev => prev.map(t => t.id === selectedTopicModal.id ? { ...t, [key]: nv } : t)); setSelectedTopicModal({...selectedTopicModal, [key]: nv}); }} className={`px-2 py-1 rounded-lg text-[9px] font-black border ${key==='ce' ? 'bg-teal-50 text-teal-600 border-teal-100' : key==='do' ? 'bg-blue-50 text-blue-600 border-blue-100' : key==='sb' ? 'bg-violet-50 text-violet-600 border-violet-100' : key==='cr' ? 'bg-pink-50 text-pink-600 border-pink-100' : 'bg-amber-50 text-amber-600 border-amber-100'}`} />
                     </div>
                   ))}
-                </div>
-              )}
-
-              {/* LEY ALERT */}
-              {!selectedTopicModal.id.toString().startsWith('p') && !selectedTopicModal.id.toString().startsWith('ud') && [1, 2, 39, 40, 62, 65, 66].includes(selectedTopicModal.id) && (
-                <div className="mx-4 p-3 bg-amber-50 border-2 border-amber-200 rounded-2xl flex items-center gap-3 text-amber-700 animate-pulse">
-                  <Icon name="AlertTriangle" size={24} />
-                  <p className="text-[10px] font-black text-left uppercase leading-tight">
-                    { [62, 65, 66].includes(selectedTopicModal.id) ? "Must comply with Law 1/2024 (Libertad Educativa CV)" : "Must comply with Decree 104/2018 (Inclusión CV)" }
-                  </p>
                 </div>
               )}
 
@@ -740,21 +701,14 @@ useEffect(() => {
                     } else {
                       setSelectedTopicModal({ ...selectedTopicModal, isEditing: true, tempNotes: selectedTopicModal.indexNotes });
                     }
-                  }} className={`p-2 rounded-xl transition-all ${selectedTopicModal.isEditing ? 'bg-emerald-500 text-white shadow-lg' : 'bg-slate-100 text-slate-500'}`}>
+                  }} className={`p-2 rounded-xl transition-all ${selectedTopicModal.isEditing ? 'bg-teal-500 text-white shadow-lg' : 'bg-slate-100 text-slate-500'}`}>
                     <Icon name={selectedTopicModal.isEditing ? "Check" : "Edit"} size={18} />
                   </button>
                 </div>
                 {selectedTopicModal.isEditing ? (
-                  <textarea 
-                    autoFocus 
-                    className="w-full h-96 p-4 bg-slate-50 rounded-2xl border-2 border-emerald-200 outline-none font-medium text-slate-700 leading-relaxed resize-none custom-scrollbar" 
-                    value={selectedTopicModal.tempNotes} 
-                    onChange={e => setSelectedTopicModal({ ...selectedTopicModal, tempNotes: e.target.value })} 
-                  />
+                  <textarea autoFocus className="w-full h-96 p-4 bg-slate-50 rounded-2xl border-2 border-teal-200 outline-none font-medium text-slate-700 leading-relaxed resize-none custom-scrollbar" value={selectedTopicModal.tempNotes} onChange={e => setSelectedTopicModal({ ...selectedTopicModal, tempNotes: e.target.value })} />
                 ) : (
-                  <pre className="whitespace-pre-wrap font-sans text-slate-600 leading-relaxed bg-slate-50 p-6 rounded-2xl border-2 border-slate-100 min-h-[200px] overflow-x-auto">
-                    {selectedTopicModal.indexNotes || "Notes..."}
-                  </pre>
+                  <pre className="whitespace-pre-wrap font-sans text-slate-600 leading-relaxed bg-slate-50 p-6 rounded-2xl border-2 border-slate-100 min-h-[200px] overflow-x-auto">{selectedTopicModal.indexNotes || "Notes..."}</pre>
                 )}
               </div>
             </div>
@@ -762,63 +716,39 @@ useEffect(() => {
         </div>
       )}
 
-      {/* HEADER PREMIUM */}
-      <header className="sticky top-0 z-[100] bg-white/95 backdrop-blur-md border-b-2 border-slate-100 p-4 shadow-sm">
+      {/* CABECERO PREMIUM (Color Unificado a Teal/Turquesa suave) */}
+      <header className="sticky top-0 z-[100] bg-white/80 backdrop-blur-md border-b-2 border-slate-100/50 p-4 shadow-sm">
         <div className="max-w-5xl mx-auto flex justify-between items-center">
           <div className="flex items-center gap-2 cursor-pointer transition-transform active:scale-95" onClick={() => setActiveTab('map')}>
-            <div className="p-2 bg-emerald-600 rounded-xl text-white shadow-lg"><Icon name="Turtle" size={24} /></div>
-            <span className="font-black text-emerald-950 text-xl tracking-tighter hidden sm:block">TurtleStudy</span>
+            <div className="p-2 bg-teal-600 rounded-xl text-white shadow-lg"><Icon name="Turtle" size={24} /></div>
+            <span className="font-black text-teal-950 text-xl tracking-tighter hidden sm:block">TurtleStudy</span>
           </div>
 
           <div className="flex items-center gap-2">
-            <button onClick={() => { setActiveTab('stats'); setIsToolsExpanded(true); }} className="px-3 py-2 bg-emerald-50 text-emerald-700 rounded-2xl border border-emerald-100 font-black flex items-center gap-2 text-sm shadow-sm hover:bg-emerald-100 transition-colors">
+            <button onClick={() => { setActiveTab('stats'); setIsToolsExpanded(true); }} className="px-3 py-2 bg-teal-50 text-teal-700 rounded-2xl border border-teal-100 font-black flex items-center gap-2 text-sm shadow-sm hover:bg-teal-100 transition-colors">
               <Icon name="Trophy" size={16} /><span>{points}</span>
             </button>
             
             <div className="relative">
-              <button onClick={() => setShowTimerMenu(!showTimerMenu)} className={`px-3 py-2 rounded-2xl font-black flex items-center gap-2 border transition-all text-sm ${isTimerActive ? 'bg-emerald-600 text-white shadow-emerald-200 shadow-lg' : 'bg-white text-emerald-600 border-slate-200'}`}>
+              <button onClick={() => setShowTimerMenu(!showTimerMenu)} className={`px-3 py-2 rounded-2xl font-black flex items-center gap-2 border transition-all text-sm ${isTimerActive ? 'bg-teal-600 text-white shadow-teal-200 shadow-lg' : 'bg-white text-teal-600 border-slate-200'}`}>
                 <Icon name="Clock" size={16} className={isTimerActive ? 'animate-spin' : ''} />
                 <span className="tabular-nums">{timeLeft > 0 ? (Math.floor(timeLeft/60)+":"+(timeLeft%60).toString().padStart(2,'0')) : '00:00'}</span>
               </button>
               {showTimerMenu && (
                 <div className="absolute top-full right-0 mt-2 bg-white border-2 border-slate-100 rounded-2xl p-4 shadow-2xl z-[200] w-64 animate-in zoom-in-95">
                   <div className="grid grid-cols-2 gap-2 mb-3">
-                    <button onClick={()=>{setTimeLeft(7200); setEndTime(Date.now() + 7200000); setIsTimerActive(true); setShowTimerMenu(false)}} className="p-2 bg-slate-50 hover:bg-emerald-50 rounded-xl text-[10px] font-black uppercase">2H Focus</button>
-                    <button onClick={()=>{setTimeLeft(3600); setEndTime(Date.now() + 3600000); setIsTimerActive(true); setShowTimerMenu(false)}} className="p-2 bg-slate-50 hover:bg-emerald-50 rounded-xl text-[10px] font-black uppercase">1H Plan</button>
+                    <button onClick={()=>{setTimeLeft(7200); setEndTime(Date.now() + 7200000); setIsTimerActive(true); setShowTimerMenu(false)}} className="p-2 bg-slate-50 hover:bg-teal-50 rounded-xl text-[10px] font-black uppercase">2H Focus</button>
+                    <button onClick={()=>{setTimeLeft(3600); setEndTime(Date.now() + 3600000); setIsTimerActive(true); setShowTimerMenu(false)}} className="p-2 bg-slate-50 hover:bg-teal-50 rounded-xl text-[10px] font-black uppercase">1H Plan</button>
                   </div>
-                  
-                  {/* Temporizador Personalizado */}
                   <div className="pt-2 border-t border-slate-100 flex gap-2 items-center">
-                    <input 
-                      type="number" 
-                      placeholder="Min..." 
-                      className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-xs font-black outline-none focus:border-emerald-300"
-                      value={customMinutes}
-                      onChange={e => setCustomMinutes(e.target.value)}
-                    />
-                    <button 
-                      onClick={() => {
-                        const mins = parseInt(customMinutes);
-                        if(mins > 0) {
-                          const ms = mins * 60 * 1000;
-                          setTimeLeft(mins * 60);
-                          setEndTime(Date.now() + ms);
-                          setIsTimerActive(true);
-                          setShowTimerMenu(false);
-                          setCustomMinutes("");
-                        }
-                      }}
-                      className="bg-emerald-600 text-white px-3 py-1 rounded-lg text-[10px] font-black"
-                    >
-                      SET
-                    </button>
+                    <input type="number" placeholder="Min..." className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-xs font-black outline-none focus:border-teal-300" value={customMinutes} onChange={e => setCustomMinutes(e.target.value)} />
+                    <button onClick={() => { const mins = parseInt(customMinutes); if(mins > 0) { setTimeLeft(mins * 60); setEndTime(Date.now() + (mins * 60 * 1000)); setIsTimerActive(true); setShowTimerMenu(false); setCustomMinutes(""); } }} className="bg-teal-600 text-white px-3 py-1 rounded-lg text-[10px] font-black">SET</button>
                   </div>
-
                   <button onClick={()=>{setTimeLeft(0); setEndTime(null); setIsTimerActive(false); setShowTimerMenu(false)}} className="w-full p-2 bg-red-50 text-red-600 rounded-xl text-[10px] font-black uppercase tracking-widest mt-2">Reset Timer</button>
                 </div>
               )}
             </div>
-            {/* El botón nuevo de Ajustes Globales */}
+            
             <button onClick={() => setShowGlobalSettings(true)} className="p-2 bg-slate-100 text-slate-500 rounded-xl hover:bg-slate-200 transition-colors shadow-sm ml-1">
               <Icon name="Settings" size={20} />
             </button>
@@ -833,64 +763,56 @@ useEffect(() => {
           <div className="max-w-5xl mx-auto pt-4 border-t border-slate-100 mt-4 animate-in slide-in-from-top-2">
             <div className="grid grid-cols-5 gap-2 mb-4">
               <HeaderToolBtn active={activeTab==='badges'} icon="Award" label="LOGROS" color="amber" onClick={()=>setActiveTab('badges')} />
-              <HeaderToolBtn active={activeTab==='flashcards'} icon="Library" label="CARDS" color="rose" onClick={()=>setActiveTab('flashcards')} />
+              <HeaderToolBtn active={activeTab==='flashcards'} icon="Library" label="CARDS" color="teal" onClick={()=>setActiveTab('flashcards')} />
               <HeaderToolBtn active={activeTab==='notes'} icon="StickyNote" label="NOTAS" color="yellow" onClick={()=>setActiveTab('notes')} />
               <HeaderToolBtn active={activeTab==='todo'} icon="ListTodo" label="TAREAS" color="orange" onClick={()=>setActiveTab('todo')} />
               <HeaderToolBtn active={activeTab==='stats'} icon="BarChart3" label="STATS" color="violet" onClick={()=>setActiveTab('stats')} />
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="flex bg-orange-50 rounded-2xl border border-orange-100 shadow-sm transition-all hover:bg-orange-100 overflow-hidden">
-                <div className="flex-1 flex flex-col items-center justify-center p-2 border-r border-orange-200">
-                  <Icon name="Flame" size={20} className="fill-orange-500 text-orange-500" />
-                  <p className="text-xs font-black text-orange-700 mt-1">{streak} Días</p>
-                </div>
-                <div className="flex-1 flex flex-col items-center justify-center p-2">
-                  <span className="text-lg leading-none">👑</span>
-                  <p className="text-xs font-black text-amber-600 mt-1">{perfectWeeks} Semanas</p>
-                </div>
-              </div>
-              <button 
-                onClick={() => { 
-                  const drawn = []; 
-                  const pool = Array.from({length:69}, (_,i)=>i+1); 
-                  for(let i=0; i<4; i++) drawn.push(pool.splice(Math.floor(Math.random()*pool.length),1)[0]); 
-                  setLuckyNumbers(drawn.sort((a,b)=>a-b)); 
-                }} 
-                className="flex items-center justify-center gap-3 p-3 bg-amber-50 rounded-2xl border border-amber-100 text-amber-700 shadow-sm active:scale-95 transition-all hover:bg-amber-100"
-              >
+            
+            {/* Racha eliminada, Dado Mágico ampliado para ocupar el espacio visual */}
+            <div className="grid grid-cols-1">
+              <button onClick={() => { const drawn = []; const pool = Array.from({length:69}, (_,i)=>i+1); for(let i=0; i<4; i++) drawn.push(pool.splice(Math.floor(Math.random()*pool.length),1)[0]); setLuckyNumbers(drawn.sort((a,b)=>a-b)); }} className="flex items-center justify-center gap-3 p-3 bg-amber-50 rounded-2xl border border-amber-100 text-amber-700 shadow-sm active:scale-95 transition-all hover:bg-amber-100">
                 <Icon name="Dices" size={20} />
-                <div className="flex gap-1">
-                  {luckyNumbers.map((n,i)=><span key={i} className="text-xs font-black w-6 h-6 bg-white border border-amber-200 rounded flex items-center justify-center">{n||'?'}</span>)}
+                <span className="text-xs font-black uppercase tracking-widest hidden sm:block">Magic Dice</span>
+                <div className="flex gap-1 ml-2">
+                  {luckyNumbers.map((n,i)=><span key={i} className="text-xs font-black w-8 h-8 bg-white border border-amber-200 rounded-lg flex items-center justify-center">{n||'?'}</span>)}
                 </div>
               </button>
             </div>
 
-            {/* Misiones Semanales UI */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 p-4 bg-slate-50 rounded-3xl border border-slate-100">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 p-4 bg-slate-50/50 rounded-3xl border border-slate-100">
                <div className="space-y-2">
                  <div className="flex justify-between items-center"><span className="text-xs font-black uppercase text-slate-700">Misión 1: 500 Puntos</span><span className="text-[10px] font-bold text-slate-400">{weeklyData.points}/500</span></div>
-                 <div className="h-2 bg-slate-200 rounded-full overflow-hidden"><div className="h-full bg-emerald-500 transition-all duration-500" style={{width: `${Math.min(100, (weeklyData.points/500)*100)}%`}}></div></div>
-                 {weeklyData.points >= 500 && !weeklyData.claimed1 && <button onClick={()=>claimMission(1)} className="w-full py-1.5 bg-emerald-600 text-white rounded-lg text-[10px] font-black uppercase shadow-md active:scale-95 transition-all">Reclamar +50 Pts</button>}
-                 {weeklyData.claimed1 && <div className="text-center text-[10px] font-black text-emerald-600 uppercase">¡Completada!</div>}
+                 <div className="h-2 bg-slate-200 rounded-full overflow-hidden"><div className="h-full bg-teal-500 transition-all duration-500" style={{width: `${Math.min(100, (weeklyData.points/500)*100)}%`}}></div></div>
+                 {weeklyData.points >= 500 && !weeklyData.claimed1 && <button onClick={()=>claimMission(1)} className="w-full py-1.5 bg-teal-600 text-white rounded-lg text-[10px] font-black uppercase shadow-md active:scale-95 transition-all">Reclamar +50 Pts</button>}
+                 {weeklyData.claimed1 && <div className="text-center text-[10px] font-black text-teal-600 uppercase">¡Completada!</div>}
                </div>
                <div className="space-y-2">
                  <div className="flex justify-between items-center"><span className="text-xs font-black uppercase text-slate-700">Misión 2: Constancia</span><span className="text-[10px] font-bold text-slate-400">{weeklyData.dailyChallengesDone}/5 Retos</span></div>
                  <div className="flex gap-2 justify-between mt-1">
-                    <span className={`text-[9px] font-black uppercase ${weeklyData.topicsTouched ? 'text-emerald-600' : 'text-slate-400'}`}>Temas {weeklyData.topicsTouched ? '✓' : ''}</span>
-                    <span className={`text-[9px] font-black uppercase ${weeklyData.progTouched ? 'text-emerald-600' : 'text-slate-400'}`}>Prog {weeklyData.progTouched ? '✓' : ''}</span>
-                    <span className={`text-[9px] font-black uppercase ${weeklyData.practicoTouched ? 'text-emerald-600' : 'text-slate-400'}`}>Práctico {weeklyData.practicoTouched ? '✓' : ''}</span>
+                    <span className={`text-[9px] font-black uppercase ${weeklyData.topicsTouched ? 'text-teal-600' : 'text-slate-400'}`}>Temas {weeklyData.topicsTouched ? '✓' : ''}</span>
+                    <span className={`text-[9px] font-black uppercase ${weeklyData.progTouched ? 'text-teal-600' : 'text-slate-400'}`}>Prog {weeklyData.progTouched ? '✓' : ''}</span>
+                    <span className={`text-[9px] font-black uppercase ${weeklyData.practicoTouched ? 'text-teal-600' : 'text-slate-400'}`}>Práctico {weeklyData.practicoTouched ? '✓' : ''}</span>
                  </div>
-                 {weeklyData.topicsTouched && weeklyData.progTouched && weeklyData.practicoTouched && weeklyData.dailyChallengesDone >= 5 && !weeklyData.claimed2 && <button onClick={()=>claimMission(2)} className="w-full py-1.5 bg-emerald-600 text-white rounded-lg text-[10px] font-black uppercase shadow-md active:scale-95 transition-all">Reclamar +50 Pts</button>}
-                 {weeklyData.claimed2 && <div className="text-center text-[10px] font-black text-emerald-600 uppercase">¡Completada!</div>}
+                 {weeklyData.topicsTouched && weeklyData.progTouched && weeklyData.practicoTouched && weeklyData.dailyChallengesDone >= 5 && !weeklyData.claimed2 && <button onClick={()=>claimMission(2)} className="w-full py-1.5 bg-teal-600 text-white rounded-lg text-[10px] font-black uppercase shadow-md active:scale-95 transition-all">Reclamar +50 Pts</button>}
+                 {weeklyData.claimed2 && <div className="text-center text-[10px] font-black text-teal-600 uppercase">¡Completada!</div>}
                </div>
             </div>
-
           </div>
         )}
       </header>
 
-      {/* MAIN CONTAINER */}
-      {/* EL CENTRO DE MANDO INVISIBLE HASTA QUE SE LLAMA */}
+      {showGlobalSettings && (
+        <GlobalSettingsModal 
+          onClose={() => setShowGlobalSettings(false)}
+          actionLogs={actionLogs} undoAction={undoAction} levelDates={levelDates}
+          decks={decks} setDecks={setDecks} vaultItems={vaultItems} setVaultItems={setVaultItems}
+          examDate={examDate} setExamDate={setExamDate} submissionDate={submissionDate} setSubmissionDate={setSubmissionDate}
+          addPoints={addPoints} onResetTopics={handleResetTopics} onResetPlanning={handleResetPlanning} onResetPractico={handleResetPractico}
+          onLogout={handleLogout}
+        />
+      )}
+{/* EL CENTRO DE MANDO INVISIBLE HASTA QUE SE LLAMA */}
       {showGlobalSettings && (
         <GlobalSettingsModal 
           onClose={() => setShowGlobalSettings(false)}
@@ -930,7 +852,6 @@ useEffect(() => {
         )}
         {activeTab === 'planning' && <PlanningHub planning={planning} setPlanning={setPlanning} units={units} setUnits={setUnits} addPoints={addPoints} submissionDate={submissionDate} setSubmissionDate={setSubmissionDate} actionLogs={actionLogs} onOpenModal={setSelectedTopicModal} onReset={handleResetPlanning} touchWeekly={touchWeekly} />}
         {activeTab === 'practico' && <PracticoView skills={skills} setSkills={setSkills} addPoints={addPoints} sessions={practicoSessions} setSessions={setPracticoSessions} onReset={handleResetPractico} touchWeekly={touchWeekly} />}
-        
         {/* LLAMADA A FLASHCARDS MANAGER ACTUALIZADA */}
         {activeTab === 'flashcards' && !activeDeckId && !examDeck && (
           <FlashcardsManager 
@@ -952,9 +873,10 @@ useEffect(() => {
       </main>
 
       {/* NAV FOOTER FIXED */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t-2 border-slate-100 p-4 pb-8 z-50 shadow-lg">
+     {/* NAV FOOTER FIXED (Unified Colors) */}
+      <nav className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t-2 border-slate-100 p-4 pb-8 z-50 shadow-[0_-10px_40px_rgba(0,0,0,0.03)]">
         <div className="max-w-md mx-auto flex justify-around">
-          <NavBtn active={activeTab==='map'} icon="MapIcon" label="MAPA" color="emerald" onClick={()=>setActiveTab('map')} />
+          <NavBtn active={activeTab==='map'} icon="MapIcon" label="MAPA" color="teal" onClick={()=>setActiveTab('map')} />
           <NavBtn active={activeTab==='syllabus'} icon="BookOpen" label="TEMAS" color="amber" onClick={()=>setActiveTab('syllabus')} />
           <NavBtn active={activeTab==='planning'} icon="FileText" label="PROG" color="teal" onClick={()=>setActiveTab('planning')} />
           <NavBtn active={activeTab==='practico'} icon="Target" label="PRACT" color="indigo" onClick={()=>setActiveTab('practico')} />
@@ -968,49 +890,62 @@ useEffect(() => {
 // 5. COMPONENTES DE VISTA (COMPLETOS)
 // ==========================================
 
+// ==========================================
+// COMPONENTES DE VISTA (COMPLETOS)
+// ==========================================
+
 function ProgressMap({ points, level, xp, addPoints, streak, perfectWeeks, onVaultOpen }) {
   const [ptsMenu, setPtsMenu] = useState('closed');
 
-  // Cálculo de la "Era" actual (cada 10 niveles es una era nueva)
-  const currentEra = Math.floor((level - 1) / 10) + 1;
-  const eraNames = ["The Genesis", "Foundation", "Momentum", "Deep Focus", "Mastery", "Resilience", "The Grind", "Elevation", "Ascension", "End Game"];
+  // Sistema Visual Sutil de Eras (Bucle infinito cada 10 niveles)
+  const getEraStyle = (lvl) => {
+    const era = Math.floor((lvl - 1) / 10);
+    const styles = [
+      'border-teal-400 text-teal-600 bg-teal-50',       // Niveles 1-10, 101-110...
+      'border-cyan-400 text-cyan-600 bg-cyan-50',       // Niveles 11-20, 111-120...
+      'border-blue-400 text-blue-600 bg-blue-50',       // Niveles 21-30, 121-130...
+      'border-indigo-400 text-indigo-600 bg-indigo-50', // Niveles 31-40...
+      'border-violet-400 text-violet-600 bg-violet-50', // Niveles 41-50...
+      'border-fuchsia-400 text-fuchsia-600 bg-fuchsia-50',// Niveles 51-60...
+      'border-rose-400 text-rose-600 bg-rose-50',       // Niveles 61-70...
+      'border-orange-400 text-orange-600 bg-orange-50', // Niveles 71-80...
+      'border-amber-400 text-amber-600 bg-amber-50',    // Niveles 81-90...
+      'border-slate-800 text-slate-800 bg-slate-100',   // Niveles 91-100...
+    ];
+    // El operador % reinicia el ciclo cromático al pasar del último estilo
+    return styles[era % styles.length];
+  };
+
+  const activeEraStyle = getEraStyle(level);
+  // Extraemos el color de texto (ej: text-teal-600) para pintar la barra superior
+  const barColorClass = activeEraStyle.split(' ')[1].replace('text-', 'bg-');
 
   return (
     <div className="space-y-8 max-w-xl mx-auto py-8 text-center animate-in fade-in">
-      
-      {/* Banner de la Era Actual */}
-      <div className="bg-gradient-to-r from-teal-50 to-cyan-50 border-2 border-teal-100 rounded-[32px] p-6 text-left relative overflow-hidden">
-        <div className="relative z-10">
-          <p className="text-[10px] font-black uppercase text-teal-600 tracking-widest mb-1">Current Era • {currentEra}/10</p>
-          <h3 className="text-2xl font-black text-teal-950">{eraNames[currentEra - 1] || "The Legacy"}</h3>
-        </div>
-        <Icon name="Target" size={100} className="absolute -right-4 -bottom-8 text-teal-500 opacity-10 rotate-12" />
-      </div>
-
       <div className="grid grid-cols-2 gap-4">
         <div className="relative">
           <div onClick={() => setPtsMenu(ptsMenu === 'closed' ? 'main' : 'closed')} className="bento-card p-6 cursor-pointer h-full flex flex-col items-center justify-center">
             <div className="flex justify-between items-end w-full mb-2">
-              <span className="text-sm font-black text-cyan-700 uppercase">Lvl {level}</span>
-              <span className="text-[10px] font-black text-cyan-500 tabular-nums">{xp || 0}/200</span>
+              <span className={`text-sm font-black uppercase ${activeEraStyle.split(' ')[1]}`}>Lvl {level}</span>
+              <span className="text-[10px] font-black text-slate-400 tabular-nums">{xp || 0}/200</span>
             </div>
             <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
-              <div className="h-full bg-cyan-400 transition-all duration-1000" style={{width:`${((xp||0)/200)*100}%`}}/>
+              <div className={`h-full transition-all duration-1000 ${barColorClass}`} style={{width:`${((xp||0)/200)*100}%`}}/>
             </div>
           </div>
           
           {ptsMenu !== 'closed' && (
-            <div className="absolute top-full left-0 right-0 mt-2 bg-white border-2 border-cyan-100 rounded-2xl p-3 shadow-lg z-50 flex flex-col gap-2 animate-in zoom-in-95">
+            <div className="absolute top-full left-0 right-0 mt-2 bg-white border-2 border-slate-100 rounded-2xl p-3 shadow-lg z-50 flex flex-col gap-2 animate-in zoom-in-95">
               {ptsMenu === 'main' && (
                 <div className="flex gap-2">
-                  <button onClick={(e) => { e.stopPropagation(); setPtsMenu('add'); }} className="flex-1 py-3 bg-cyan-50 text-cyan-600 rounded-xl font-black hover:bg-cyan-100 transition-colors"><Icon name="Plus" size={20} className="mx-auto" /></button>
+                  <button onClick={(e) => { e.stopPropagation(); setPtsMenu('add'); }} className={`flex-1 py-3 rounded-xl font-black transition-colors ${activeEraStyle}`}><Icon name="Plus" size={20} className="mx-auto" /></button>
                   <button onClick={(e) => { e.stopPropagation(); setPtsMenu('sub'); }} className="flex-1 py-3 bg-slate-50 text-slate-500 rounded-xl font-black hover:bg-slate-100 transition-colors"><Icon name="Minus" size={20} className="mx-auto" /></button>
                 </div>
               )}
               {ptsMenu === 'add' && (
                 <div className="grid grid-cols-2 gap-2">
                   {[5, 10, 15, 25].map(v => (
-                    <button key={v} onClick={(e) => { e.stopPropagation(); addPoints(v, `+${v} Pts (Manual)`); setPtsMenu('closed'); }} className="p-2 bg-cyan-500 text-white rounded-xl font-black text-xs hover:bg-cyan-600 transition-colors">+{v}</button>
+                    <button key={v} onClick={(e) => { e.stopPropagation(); addPoints(v, `+${v} Pts (Manual)`); setPtsMenu('closed'); }} className={`p-2 text-white rounded-xl font-black text-xs transition-colors ${barColorClass}`}>+{v}</button>
                   ))}
                   <button onClick={(e) => { e.stopPropagation(); setPtsMenu('main'); }} className="col-span-2 p-2 bg-slate-100 text-slate-500 rounded-xl text-[10px] font-black uppercase hover:bg-slate-200 transition-colors">Volver</button>
                 </div>
@@ -1050,12 +985,17 @@ function ProgressMap({ points, level, xp, addPoints, streak, perfectWeeks, onVau
 
       <div className="flex flex-col items-center gap-16 relative mt-12">
         <div className="absolute top-0 bottom-0 w-1.5 bg-slate-200 rounded-full -z-10" />
-        {[level+1, level, level-1, level-2].filter(l=>l>0).map(l => (
-          <div key={l} className={`w-20 h-20 rounded-full border-[3px] flex flex-col items-center justify-center transition-all relative ${l === level ? 'bg-white border-cyan-400 scale-110 shadow-[0_0_0_8px_rgba(34,211,238,0.1)]' : 'bg-[#f0f4f2] border-slate-300 text-slate-400 opacity-70'}`}>
-            <span className="text-2xl font-black tabular-nums">{l}</span>
-            {l === level && <Icon name="Turtle" size={24} className="absolute -top-8 text-cyan-600 animate-bounce" />}
-          </div>
-        ))}
+        {[level+1, level, level-1, level-2].filter(l=>l>0).map(l => {
+          const isCurrent = l === level;
+          const style = getEraStyle(l);
+          
+          return (
+            <div key={l} className={`w-20 h-20 rounded-full border-[3px] flex flex-col items-center justify-center transition-all relative ${isCurrent ? `bg-white scale-110 shadow-[0_0_0_8px_rgba(255,255,255,0.5)] ${style.split(' ')[0]}` : 'bg-white/50 border-slate-300 text-slate-400 opacity-70'}`}>
+              <span className={`text-2xl font-black tabular-nums ${isCurrent ? style.split(' ')[1] : ''}`}>{l}</span>
+              {isCurrent && <Icon name="Turtle" size={24} className={`absolute -top-8 animate-bounce ${style.split(' ')[1]}`} />}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
@@ -1571,13 +1511,12 @@ function FlashcardUI({ card, isFlipped, setIsFlipped }) {
   const getQSize = (text) => text.length > 150 ? "text-lg" : text.length > 80 ? "text-xl" : "text-2xl md:text-3xl";
   const getASize = (text) => text.length > 300 ? "text-sm" : text.length > 150 ? "text-base" : "text-xl";
 
-  // Función para procesar palabras entre asteriscos y resaltarlas
   const renderFormattedText = (text) => {
     if (!text) return "";
     const parts = text.split(/(\*[^*]+\*)/g);
     return parts.map((part, i) => {
       if (part.startsWith('*') && part.endsWith('*')) {
-        return <span key={i} className="text-cyan-600 bg-cyan-50 px-1 rounded-md border border-cyan-100">{part.slice(1, -1)}</span>;
+        return <span key={i} className="text-teal-600 bg-teal-50 px-1 rounded-md border border-teal-100">{part.slice(1, -1)}</span>;
       }
       return part;
     });
@@ -1585,24 +1524,28 @@ function FlashcardUI({ card, isFlipped, setIsFlipped }) {
 
   return (
     <div 
-      className="w-full h-[60vh] min-h-[350px] max-h-[500px] cursor-pointer flex"
+      className="relative w-full h-[60vh] min-h-[350px] max-h-[500px] cursor-pointer perspective-1000"
       onClick={() => setIsFlipped(!isFlipped)}
     >
-      {isFlipped ? (
-        <div className="w-full flex-1 bg-slate-50 rounded-[40px] p-6 sm:p-10 border-2 border-cyan-100 flex flex-col justify-center items-center text-center animate-in fade-in zoom-in-95 duration-200 overflow-y-auto custom-scrollbar">
-          <span className="text-[10px] font-black text-cyan-600 uppercase tracking-[0.3em] mb-4 shrink-0">Answer</span>
-          <p className={`${getASize(card.a)} font-bold text-slate-700 leading-relaxed whitespace-pre-wrap my-auto`}>
-            {renderFormattedText(card.a)}
-          </p>
-        </div>
-      ) : (
-        <div className="w-full flex-1 bg-white rounded-[40px] p-6 sm:p-10 border-2 border-slate-200 flex flex-col justify-center items-center text-center animate-in fade-in zoom-in-95 duration-200 overflow-y-auto custom-scrollbar">
+      <div className={`relative w-full h-full transition-all duration-700 preserve-3d ${isFlipped ? 'rotate-y-180' : ''}`}>
+        
+        {/* CARA DELANTERA (Pregunta) */}
+        <div className="absolute w-full h-full backface-hidden bg-white rounded-[40px] p-6 sm:p-10 border-2 border-slate-200 shadow-sm flex flex-col justify-center items-center text-center overflow-y-auto custom-scrollbar">
           <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4 shrink-0">Question</span>
           <p className={`${getQSize(card.q)} font-black text-slate-800 leading-tight my-auto`}>
             {renderFormattedText(card.q)}
           </p>
         </div>
-      )}
+
+        {/* CARA TRASERA (Respuesta) */}
+        <div className="absolute w-full h-full backface-hidden rotate-y-180 bg-slate-50 rounded-[40px] p-6 sm:p-10 border-2 border-teal-100 shadow-inner flex flex-col justify-center items-center text-center overflow-y-auto custom-scrollbar">
+          <span className="text-[10px] font-black text-teal-600 uppercase tracking-[0.3em] mb-4 shrink-0">Answer</span>
+          <p className={`${getASize(card.a)} font-bold text-slate-700 leading-relaxed whitespace-pre-wrap my-auto`}>
+            {renderFormattedText(card.a)}
+          </p>
+        </div>
+
+      </div>
     </div>
   );
 }
