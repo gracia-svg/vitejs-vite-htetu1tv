@@ -442,9 +442,11 @@ useEffect(() => {
     });
   };
 
-  const handleUpdateCard = (deckId, cardId, newData) => {
+    const handleUpdateCard = (deckId, cardId, newData) => {
+    if (!deckId || !cardId) return; // Blindaje: si no hay IDs, cancelamos la operación
     setDecks(prev => prev.map(d => {
-       if (d.id.toString() === deckId.toString()) {
+       // Comprobación segura de IDs
+       if (d.id && d.id.toString() === deckId.toString()) {
           return { ...d, cards: d.cards.map(c => c.id === cardId ? { ...c, ...newData } : c) };
        }
        return d;
@@ -1329,14 +1331,15 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam, dailyChallengeCa
 
   const startExamMode = () => {
     if (examCats.length === 0) {
-      alert("Selecciona al menos una categoría.");
+      alert("Selecciona al menos una categoría para el examen.");
       return;
     }
     const pool = decks
       .filter(d => examCats.includes(d.category))
-      .flatMap(d => d.cards || [])
+      .flatMap(d => (d.cards || []).map(c => ({ ...c, deckId: d.id }))) // CORRECCIÓN: Inyectamos el deckId para evitar el error
       .sort(() => Math.random() - 0.5)
       .slice(0, 15);
+    
     onExam({ name: "Exam Mode (15)", cards: pool, isExam: true });
   };
 
@@ -1393,8 +1396,8 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam, dailyChallengeCa
         </div>
 
         {showExamFilters && (
-          <div className="pt-4 border-t border-slate-100 animate-in slide-in-from-top-2 text-left">
-            <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-3 ml-1">Selecciona categorías para el examen:</p>
+          <div className="pt-4 border-t border-slate-100 animate-in slide-in-from-top-2">
+            <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-3">Filtro de Categorías:</p>
             <div className="flex flex-wrap gap-2 mb-4">
               {DECK_CATEGORIES.map(cat => (
                 <button 
@@ -1406,7 +1409,9 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam, dailyChallengeCa
                 </button>
               ))}
             </div>
-            <button onClick={startExamMode} className="w-full py-3 bg-rose-600 text-white rounded-2xl font-black text-[11px] uppercase shadow-lg active:scale-95 transition-all">Comenzar Examen (15)</button>
+            <button onClick={startExamMode} className="w-full py-3 bg-rose-600 text-white rounded-2xl font-black text-[11px] uppercase shadow-lg active:scale-95 transition-all">
+              Comenzar Examen (15)
+            </button>
           </div>
         )}
       </div>
@@ -1414,25 +1419,30 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam, dailyChallengeCa
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {sortedDecks.map(deck => (
           <div key={deck.id} className="bento-card group bg-white p-6 border-slate-100 hover:border-rose-200 transition-all shadow-sm hover:shadow-xl relative flex flex-col min-h-[220px]">
-            <button onClick={(e) => { e.stopPropagation(); setEditingDeck(deck); }} className="absolute top-4 right-4 p-2 text-slate-200 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all z-10"><Icon name="Settings" size={18} /></button>
+            {/* AJUSTE: Engranaje posicionado para no solapar */}
+            <button onClick={(e) => { e.stopPropagation(); setEditingDeck(deck); }} className="absolute top-4 right-4 p-2 text-slate-200 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all z-10">
+              <Icon name="Settings" size={18} />
+            </button>
+            
             <div onClick={() => onSelect(deck.id.toString())} className="cursor-pointer flex-1 flex flex-col">
               <div className="flex items-center gap-2 mb-3">
                 <span className={`px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border ${getCategoryBadge(deck.category)}`}>{deck.category}</span>
                 <span className="text-[8px] font-black text-slate-300 uppercase tracking-tighter bg-slate-50 px-1.5 py-1 rounded-md">{deck.cards?.length || 0} Cards</span>
               </div>
               <h3 className="text-lg font-black text-slate-800 leading-tight mb-4 pr-10">{deck.name}</h3>
+              
               <div className="flex flex-wrap gap-1 mb-4">
                 {deck.topicIds?.map(tid => <span key={tid} className="px-1.5 py-0.5 bg-slate-50 text-slate-400 border border-slate-100 rounded text-[7px] font-bold">T{tid}</span>)}
               </div>
-              <div className="mt-auto pt-4 border-t border-slate-50">
-                <div className="flex justify-between items-end mb-2">
-                  <div className="text-left">
-                    <p className="text-[14px] font-black text-slate-800 leading-none">{getAverageGrade(deck)}</p>
-                    <p className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">Nota Media</p>
-                  </div>
-                  <div className="w-24 bg-slate-100 h-2 rounded-full overflow-hidden mb-1">
-                    <div className="h-full bg-rose-500 transition-all duration-700" style={{ width: `${Math.min(100, ((deck.cards?.filter(c => (c.interval || 0) > 0).length || 0) / (deck.cards?.length || 1)) * 100)}%` }} />
-                  </div>
+
+              {/* DISEÑO: Nota Media separada visualmente abajo */}
+              <div className="mt-auto pt-4 border-t border-slate-50 flex justify-between items-end">
+                <div className="text-left">
+                  <p className="text-[14px] font-black text-slate-800 leading-none">{getAverageGrade(deck)}</p>
+                  <p className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">Nota Media</p>
+                </div>
+                <div className="w-24 bg-slate-100 h-2 rounded-full overflow-hidden mb-1">
+                  <div className="h-full bg-rose-500 transition-all duration-700" style={{ width: `${Math.min(100, ((deck.cards?.filter(c => (c.interval || 0) > 0).length || 0) / (deck.cards?.length || 1)) * 100)}%` }} />
                 </div>
               </div>
             </div>
@@ -1447,7 +1457,7 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam, dailyChallengeCa
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
               <div className="space-y-4">
                 <input placeholder="Deck Name..." value={newDeckName} onChange={e => setNewDeckName(e.target.value)} className="w-full bg-slate-50 rounded-2xl px-4 py-3 text-sm font-bold border-2 border-transparent focus:border-rose-200 outline-none" />
-                <select value={newDeckCat} onChange={e => setNewDeckCat(e.target.value)} className="w-full bg-slate-50 rounded-2xl px-4 py-3 text-sm font-black appearance-none outline-none border-2 border-transparent focus:border-rose-200">{DECK_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}</select>
+                <select value={newDeckCat} onChange={e => setNewDeckCat(e.target.value)} className="w-full bg-slate-50 rounded-2xl px-4 py-3 text-sm font-black appearance-none outline-none">{DECK_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}</select>
                 <div className="grid grid-cols-5 gap-1 p-2 bg-slate-50 rounded-2xl max-h-40 overflow-y-auto border border-slate-100">
                   {topics.slice(0, 69).map(t => (
                     <button key={t.id} onClick={() => setNewDeckTopics(p => p.includes(t.id) ? p.filter(x => x !== t.id) : [...p, t.id])} className={`p-1.5 rounded-lg text-[8px] font-black border transition-all ${newDeckTopics.includes(t.id) ? 'bg-rose-600 text-white border-rose-600' : 'bg-white text-slate-400 border-transparent'}`}>{t.id}</button>
@@ -1465,12 +1475,12 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam, dailyChallengeCa
 
       {editingDeck && (
         <div className="modal-overlay animate-in fade-in" onClick={() => setEditingDeck(null)}>
-          <div className="bg-white rounded-[40px] p-8 max-w-2xl w-full shadow-2xl animate-in zoom-in-95 max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+          <div className="bg-white rounded-[40px] p-8 max-w-2xl w-full shadow-2xl flex flex-col max-h-[90vh] animate-in zoom-in-95" onClick={e => e.stopPropagation()}>
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-xl font-black text-slate-800">Edit Deck</h3>
               <button onClick={() => setEditingDeck(null)} className="p-2 bg-slate-50 text-slate-400 rounded-full hover:text-red-500"><Icon name="X" size={20}/></button>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 overflow-y-auto">
               <div className="space-y-6 text-left">
                 <input value={editingDeck.name} onChange={e => updateDeckMetadata(editingDeck.id, 'name', e.target.value)} className="w-full bg-slate-50 rounded-2xl px-4 py-3 text-sm font-bold border-2 border-transparent focus:border-rose-200 outline-none" />
                 <select value={editingDeck.category} onChange={e => updateDeckMetadata(editingDeck.id, 'category', e.target.value)} className="w-full bg-slate-50 rounded-2xl px-4 py-3 text-sm font-black outline-none">{DECK_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}</select>
@@ -1497,7 +1507,8 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam, dailyChallengeCa
       )}
     </div>
   );
-}
+      }
+    
 
 function FlashcardUI({ card, isFlipped, setIsFlipped }) {
   return (
