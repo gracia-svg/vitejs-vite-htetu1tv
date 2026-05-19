@@ -1566,19 +1566,11 @@ function DeckStudyView({ deck, onBack, addPoints, onUpdateCard, onFinishChalleng
   const [idx, setIdx] = useState(0);
   const [flipped, setFlipped] = useState(false);
   
-  useEffect(() => {
-    setFlipped(false);
-  }, [idx, deck]);
-
   const cardsToStudy = useMemo(() => {
-    if (!deck || !deck.cards) return [];
-    if (deck.isChallenge) return deck.cards.slice(0, 30);
-    if (deck.isExam) return deck.cards.slice(0, 15);
-    return deck.cards;
+    return deck.cards.slice(0, deck.isExam ? 15 : deck.cards.length);
   }, [deck]);
 
-  const handleAnki = useCallback((score) => {
-    if (!cardsToStudy[idx]) return;
+  const handleAnki = (score) => {
     const card = cardsToStudy[idx];
     const targetDeckId = (card.deckId || deck.id)?.toString();
     
@@ -1588,104 +1580,79 @@ function DeckStudyView({ deck, onBack, addPoints, onUpdateCard, onFinishChalleng
     let newInterval = 0;
     let newEase = ease;
 
-    if (score === 1) { newInterval = 0; newEase = Math.max(1.3, ease - 0.2); } 
-    else if (score === 2) { newInterval = interval === 0 ? 1 : interval * 1.2; newEase = Math.max(1.3, ease - 0.15); } 
-    else if (score === 3) { newInterval = interval === 0 ? 3 : interval * ease; } 
-    else if (score === 4) { newInterval = interval === 0 ? 7 : interval * ease * 1.3; newEase += 0.15; }
+    if (score === 1) { // AGAIN
+      newInterval = 0;
+      newEase = Math.max(1.3, ease - 0.2);
+    } else if (score === 2) { // HARD
+      newInterval = interval === 0 ? 1 : interval * 1.2;
+      newEase = Math.max(1.3, ease - 0.15);
+    } else if (score === 3) { // GOOD
+      newInterval = interval === 0 ? 3 : interval * ease;
+    } else if (score === 4) { // EASY
+      newInterval = interval === 0 ? 7 : interval * ease * 1.3;
+      newEase += 0.15;
+    }
 
     onUpdateCard(targetDeckId, card.id, { 
-      interval: newInterval, ease: newEase, lastScore: score,
+      interval: newInterval, 
+      ease: newEase, 
+      lastScore: score,
       nextDate: score === 1 ? 0 : Date.now() + (newInterval * 86400000) 
     });
 
+    // CORRECCIÓN: Primero reseteamos el estado de 'flipped' para ocultar la respuesta
+    // y después pasamos al siguiente índice. Esto elimina el parpadeo.
     setFlipped(false);
-    setIdx(p => p + 1);
-  }, [idx, cardsToStudy, deck.id, addPoints, onUpdateCard]);
-
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (idx >= cardsToStudy.length) return;
-      if (e.code === 'Space') {
-        e.preventDefault();
-        setFlipped(prev => !prev);
-      }
-      if (flipped) {
-        if (e.key === '1') handleAnki(1);
-        if (e.key === '2') handleAnki(2);
-        if (e.key === '3') handleAnki(3);
-        if (e.key === '4') handleAnki(4);
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [flipped, idx, cardsToStudy.length, handleAnki]);
-
-  if (!cardsToStudy || cardsToStudy.length === 0) {
-    return (
-      <div className="max-w-xl mx-auto py-10 text-center space-y-8 animate-in zoom-in-95">
-        <h2 className="text-xl font-black text-slate-800">No hay tarjetas disponibles.</h2>
-        <button onClick={onBack} className="px-6 py-3 bg-slate-900 text-white rounded-xl font-black shadow-lg">Volver</button>
-      </div>
-    );
-  }
+    setTimeout(() => {
+      setIdx(p => p + 1);
+    }, 0);
+  };
 
   if (idx >= cardsToStudy.length) {
     return (
-      <div className="max-w-xl mx-auto py-10 text-center space-y-8 animate-in zoom-in-95 h-[70vh] flex flex-col justify-center">
-        <div className="flex justify-center mb-4">
-          <div className="p-6 bg-white rounded-[40px] shadow-sm"><Icon name="Award" size={64} className="text-amber-500" /></div>
-        </div>
-        <h2 className="text-3xl font-black text-slate-800">Session Finished!</h2>
-        <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">
-          {deck.name} • {cardsToStudy.length} cards reviewed
-        </p>
-        <button onClick={onFinishChallenge || onBack} className="w-full py-5 bg-slate-900 text-white rounded-[24px] font-black shadow-lg uppercase text-xs tracking-widest active:scale-95 transition-all mt-8">
-          Return to Manager
-        </button>
+      <div className="max-w-xl mx-auto py-10 text-center space-y-8 animate-in zoom-in-95">
+        <Icon name="Award" size={60} className="mx-auto text-amber-500" />
+        <h2 className="text-3xl font-black text-slate-800">Sesión Finalizada</h2>
+        <button onClick={onFinishChallenge || onBack} className="w-full py-5 bg-rose-600 text-white rounded-[24px] font-black shadow-lg uppercase text-sm">Volver</button>
       </div>
     );
   }
 
+  const card = cardsToStudy[idx];
+
   return (
-    <div className="max-w-xl mx-auto py-6 space-y-6 text-left">
-      <div className="flex justify-between items-center px-2">
-        <button onClick={onBack} className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-teal-600 transition-colors">
-          <Icon name="ChevronRight" className="rotate-180" size={16}/> Quit
+    <div className="max-w-xl mx-auto py-10 space-y-8 text-left">
+      <div className="flex justify-between items-center">
+        <button onClick={onBack} className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-rose-600 transition-all">
+          <Icon name="ChevronRight" className="rotate-180" size={16}/> Back
         </button>
-        <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">
-          {idx + 1} / {cardsToStudy.length}
-        </span>
+        <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">{idx + 1} / {cardsToStudy.length}</span>
       </div>
       
-      <FlashcardUI card={cardsToStudy[idx]} isFlipped={flipped} setIsFlipped={setFlipped} />
+      <FlashcardUI card={card} isFlipped={flipped} setIsFlipped={setFlipped} />
       
-      {/* Botonera de la misma altura siempre, sin botón extra Reveal */}
-      <div className="h-[76px] px-1 relative">
-        {flipped ? (
-          <div className="grid grid-cols-4 gap-2 animate-in fade-in zoom-in-95 duration-200 absolute inset-0 px-1">
-            <button onClick={() => handleAnki(1)} className="h-full bg-white text-red-500 rounded-2xl border-2 border-red-100 font-black flex flex-col items-center justify-center hover:bg-red-50 hover:border-red-200 transition-all active:scale-95 shadow-sm">
-              <span className="text-lg leading-none mb-1">✖️</span>
-              <span className="text-[8px] opacity-60 uppercase tracking-widest hidden sm:block">Again</span>
-            </button>
-            <button onClick={() => handleAnki(2)} className="h-full bg-white text-orange-500 rounded-2xl border-2 border-orange-100 font-black flex flex-col items-center justify-center hover:bg-orange-50 hover:border-orange-200 transition-all active:scale-95 shadow-sm">
-              <span className="text-lg leading-none mb-1">⚠️</span>
-              <span className="text-[8px] opacity-60 uppercase tracking-widest hidden sm:block">Hard</span>
-            </button>
-            <button onClick={() => handleAnki(3)} className="h-full bg-white text-emerald-500 rounded-2xl border-2 border-emerald-100 font-black flex flex-col items-center justify-center hover:bg-emerald-50 hover:border-emerald-200 transition-all active:scale-95 shadow-sm">
-              <span className="text-lg leading-none mb-1">✔️</span>
-              <span className="text-[8px] opacity-60 uppercase tracking-widest hidden sm:block">Good</span>
-            </button>
-            <button onClick={() => handleAnki(4)} className="h-full bg-white text-blue-500 rounded-2xl border-2 border-blue-100 font-black flex flex-col items-center justify-center hover:bg-blue-50 hover:border-blue-200 transition-all active:scale-95 shadow-sm">
-              <span className="text-lg leading-none mb-1">🚀</span>
-              <span className="text-[8px] opacity-60 uppercase tracking-widest hidden sm:block">Easy</span>
-            </button>
-          </div>
-        ) : (
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-300 animate-pulse">Tap the card to flip</p>
-          </div>
-        )}
-      </div>
+      {flipped ? (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 animate-in slide-in-from-bottom-2">
+          <button onClick={() => handleAnki(1)} className="p-4 bg-red-50 text-red-600 rounded-2xl border-2 border-red-100 font-black flex flex-col items-center hover:bg-red-100 transition-colors">
+            <span className="text-xs uppercase">Again</span>
+            <span className="text-[8px] opacity-60">0d</span>
+          </button>
+          <button onClick={() => handleAnki(2)} className="p-4 bg-orange-50 text-orange-600 rounded-2xl border-2 border-orange-100 font-black flex flex-col items-center hover:bg-orange-100 transition-colors">
+            <span className="text-xs uppercase">Hard</span>
+            <span className="text-[8px] opacity-60">1.2x</span>
+          </button>
+          <button onClick={() => handleAnki(3)} className="p-4 bg-emerald-50 text-emerald-600 rounded-2xl border-2 border-emerald-100 font-black flex flex-col items-center hover:bg-emerald-100 transition-colors">
+            <span className="text-xs uppercase">Good</span>
+            <span className="text-[8px] opacity-60">2.5x</span>
+          </button>
+          <button onClick={() => handleAnki(4)} className="p-4 bg-blue-50 text-blue-600 rounded-2xl border-2 border-blue-100 font-black flex flex-col items-center hover:bg-blue-100 transition-colors">
+            <span className="text-xs uppercase">Easy</span>
+            <span className="text-[8px] opacity-60">Max</span>
+          </button>
+        </div>
+      ) : (
+        <button onClick={() => setFlipped(true)} className="w-full py-5 bg-rose-600 text-white rounded-3xl font-black shadow-xl uppercase text-xs active:scale-95 transition-all">Reveal Answer</button>
+      )}
     </div>
   );
 }
