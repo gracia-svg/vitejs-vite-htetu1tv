@@ -1580,7 +1580,6 @@ function DeckStudyView({ deck, onBack, addPoints, onUpdateCard, onFinishChalleng
     let newInterval = 0;
     let newEase = ease;
 
-    // Lógica Anki original (botones 1-4)
     if (score === 1) { // AGAIN
       newInterval = 0;
       newEase = Math.max(1.3, ease - 0.2);
@@ -1601,12 +1600,8 @@ function DeckStudyView({ deck, onBack, addPoints, onUpdateCard, onFinishChalleng
       nextDate: score === 1 ? 0 : Date.now() + (newInterval * 86400000) 
     });
 
-    // CORRECCIÓN DEL PARPADEO:
-    // Forzamos el cierre de la tarjeta antes de cambiar de índice
+    // CORRECCIÓN DEFINITIVA PARPADEO Y RESET
     setFlipped(false);
-    
-    // El pequeño delay asegura que el renderizado de la pregunta 
-    // ocurra antes de que se muestre la siguiente tarjeta
     setTimeout(() => {
       setIdx(p => p + 1);
     }, 0);
@@ -1633,30 +1628,27 @@ function DeckStudyView({ deck, onBack, addPoints, onUpdateCard, onFinishChalleng
         <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">{idx + 1} / {cardsToStudy.length}</span>
       </div>
       
+      {/* Solo pulsando la tarjeta se voltea */}
       <FlashcardUI card={card} isFlipped={flipped} setIsFlipped={setFlipped} />
       
-      {flipped ? (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 animate-in slide-in-from-bottom-2">
-          <button onClick={() => handleAnki(1)} className="p-4 bg-red-50 text-red-600 rounded-2xl border-2 border-red-100 font-black flex flex-col items-center hover:bg-red-100 transition-colors">
-            <span className="text-xs uppercase">Again</span>
-            <span className="text-[8px] opacity-60">0d</span>
-          </button>
-          <button onClick={() => handleAnki(2)} className="p-4 bg-orange-50 text-orange-600 rounded-2xl border-2 border-orange-100 font-black flex flex-col items-center hover:bg-orange-100 transition-colors">
-            <span className="text-xs uppercase">Hard</span>
-            <span className="text-[8px] opacity-60">1.2x</span>
-          </button>
-          <button onClick={() => handleAnki(3)} className="p-4 bg-emerald-50 text-emerald-600 rounded-2xl border-2 border-emerald-100 font-black flex flex-col items-center hover:bg-emerald-100 transition-colors">
-            <span className="text-xs uppercase">Good</span>
-            <span className="text-[8px] opacity-60">2.5x</span>
-          </button>
-          <button onClick={() => handleAnki(4)} className="p-4 bg-blue-50 text-blue-600 rounded-2xl border-2 border-blue-100 font-black flex flex-col items-center hover:bg-blue-100 transition-colors">
-            <span className="text-xs uppercase">Easy</span>
-            <span className="text-[8px] opacity-60">Max</span>
-          </button>
-        </div>
-      ) : (
-        <button onClick={() => setFlipped(true)} className="w-full py-5 bg-rose-600 text-white rounded-3xl font-black shadow-xl uppercase text-xs active:scale-95 transition-all">Reveal Answer</button>
-      )}
+      <div className={`grid grid-cols-4 gap-2 transition-all duration-300 ${flipped ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}>
+        <button onClick={() => handleAnki(1)} className="flex flex-col items-center gap-1 p-3 bg-red-50 text-red-600 rounded-2xl border border-red-100 hover:bg-red-100 transition-colors">
+          <Icon name="XCircle" size={20} />
+          <span className="text-[9px] font-black uppercase">Again</span>
+        </button>
+        <button onClick={() => handleAnki(2)} className="flex flex-col items-center gap-1 p-3 bg-orange-50 text-orange-600 rounded-2xl border border-orange-100 hover:bg-orange-100 transition-colors">
+          <Icon name="AlertCircle" size={20} />
+          <span className="text-[9px] font-black uppercase">Hard</span>
+        </button>
+        <button onClick={() => handleAnki(3)} className="flex flex-col items-center gap-1 p-3 bg-emerald-50 text-emerald-600 rounded-2xl border border-emerald-100 hover:bg-emerald-100 transition-colors">
+          <Icon name="CheckCircle" size={20} />
+          <span className="text-[9px] font-black uppercase">Good</span>
+        </button>
+        <button onClick={() => handleAnki(4)} className="flex flex-col items-center gap-1 p-3 bg-blue-50 text-blue-600 rounded-2xl border border-blue-100 hover:bg-blue-100 transition-colors">
+          <Icon name="Zap" size={20} />
+          <span className="text-[9px] font-black uppercase">Easy</span>
+        </button>
+      </div>
     </div>
   );
 }
