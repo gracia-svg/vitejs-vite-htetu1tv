@@ -1593,18 +1593,20 @@ function DeckStudyView({ deck, onBack, addPoints, onUpdateCard, onFinishChalleng
       newEase += 0.15;
     }
 
-    onUpdateCard(targetDeckId, card.id, { 
-      interval: newInterval, 
-      ease: newEase, 
-      lastScore: score,
-      nextDate: score === 1 ? 0 : Date.now() + (newInterval * 86400000) 
-    });
-
-    // CORRECCIÓN DEFINITIVA PARPADEO Y RESET
+    // 1. Cerramos la tarjeta ANTES de cualquier otra acción
     setFlipped(false);
+
+    // 2. Esperamos un instante para que la animación de cierre termine 
+    // y no se vea la respuesta de la siguiente tarjeta
     setTimeout(() => {
+      onUpdateCard(targetDeckId, card.id, { 
+        interval: newInterval, 
+        ease: newEase, 
+        lastScore: score,
+        nextDate: score === 1 ? 0 : Date.now() + (newInterval * 86400000) 
+      });
       setIdx(p => p + 1);
-    }, 0);
+    }, 50); 
   };
 
   if (idx >= cardsToStudy.length) {
@@ -1628,7 +1630,7 @@ function DeckStudyView({ deck, onBack, addPoints, onUpdateCard, onFinishChalleng
         <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">{idx + 1} / {cardsToStudy.length}</span>
       </div>
       
-      {/* Solo pulsando la tarjeta se voltea */}
+      {/* El giro solo ocurre al pulsar la tarjeta */}
       <FlashcardUI card={card} isFlipped={flipped} setIsFlipped={setFlipped} />
       
       <div className={`grid grid-cols-4 gap-2 transition-all duration-300 ${flipped ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}>
