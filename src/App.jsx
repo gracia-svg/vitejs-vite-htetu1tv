@@ -1580,6 +1580,7 @@ function DeckStudyView({ deck, onBack, addPoints, onUpdateCard, onFinishChalleng
     let newInterval = 0;
     let newEase = ease;
 
+    // Lógica Anki original (botones 1-4)
     if (score === 1) { // AGAIN
       newInterval = 0;
       newEase = Math.max(1.3, ease - 0.2);
@@ -1600,9 +1601,12 @@ function DeckStudyView({ deck, onBack, addPoints, onUpdateCard, onFinishChalleng
       nextDate: score === 1 ? 0 : Date.now() + (newInterval * 86400000) 
     });
 
-    // CORRECCIÓN: Primero reseteamos el estado de 'flipped' para ocultar la respuesta
-    // y después pasamos al siguiente índice. Esto elimina el parpadeo.
+    // CORRECCIÓN DEL PARPADEO:
+    // Forzamos el cierre de la tarjeta antes de cambiar de índice
     setFlipped(false);
+    
+    // El pequeño delay asegura que el renderizado de la pregunta 
+    // ocurra antes de que se muestre la siguiente tarjeta
     setTimeout(() => {
       setIdx(p => p + 1);
     }, 0);
