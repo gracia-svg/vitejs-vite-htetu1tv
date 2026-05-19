@@ -1565,6 +1565,7 @@ function FlashcardUI({ card, isFlipped, setIsFlipped }) {
 function DeckStudyView({ deck, onBack, addPoints, onUpdateCard, onFinishChallenge }) {
   const [idx, setIdx] = useState(0);
   const [flipped, setFlipped] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false); // Estado para blanquear el cambio
   
   const cardsToStudy = useMemo(() => {
     return deck.cards.slice(0, deck.isExam ? 15 : deck.cards.length);
@@ -1580,33 +1581,28 @@ function DeckStudyView({ deck, onBack, addPoints, onUpdateCard, onFinishChalleng
     let newInterval = 0;
     let newEase = ease;
 
-    if (score === 1) { // AGAIN
-      newInterval = 0;
-      newEase = Math.max(1.3, ease - 0.2);
-    } else if (score === 2) { // HARD
-      newInterval = interval === 0 ? 1 : interval * 1.2;
-      newEase = Math.max(1.3, ease - 0.15);
-    } else if (score === 3) { // GOOD
-      newInterval = interval === 0 ? 3 : interval * ease;
-    } else if (score === 4) { // EASY
-      newInterval = interval === 0 ? 7 : interval * ease * 1.3;
-      newEase += 0.15;
-    }
+    if (score === 1) { newInterval = 0; newEase = Math.max(1.3, ease - 0.2); }
+    else if (score === 2) { newInterval = interval === 0 ? 1 : interval * 1.2; newEase = Math.max(1.3, ease - 0.15); }
+    else if (score === 3) { newInterval = interval === 0 ? 3 : interval * ease; }
+    else if (score === 4) { newInterval = interval === 0 ? 7 : interval * ease * 1.3; newEase += 0.15; }
 
-    // 1. Cerramos la tarjeta ANTES de cualquier otra acción
+    // 1. Iniciamos transición y cerramos giro
+    setIsTransitioning(true);
     setFlipped(false);
 
-    // 2. Esperamos un instante para que la animación de cierre termine 
-    // y no se vea la respuesta de la siguiente tarjeta
+    // 2. Ejecutamos la actualización y el cambio de índice
+    onUpdateCard(targetDeckId, card.id, { 
+      interval: newInterval, 
+      ease: newEase, 
+      lastScore: score,
+      nextDate: score === 1 ? 0 : Date.now() + (newInterval * 86400000) 
+    });
+
+    // 3. Pequeño salto de ciclo para limpiar el DOM antes de mostrar la siguiente
     setTimeout(() => {
-      onUpdateCard(targetDeckId, card.id, { 
-        interval: newInterval, 
-        ease: newEase, 
-        lastScore: score,
-        nextDate: score === 1 ? 0 : Date.now() + (newInterval * 86400000) 
-      });
       setIdx(p => p + 1);
-    }, 50); 
+      setIsTransitioning(false);
+    }, 50);
   };
 
   if (idx >= cardsToStudy.length) {
@@ -1630,10 +1626,14 @@ function DeckStudyView({ deck, onBack, addPoints, onUpdateCard, onFinishChalleng
         <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">{idx + 1} / {cardsToStudy.length}</span>
       </div>
       
-      {/* El giro solo ocurre al pulsar la tarjeta */}
-      <FlashcardUI card={card} isFlipped={flipped} setIsFlipped={setFlipped} />
+      {/* Si estamos en transición, ocultamos la tarjeta para evitar el parpadeo de datos antiguos */}
+      {!isTransitioning ? (
+        <FlashcardUI card={card} isFlipped={flipped} setIsFlipped={setFlipped} />
+      ) : (
+        <div className="w-full aspect-[4/3] bg-white/20 rounded-[40px] border-2 border-dashed border-slate-100 animate-pulse" />
+      )}
       
-      <div className={`grid grid-cols-4 gap-2 transition-all duration-300 ${flipped ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}>
+      <div className={`grid grid-cols-4 gap-2 transition-all duration-300 ${flipped && !isTransitioning ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}>
         <button onClick={() => handleAnki(1)} className="flex flex-col items-center gap-1 p-3 bg-red-50 text-red-600 rounded-2xl border border-red-100 hover:bg-red-100 transition-colors">
           <Icon name="XCircle" size={20} />
           <span className="text-[9px] font-black uppercase">Again</span>
