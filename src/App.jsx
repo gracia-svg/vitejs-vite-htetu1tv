@@ -864,9 +864,8 @@ useEffect(() => {
         {activeTab === 'stats' && <StatsView actionLogs={actionLogs} undoAction={undoAction} topics={topics} planning={planning} units={units} levelDates={levelDates} />}
       </main>
 
-      {/* NAV FOOTER FIXED */}
-     {/* NAV FOOTER FIXED (Unified Colors) */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t-2 border-slate-100 p-4 pb-8 z-50 shadow-[0_-10px_40px_rgba(0,0,0,0.03)]">
+{/* NAV FOOTER FIXED: Compacto para liberar espacio vertical */}
+      <nav className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t-2 border-slate-100 p-2 pb-safe z-50 shadow-[0_-10px_40px_rgba(0,0,0,0.03)]">
         <div className="max-w-md mx-auto flex justify-around">
           <NavBtn active={activeTab==='map'} icon="MapIcon" label="MAPA" color="teal" onClick={()=>setActiveTab('map')} />
           <NavBtn active={activeTab==='syllabus'} icon="BookOpen" label="TEMAS" color="amber" onClick={()=>setActiveTab('syllabus')} />
