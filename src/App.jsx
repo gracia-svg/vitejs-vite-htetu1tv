@@ -1307,18 +1307,24 @@ function NotesView({ notes, setNotes }) {
 }
 function FlashcardsManager({ decks, setDecks, onSelect, onExam, dailyChallengeCount, generateChallenge, topics }) {
   const [showAddModal, setShowAddModal] = useState(false);
-  const [editingDeck, setEditingDeck] = useState(null);
+  // UNICO CAMBIO: Usamos ID en lugar del objeto para que React no se bloquee
+  const [editingDeckId, setEditingDeckId] = useState(null);
   const [showExamFilters, setShowExamFilters] = useState(false);
   const [examCats, setExamCategoryFilter] = useState([]); 
   const [showChallengeIntro, setShowChallengeIntro] = useState(false);
 
-  // REFERENCIA PARA EL AUTO-SCROLL
   const filtersRef = useRef(null);
 
   const [newDeckName, setNewDeckName] = useState("");
   const [newDeckCat, setNewDeckCat] = useState("General");
   const [newDeckTopics, setNewDeckTopics] = useState([]);
   const [bulkText, setBulkText] = useState("");
+  
+  // Estos estados son necesarios para que la edición funcione por separado
+  const [newCardQ, setNewCardQ] = useState("");
+  const [newCardA, setNewCardA] = useState("");
+
+  const editingDeck = useMemo(() => decks.find(d => d.id === editingDeckId), [decks, editingDeckId]);
 
   const sortedDecks = useMemo(() => 
     [...decks].sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' })), 
@@ -1333,7 +1339,6 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam, dailyChallengeCo
     return ((sum / scoredCards.length) * 2.5).toFixed(1);
   };
 
-  // EFECTO DE AUTO-SCROLL
   useEffect(() => {
     if (showExamFilters && filtersRef.current) {
       filtersRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -1362,20 +1367,26 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam, dailyChallengeCo
 
   const updateDeckMetadata = (id, field, value) => {
     setDecks(prev => prev.map(d => d.id === id ? { ...d, [field]: value } : d));
-    if (editingDeck) setEditingDeck(prev => ({ ...prev, [field]: value }));
+  };
+
+  const toggleTopicInDeck = (deckId, topicId) => {
+    setDecks(prev => prev.map(d => {
+      if (d.id !== deckId) return d;
+      const ids = d.topicIds || [];
+      const newIds = ids.includes(topicId) ? ids.filter(i => i !== topicId) : [...ids, topicId];
+      return { ...d, topicIds: newIds };
+    }));
   };
 
   const addCardToDeck = (deckId) => {
     if (!newCardQ.trim() || !newCardA.trim()) return;
     const newCard = { id: Date.now().toString(), q: newCardQ.trim(), a: newCardA.trim(), interval: 0, ease: 2.5 };
-    setDecks(prev => prev.map(d => d.id === deckId ? { ...d, cards: [...d.cards, newCard] } : d));
-    if (editingDeck) setEditingDeck(prev => ({ ...prev, cards: [...prev.cards, newCard] }));
+    setDecks(prev => prev.map(d => d.id === deckId ? { ...d, cards: [...(d.cards || []), newCard] } : d));
     setNewCardQ(""); setNewCardA("");
   };
 
   const removeCard = (deckId, cardId) => {
     setDecks(prev => prev.map(d => d.id === deckId ? { ...d, cards: d.cards.filter(c => c.id !== cardId) } : d));
-    if (editingDeck) setEditingDeck(prev => ({ ...prev, cards: prev.cards.filter(c => c.id !== cardId) }));
   };
 
   return (
@@ -1414,7 +1425,6 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam, dailyChallengeCo
           </button>
         </div>
 
-        {/* CONTENEDOR DE FILTROS CON REFERENCIA */}
         {showExamFilters && (
           <div ref={filtersRef} className="pt-4 border-t border-slate-100 animate-in slide-in-from-top-2 text-left">
             <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-3 ml-1">Selecciona categorías para el examen (15 tarjetas):</p>
@@ -1435,7 +1445,7 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam, dailyChallengeCo
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {sortedDecks.map(deck => (
           <div key={deck.id} className="bento-card group bg-white p-6 border-slate-100 hover:border-rose-200 transition-all shadow-sm hover:shadow-xl relative flex flex-col min-h-[200px]">
-            <button onClick={(e) => { e.stopPropagation(); setEditingDeck(deck); }} className="absolute top-4 right-4 p-2 text-slate-200 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all z-10">
+            <button onClick={(e) => { e.stopPropagation(); setEditingDeckId(deck.id); }} className="absolute top-4 right-4 p-2 text-slate-200 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all z-10">
               <Icon name="Settings" size={18} />
             </button>
             <div onClick={() => onSelect(deck.id.toString())} className="cursor-pointer flex-1 flex flex-col">
@@ -1458,7 +1468,6 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam, dailyChallengeCo
         ))}
       </div>
 
-      {/* (Mantén los modales showAddModal y editingDeck aquí como los tenías) */}
       {showAddModal && (
         <div className="modal-overlay animate-in fade-in" onClick={() => setShowAddModal(false)}>
           <div className="bg-white rounded-[40px] p-8 max-w-3xl w-full shadow-2xl animate-in zoom-in-95 max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
@@ -1483,17 +1492,22 @@ function FlashcardsManager({ decks, setDecks, onSelect, onExam, dailyChallengeCo
       )}
 
       {editingDeck && (
-        <div className="modal-overlay animate-in fade-in" onClick={() => setEditingDeck(null)}>
+        <div className="modal-overlay animate-in fade-in" onClick={() => setEditingDeckId(null)}>
           <div className="bg-white rounded-[40px] p-8 max-w-2xl w-full shadow-2xl animate-in zoom-in-95 max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-xl font-black text-slate-800">Edit Deck</h3>
-              <button onClick={() => setEditingDeck(null)} className="p-2 bg-slate-50 text-slate-400 rounded-full hover:text-red-500"><Icon name="X" size={20}/></button>
+              <button onClick={() => setEditingDeckId(null)} className="p-2 bg-slate-50 text-slate-400 rounded-full hover:text-red-500"><Icon name="X" size={20}/></button>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="space-y-6 text-left">
                 <input value={editingDeck.name} onChange={e => updateDeckMetadata(editingDeck.id, 'name', e.target.value)} className="w-full bg-slate-50 rounded-2xl px-4 py-3 text-sm font-bold border-2 border-transparent focus:border-rose-200 outline-none" />
                 <select value={editingDeck.category} onChange={e => updateDeckMetadata(editingDeck.id, 'category', e.target.value)} className="w-full bg-slate-50 rounded-2xl px-4 py-3 text-sm font-black outline-none">{DECK_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}</select>
-                <button onClick={() => { if(window.confirm("Delete deck?")) { setDecks(prev => prev.filter(d => d.id !== editingDeck.id)); setEditingDeck(null); } }} className="w-full py-3 bg-red-50 text-red-600 rounded-2xl font-black text-[10px] uppercase border border-red-100">Delete Deck</button>
+                <div className="grid grid-cols-5 gap-1 p-2 bg-slate-50 rounded-2xl max-h-40 overflow-y-auto border border-slate-100">
+                  {topics.slice(0, 69).map(t => (
+                    <button key={t.id} onClick={() => toggleTopicInDeck(editingDeck.id, t.id)} className={`p-1.5 rounded-lg text-[8px] font-black border transition-all ${editingDeck.topicIds?.includes(t.id) ? 'bg-rose-600 text-white border-rose-600' : 'bg-white text-slate-400 border-transparent'}`}>{t.id}</button>
+                  ))}
+                </div>
+                <button onClick={() => { if(window.confirm("Delete deck?")) { setDecks(prev => prev.filter(d => d.id !== editingDeck.id)); setEditingDeckId(null); } }} className="w-full py-3 bg-red-50 text-red-600 rounded-2xl font-black text-[10px] uppercase border border-red-100">Delete Deck</button>
               </div>
               <div className="space-y-6 text-left">
                 <div className="bg-slate-50 p-4 rounded-3xl space-y-2 border border-slate-100">
