@@ -728,7 +728,7 @@ useEffect(() => {
         </div>
       )}
 
-{/* CABECERO PREMIUM (Color Unificado a Teal/Turquesa suave) */}
+      {/* CABECERO PREMIUM (Color Unificado a Teal/Turquesa suave) */}
       <header className="sticky top-0 z-[100] bg-white/80 backdrop-blur-md border-b-2 border-slate-100/50 p-4 shadow-sm">
         <div className="max-w-5xl mx-auto flex justify-between items-center">
           <div className="flex items-center gap-2 cursor-pointer transition-transform active:scale-95" onClick={() => setActiveTab('map')}>
@@ -737,15 +737,6 @@ useEffect(() => {
           </div>
 
           <div className="flex items-center gap-2">
-            
-            {/* DADOS INTEGRADOS AQUÍ ARRIBA */}
-            <button onClick={() => { const drawn = []; const pool = Array.from({length:69}, (_,i)=>i+1); for(let i=0; i<4; i++) drawn.push(pool.splice(Math.floor(Math.random()*pool.length),1)[0]); setLuckyNumbers(drawn.sort((a,b)=>a-b)); }} className="flex items-center gap-1 p-2 bg-amber-50 text-amber-600 rounded-xl border border-amber-100 hover:bg-amber-100 transition-colors shadow-sm active:scale-95">
-              <Icon name="Dices" size={18} />
-              <div className="flex gap-1">
-                {luckyNumbers.map((n,i)=><span key={i} className="text-[10px] font-black w-5 h-5 bg-white border border-amber-200 rounded flex items-center justify-center">{n||'?'}</span>)}
-              </div>
-            </button>
-
             <button onClick={() => { setActiveTab('stats'); setIsToolsExpanded(true); }} className="px-3 py-2 bg-teal-50 text-teal-700 rounded-2xl border border-teal-100 font-black flex items-center gap-2 text-sm shadow-sm hover:bg-teal-100 transition-colors">
               <Icon name="Trophy" size={16} /><span>{points}</span>
             </button>
@@ -788,6 +779,17 @@ useEffect(() => {
               <HeaderToolBtn active={activeTab==='notes'} icon="StickyNote" label="NOTAS" color="yellow" onClick={()=>setActiveTab('notes')} />
               <HeaderToolBtn active={activeTab==='todo'} icon="ListTodo" label="TAREAS" color="orange" onClick={()=>setActiveTab('todo')} />
               <HeaderToolBtn active={activeTab==='stats'} icon="BarChart3" label="STATS" color="violet" onClick={()=>setActiveTab('stats')} />
+            </div>
+            
+            {/* Racha eliminada, Dado Mágico ampliado para ocupar el espacio visual */}
+            <div className="grid grid-cols-1">
+              <button onClick={() => { const drawn = []; const pool = Array.from({length:69}, (_,i)=>i+1); for(let i=0; i<4; i++) drawn.push(pool.splice(Math.floor(Math.random()*pool.length),1)[0]); setLuckyNumbers(drawn.sort((a,b)=>a-b)); }} className="flex items-center justify-center gap-3 p-3 bg-amber-50 rounded-2xl border border-amber-100 text-amber-700 shadow-sm active:scale-95 transition-all hover:bg-amber-100">
+                <Icon name="Dices" size={20} />
+                <span className="text-xs font-black uppercase tracking-widest hidden sm:block">Magic Dice</span>
+                <div className="flex gap-1 ml-2">
+                  {luckyNumbers.map((n,i)=><span key={i} className="text-xs font-black w-8 h-8 bg-white border border-amber-200 rounded-lg flex items-center justify-center">{n||'?'}</span>)}
+                </div>
+              </button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 p-4 bg-slate-50/50 rounded-3xl border border-slate-100">
@@ -882,8 +884,9 @@ useEffect(() => {
         {activeTab === 'stats' && <StatsView actionLogs={actionLogs} undoAction={undoAction} topics={topics} planning={planning} units={units} levelDates={levelDates} />}
       </main>
 
-   {/* NAV FOOTER FIXED (Unified Colors) */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t-2 border-slate-100 p-2 pb-safe z-50 shadow-[0_-10px_40px_rgba(0,0,0,0.03)]">
+      {/* NAV FOOTER FIXED */}
+     {/* NAV FOOTER FIXED (Unified Colors) */}
+      <nav className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t-2 border-slate-100 p-4 pb-8 z-50 shadow-[0_-10px_40px_rgba(0,0,0,0.03)]">
         <div className="max-w-md mx-auto flex justify-around">
           <NavBtn active={activeTab==='map'} icon="MapIcon" label="MAPA" color="teal" onClick={()=>setActiveTab('map')} />
           <NavBtn active={activeTab==='syllabus'} icon="BookOpen" label="TEMAS" color="amber" onClick={()=>setActiveTab('syllabus')} />
@@ -891,7 +894,13 @@ useEffect(() => {
           <NavBtn active={activeTab==='practico'} icon="Target" label="PRACT" color="indigo" onClick={()=>setActiveTab('practico')} />
         </div>
       </nav>
+    </div>
+  );
+}
 
+// ==========================================
+// 5. COMPONENTES DE VISTA (COMPLETOS)
+// ==========================================
 
 // ==========================================
 // COMPONENTES DE VISTA (COMPLETOS)
