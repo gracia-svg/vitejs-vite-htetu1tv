@@ -729,6 +729,7 @@ useEffect(() => {
       )}
 
       {/* CABECERO PREMIUM (Color Unificado a Teal/Turquesa suave) */}
+     {/* CABECERO PREMIUM */}
       <header className="sticky top-0 z-[100] bg-white/80 backdrop-blur-md border-b-2 border-slate-100/50 p-4 shadow-sm">
         <div className="max-w-5xl mx-auto flex justify-between items-center">
           <div className="flex items-center gap-2 cursor-pointer transition-transform active:scale-95" onClick={() => setActiveTab('map')}>
@@ -737,6 +738,15 @@ useEffect(() => {
           </div>
 
           <div className="flex items-center gap-2">
+            
+            {/* DADOS INTEGRADOS ARRIBA */}
+            <button onClick={() => { const drawn = []; const pool = Array.from({length:69}, (_,i)=>i+1); for(let i=0; i<4; i++) drawn.push(pool.splice(Math.floor(Math.random()*pool.length),1)[0]); setLuckyNumbers(drawn.sort((a,b)=>a-b)); }} className="flex items-center gap-1 p-2 bg-amber-50 text-amber-600 rounded-xl border border-amber-100 hover:bg-amber-100 transition-colors shadow-sm active:scale-95">
+              <Icon name="Dices" size={18} />
+              <div className="flex gap-1">
+                {luckyNumbers.map((n,i)=><span key={i} className="text-[10px] font-black w-5 h-5 bg-white border border-amber-200 rounded flex items-center justify-center">{n||'?'}</span>)}
+              </div>
+            </button>
+
             <button onClick={() => { setActiveTab('stats'); setIsToolsExpanded(true); }} className="px-3 py-2 bg-teal-50 text-teal-700 rounded-2xl border border-teal-100 font-black flex items-center gap-2 text-sm shadow-sm hover:bg-teal-100 transition-colors">
               <Icon name="Trophy" size={16} /><span>{points}</span>
             </button>
@@ -779,36 +789,6 @@ useEffect(() => {
               <HeaderToolBtn active={activeTab==='notes'} icon="StickyNote" label="NOTAS" color="yellow" onClick={()=>setActiveTab('notes')} />
               <HeaderToolBtn active={activeTab==='todo'} icon="ListTodo" label="TAREAS" color="orange" onClick={()=>setActiveTab('todo')} />
               <HeaderToolBtn active={activeTab==='stats'} icon="BarChart3" label="STATS" color="violet" onClick={()=>setActiveTab('stats')} />
-            </div>
-            
-            {/* Racha eliminada, Dado Mágico ampliado para ocupar el espacio visual */}
-            <div className="grid grid-cols-1">
-              <button onClick={() => { const drawn = []; const pool = Array.from({length:69}, (_,i)=>i+1); for(let i=0; i<4; i++) drawn.push(pool.splice(Math.floor(Math.random()*pool.length),1)[0]); setLuckyNumbers(drawn.sort((a,b)=>a-b)); }} className="flex items-center justify-center gap-3 p-3 bg-amber-50 rounded-2xl border border-amber-100 text-amber-700 shadow-sm active:scale-95 transition-all hover:bg-amber-100">
-                <Icon name="Dices" size={20} />
-                <span className="text-xs font-black uppercase tracking-widest hidden sm:block">Magic Dice</span>
-                <div className="flex gap-1 ml-2">
-                  {luckyNumbers.map((n,i)=><span key={i} className="text-xs font-black w-8 h-8 bg-white border border-amber-200 rounded-lg flex items-center justify-center">{n||'?'}</span>)}
-                </div>
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 p-4 bg-slate-50/50 rounded-3xl border border-slate-100">
-               <div className="space-y-2">
-                 <div className="flex justify-between items-center"><span className="text-xs font-black uppercase text-slate-700">Misión 1: 500 Puntos</span><span className="text-[10px] font-bold text-slate-400">{weeklyData.points}/500</span></div>
-                 <div className="h-2 bg-slate-200 rounded-full overflow-hidden"><div className="h-full bg-teal-500 transition-all duration-500" style={{width: `${Math.min(100, (weeklyData.points/500)*100)}%`}}></div></div>
-                 {weeklyData.points >= 500 && !weeklyData.claimed1 && <button onClick={()=>claimMission(1)} className="w-full py-1.5 bg-teal-600 text-white rounded-lg text-[10px] font-black uppercase shadow-md active:scale-95 transition-all">Reclamar +50 Pts</button>}
-                 {weeklyData.claimed1 && <div className="text-center text-[10px] font-black text-teal-600 uppercase">¡Completada!</div>}
-               </div>
-               <div className="space-y-2">
-                 <div className="flex justify-between items-center"><span className="text-xs font-black uppercase text-slate-700">Misión 2: Constancia</span><span className="text-[10px] font-bold text-slate-400">{weeklyData.dailyChallengesDone}/5 Retos</span></div>
-                 <div className="flex gap-2 justify-between mt-1">
-                    <span className={`text-[9px] font-black uppercase ${weeklyData.topicsTouched ? 'text-teal-600' : 'text-slate-400'}`}>Temas {weeklyData.topicsTouched ? '✓' : ''}</span>
-                    <span className={`text-[9px] font-black uppercase ${weeklyData.progTouched ? 'text-teal-600' : 'text-slate-400'}`}>Prog {weeklyData.progTouched ? '✓' : ''}</span>
-                    <span className={`text-[9px] font-black uppercase ${weeklyData.practicoTouched ? 'text-teal-600' : 'text-slate-400'}`}>Práctico {weeklyData.practicoTouched ? '✓' : ''}</span>
-                 </div>
-                 {weeklyData.topicsTouched && weeklyData.progTouched && weeklyData.practicoTouched && weeklyData.dailyChallengesDone >= 5 && !weeklyData.claimed2 && <button onClick={()=>claimMission(2)} className="w-full py-1.5 bg-teal-600 text-white rounded-lg text-[10px] font-black uppercase shadow-md active:scale-95 transition-all">Reclamar +50 Pts</button>}
-                 {weeklyData.claimed2 && <div className="text-center text-[10px] font-black text-teal-600 uppercase">¡Completada!</div>}
-               </div>
             </div>
           </div>
         )}
