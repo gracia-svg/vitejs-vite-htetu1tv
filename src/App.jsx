@@ -949,28 +949,31 @@ function ProgressMap({ points, level, xp, addPoints, streak, perfectWeeks, onVau
   };
 
   const activeEraStyle = getEraStyle(level);
-  const barColorClass = activeEraStyle.split(' ')[1].replace('text-', 'bg-');
+  const textColorClass = activeEraStyle.split(' ')[1]; // Extrae el color del texto (ej: 'text-teal-600')
 
   return (
     <div className="space-y-8 max-w-xl mx-auto py-8 text-center animate-in fade-in relative">
       
       <div className="grid grid-cols-2 gap-4">
-        {/* TARJETA ULTRA-LIMPIA */}
+        
+        {/* PASTILLA DE PUNTOS TOTALES Y FUNCIÓN FUTURA */}
         <div className="relative">
-          <div onClick={() => setPtsMenu(ptsMenu === 'closed' ? 'main' : 'closed')} className="bento-card p-6 cursor-pointer h-full flex flex-col justify-center">
-            
-            <div className="flex justify-between items-baseline mb-3">
-              <span className={`text-base font-black ${activeEraStyle.split(' ')[1]}`}>Lvl {level}</span>
-              <span className="text-sm font-black text-slate-700">{points} pts</span>
-              <span className="text-[10px] font-bold text-slate-300 tabular-nums">{xp || 0}/200</span>
+          <div 
+            onClick={() => setPtsMenu(ptsMenu === 'closed' ? 'main' : 'closed')} 
+            className="bento-card p-6 cursor-pointer h-full flex flex-col justify-between text-left"
+          >
+            <div className="flex flex-col">
+              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Total Pts</span>
+              <span className="text-3xl font-black text-slate-800 tabular-nums">{points}</span>
             </div>
             
-            <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
-              <div className={`h-full transition-all duration-1000 ${barColorClass}`} style={{width:`${((xp||0)/200)*100}%`}}/>
+            {/* Espacio reservado para la función futura */}
+            <div className="mt-4 pt-3 border-t border-slate-100/70 text-[10px] font-bold text-slate-300 uppercase tracking-wider">
+              • Próxima función...
             </div>
           </div>
           
-          {/* MENÚ DE PUNTOS (Intacto) */}
+          {/* MENÚ DE AJUSTE DE PUNTOS (Se mantiene intacto para tu lógica) */}
           {ptsMenu !== 'closed' && (
             <div className="absolute top-full left-0 right-0 mt-2 bg-white border-2 border-slate-100 rounded-2xl p-3 shadow-lg z-50 flex flex-col gap-2 animate-in zoom-in-95">
               {ptsMenu === 'main' && (
@@ -982,54 +985,92 @@ function ProgressMap({ points, level, xp, addPoints, streak, perfectWeeks, onVau
               {ptsMenu === 'add' && (
                 <div className="grid grid-cols-2 gap-2">
                   {[5, 10, 15, 25].map(v => (
-                    <button key={v} onClick={(e) => { e.stopPropagation(); addPoints(v, `+${v} Pts (Manual)`); setPtsMenu('closed'); }} className={`p-2 text-white rounded-xl font-black text-xs transition-colors ${barColorClass}`}>+{v}</button>
+                    <button key={v} onClick={(e) => { e.stopPropagation(); addPoints(v, `+${v} Pts`); setPtsMenu('closed'); }} className={`p-2 text-white rounded-xl font-black text-xs transition-colors ${activeEraStyle.split(' ')[1].replace('text-', 'bg-')}`}>+{v}</button>
                   ))}
-                  <button onClick={(e) => { e.stopPropagation(); setPtsMenu('main'); }} className="col-span-2 p-2 bg-slate-100 text-slate-500 rounded-xl text-[10px] font-black uppercase hover:bg-slate-200 transition-colors">Volver</button>
+                  <button onClick={(e) => { e.stopPropagation(); setPtsMenu('main'); }} className="col-span-2 p-2 bg-slate-100 text-slate-500 rounded-xl text-[10px] font-black uppercase">Volver</button>
                 </div>
               )}
               {ptsMenu === 'sub' && (
                 <div className="grid grid-cols-2 gap-2">
                   {[5, 10, 15, 25].map(v => (
-                    <button key={v} onClick={(e) => { e.stopPropagation(); addPoints(-v, `-${v} Pts (Manual)`); setPtsMenu('closed'); }} className="p-2 bg-slate-200 text-slate-600 rounded-xl font-black text-xs hover:bg-slate-300 transition-colors">-{v}</button>
+                    <button key={v} onClick={(e) => { e.stopPropagation(); addPoints(-v, `-${v} Pts`); setPtsMenu('closed'); }} className="p-2 bg-slate-200 text-slate-600 rounded-xl font-black text-xs">-{v}</button>
                   ))}
-                  <button onClick={(e) => { e.stopPropagation(); setPtsMenu('main'); }} className="col-span-2 p-2 bg-slate-100 text-slate-500 rounded-xl text-[10px] font-black uppercase hover:bg-slate-200 transition-colors">Volver</button>
+                  <button onClick={(e) => { e.stopPropagation(); setPtsMenu('main'); }} className="col-span-2 p-2 bg-slate-100 text-slate-500 rounded-xl text-[10px] font-black uppercase">Volver</button>
                 </div>
               )}
             </div>
           )}
         </div>
 
-        {/* TARJETA DERECHA (STREAK/WEEKS) - Intacta */}
-        <div className="bento-card p-4 flex items-center justify-between">
-           <div className="flex-1 flex flex-col items-center border-r border-slate-100">
-              <Icon name="Flame" size={24} className="text-orange-400" />
-              <p className="text-lg font-black text-slate-800 leading-none mt-1">{streak}</p>
-              <p className="text-[7px] font-black uppercase text-slate-400">Days</p>
+        {/* TARJETA DERECHA (STREAK/WEEKS) - Intacta y limpia */}
+        <div className="bento-card p-4 flex items-center justify-around">
+           <div className="text-center">
+              <Icon name="Flame" size={22} className="text-orange-400 mx-auto mb-1" />
+              <p className="text-base font-black text-slate-800 leading-none">{streak}</p>
            </div>
-           <div className="flex-1 flex flex-col items-center">
-              <span className="text-2xl leading-none">👑</span>
-              <p className="text-lg font-black text-amber-500 leading-none mt-1">{perfectWeeks}</p>
-              <p className="text-[7px] font-black uppercase text-slate-400">Weeks</p>
+           <div className="w-px h-8 bg-slate-100" />
+           <div className="text-center">
+              <span className="text-xl leading-none block mb-1">👑</span>
+              <p className="text-base font-black text-amber-500 leading-none">{perfectWeeks}</p>
            </div>
         </div>
       </div>
 
+      {/* THE VAULT */}
       <div className="flex justify-center">
-        <button onClick={onVaultOpen} className="vault-pill py-3 px-8 rounded-full flex items-center gap-3 active:scale-95 transition-all">
-          <span className="text-sm">🗝️</span>
-          <span className="text-[10px] font-black uppercase tracking-widest text-slate-600">The Vault</span>
+        <button onClick={onVaultOpen} className="vault-pill py-2.5 px-6 rounded-full flex items-center gap-2 active:scale-95 transition-all">
+          <span className="text-xs">🗝️</span>
+          <span className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-500">The Vault</span>
         </button>
       </div>
 
-      <div className="flex flex-col items-center gap-16 relative mt-12">
-        <div className="absolute top-0 bottom-0 w-1.5 bg-slate-200/50 rounded-full -z-10" />
+      {/* MAPA DE NIVELES CON ANILLO DE PROGRESO ESTILO APPLE WATCH */}
+      <div className="flex flex-col items-center gap-14 relative mt-10">
+        <div className="absolute top-0 bottom-0 w-1 bg-slate-100 rounded-full -z-10" />
         {[level+1, level, level-1, level-2].filter(l=>l>0).map(l => {
           const isCurrent = l === level;
           const style = getEraStyle(l);
+          
+          if (isCurrent) {
+            // Cálculo matemático del cierre del anillo (Radio: 34, Circunferencia: ~213.6)
+            const radius = 34;
+            const circumference = 2 * Math.PI * radius;
+            const strokeDashoffset = circumference - (Math.min(200, xp || 0) / 200) * circumference;
+            
+            return (
+              <div key={l} className="relative w-24 h-24 flex items-center justify-center scale-110">
+                {/* SVG del Anillo de Progreso */}
+                <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 80 80">
+                  {/* Fondo gris sutil del anillo */}
+                  <circle cx="40" cy="40" r={radius} className="stroke-slate-100 fill-none" strokeWidth="5" />
+                  {/* Anillo activo que se cierra dinámicamente */}
+                  <circle 
+                    cx="40" 
+                    cy="40" 
+                    r={radius} 
+                    className={`fill-none transition-all duration-1000 stroke-current ${textColorClass}`} 
+                    strokeWidth="5" 
+                    strokeDasharray={circumference}
+                    strokeDashoffset={strokeDashoffset}
+                    strokeLinecap="round"
+                  />
+                </svg>
+                
+                {/* Círculo central blanco con el número de nivel */}
+                <div className="w-14 h-14 rounded-full bg-white flex items-center justify-center shadow-md border border-slate-50">
+                  <span className={`text-xl font-black tabular-nums ${textColorClass}`}>{l}</span>
+                </div>
+                
+                {/* Tortuguita animada */}
+                <Icon name="Turtle" size={20} className={`absolute -top-5 animate-bounce ${textColorClass}`} />
+              </div>
+            );
+          }
+
+          // Resto de niveles del camino (Nivel +1, Nivel -1...)
           return (
-            <div key={l} className={`w-20 h-20 rounded-full border-[3px] flex flex-col items-center justify-center transition-all relative ${isCurrent ? `bg-white scale-110 shadow-[0_0_0_8px_rgba(255,255,255,0.5)] ${style.split(' ')[0]}` : 'bg-white/60 backdrop-blur-sm border-slate-300 text-slate-400 opacity-70'}`}>
-              <span className={`text-2xl font-black tabular-nums ${isCurrent ? style.split(' ')[1] : ''}`}>{l}</span>
-              {isCurrent && <Icon name="Turtle" size={24} className={`absolute -top-8 animate-bounce ${style.split(' ')[1]}`} />}
+            <div key={l} className="w-16 h-16 rounded-full border-2 bg-white/60 border-slate-200 text-slate-300 flex items-center justify-center backdrop-blur-sm">
+              <span className="text-lg font-black tabular-nums">{l}</span>
             </div>
           );
         })}
