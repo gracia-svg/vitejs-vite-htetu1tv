@@ -226,7 +226,7 @@ export default function App() {
   const [vaultItems, setVaultItems] = useState([]);
   const [showVaultModal, setShowVaultModal] = useState(false);
   const [showVaultCarousel, setShowVaultCarousel] = useState(false);
-
+  const [selectedVaultItem, setSelectedVaultItem] = useState(null);
   const [timeLeft, setTimeLeft] = useState(0);
   const [isTimerActive, setIsTimerActive] = useState(false);
   const [endTime, setEndTime] = useState(null);
@@ -429,35 +429,27 @@ useEffect(() => {
     });
   };
 
-  // Esta función hace dos cosas: suma puntos y abre la ventana del Vault
+/* --- GESTIÓN DEL VAULT: VISTA PREVIA Y GALERÍA --- */
+
+// 1. Esta función abre el modal con una frase fija (0 puntos)
 const handleOpenVault = () => {
-  // 1. Sumamos 2 puntos y ponemos un texto que el Fitness reconozca ("Reading")
-  addPoints(2, "Vault: Reading a daily pill", { entity: 'vault' });
-  
-  // 2. Abrimos el modal (la ventana) del Vault como hacíamos antes
-  setShowVaultModal(true);
+  if (vaultItems.length > 0) {
+    // Elegimos la frase una sola vez para que no parpadee
+    const randomIndex = Math.floor(Math.random() * vaultItems.length);
+    setSelectedVaultItem(vaultItems[randomIndex]);
+    setShowVaultModal(true);
+  }
 };
 
-  useEffect(() => {
-    if (activityDays.length === 0) { setStreak(0); return; }
-    const sorted = [...activityDays].sort((a, b) => new Date(b) - new Date(a));
-    const today = new Date(); today.setHours(0, 0, 0, 0);
-    const lastDay = new Date(sorted[0]); lastDay.setHours(0, 0, 0, 0);
-    const diffDays = Math.floor((today - lastDay) / 864e5);
-    
-    if (diffDays > 1) {
-      setStreak(0);
-    } else {
-      let currentStreak = 1;
-      for (let i = 0; i < sorted.length - 1; i++) {
-        const d1 = new Date(sorted[i]); const d2 = new Date(sorted[i+1]);
-        d1.setHours(0, 0, 0, 0); d2.setHours(0, 0, 0, 0);
-        if (Math.round((d1 - d2) / 864e5) === 1) currentStreak++; else break;
-      }
-      setStreak(currentStreak);
-      if (currentStreak > maxStreak) setMaxStreak(currentStreak);
-    }
-  }, [activityDays]);
+// 2. Esta función se activa al pulsar "Open Gallery" (+5 puntos)
+const handleOpenGallery = () => {
+  // Sumamos los puntos y el fitness detectará 'Vault'
+  addPoints(5, "Vault: Exploring the gallery", { entity: 'vault' });
+  
+  // Cerramos el modal de la frase y abrimos la galería completa
+  setShowVaultModal(false);
+  setShowVaultCarousel(true);
+};
 
   // --- 3. MISIONES SEMANALES ---
   const touchWeekly = (field) => {
@@ -691,34 +683,33 @@ const handleOpenVault = () => {
       `}</style>
 
       {/* MODAL DEL VAULT (TAMAÑO REDUCIDO Y MÁS ALEGRE) */}
-      {showVaultModal && (
-        <div className="modal-overlay animate-in fade-in z-[600]" onClick={() => setShowVaultModal(false)}>
-          <div className="bg-white rounded-[32px] p-8 max-w-sm w-full text-center shadow-2xl relative animate-in zoom-in-95 border-4 border-amber-100" onClick={e => e.stopPropagation()}>
-             <button onClick={() => setShowVaultModal(false)} className="absolute top-4 right-4 text-slate-300 hover:text-rose-500 transition-colors">
-               <Icon name="X" size={24}/>
-             </button>
-             
-             <div className="mx-auto w-12 h-12 bg-amber-100 text-amber-500 rounded-full flex items-center justify-center mb-4 shadow-inner">
-                <Icon name="Quote" size={20} />
-             </div>
-             <p className="text-[10px] font-black uppercase text-amber-500 tracking-[0.2em] mb-6">Daily Vault</p>
-             
-             {vaultItems.length > 0 ? (
-               <div className="space-y-6">
-                 <p className="text-xl text-slate-800 leading-tight font-black italic">
-                   "{vaultItems[Math.floor(Math.random() * vaultItems.length)].text}"
-                 </p>
-                 <div className="inline-block px-3 py-1 bg-slate-50 rounded-lg border border-slate-100">
-                   <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{vaultItems[Math.floor(Math.random() * vaultItems.length)].reference}</p>
-                 </div>
-               </div>
-             ) : (
-               <p className="text-sm font-bold italic text-slate-400">Vault is empty. Import citations.</p>
-             )}
+{/* Dentro del modal, sustituye el bloque de contenido por este */}
+<div className="mx-auto w-12 h-12 bg-amber-100 text-amber-500 rounded-full flex items-center justify-center mb-4 shadow-inner">
+  <Icon name="Quote" size={20} />
+</div>
+<p className="text-[10px] font-black uppercase text-amber-500 tracking-[0.2em] mb-6">Daily Vault</p>
 
-             <button onClick={() => { setShowVaultModal(false); setShowVaultCarousel(true); }} className="mt-8 w-full py-3 bg-slate-900 text-white rounded-xl font-black text-xs uppercase tracking-widest shadow-lg active:scale-95 transition-all hover:bg-slate-800">
-               Open Gallery
-             </button>
+{selectedVaultItem ? (
+  <div className="space-y-6">
+    <p className="text-xl text-slate-800 leading-tight font-black italic">
+      "{selectedVaultItem.text}"
+    </p>
+    <div className="inline-block px-3 py-1 bg-slate-50 rounded-lg border border-slate-100">
+      <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
+        {selectedVaultItem.reference}
+      </p>
+    </div>
+  </div>
+) : (
+  <p className="text-sm font-bold italic text-slate-400">Vault is empty. Import citations.</p>
+)}
+
+<button 
+  onClick={handleOpenGallery} 
+  className="mt-8 w-full py-3 bg-slate-900 text-white rounded-xl font-black text-xs uppercase tracking-widest shadow-lg active:scale-95 transition-all hover:bg-slate-800"
+>
+  Open Gallery
+</button>
           </div>
         </div>
       )}
