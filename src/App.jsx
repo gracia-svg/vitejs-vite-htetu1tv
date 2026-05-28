@@ -1003,7 +1003,7 @@ useEffect(() => {
 // 5. COMPONENTES DE VISTA (COMPLETOS)
 // ==========================================
 
-// --- BLOQUE 2: NUEVO DISEÑO VISUAL ---
+// --- BLOQUE 2: DISEÑO VISUAL REFINADO (MINIMALISTA) ---
 function ProgressMap({ points, level, xp, addPoints, streak, perfectWeeks, onVaultOpen, fitness }) {
   const [ptsMenu, setPtsMenu] = useState('closed');
 
@@ -1026,32 +1026,68 @@ function ProgressMap({ points, level, xp, addPoints, streak, perfectWeeks, onVau
     <div className="space-y-8 max-w-xl mx-auto py-8 text-center animate-in fade-in relative">
       <div className="grid grid-cols-2 gap-4">
         
-        {/* PASTILLA IZQUIERDA: FITNESS & SCORE */}
+        {/* PASTILLA IZQUIERDA: SCORE & FITNESS (REFINADA) */}
         <div className="relative">
-          <div onClick={() => setPtsMenu(ptsMenu === 'closed' ? 'main' : 'closed')} className="bento-card p-5 cursor-pointer h-full flex flex-col justify-between text-left border-slate-100">
+          <div 
+            onClick={() => setPtsMenu(ptsMenu === 'closed' ? 'main' : 'closed')} 
+            className="bento-card p-5 cursor-pointer h-full flex flex-col justify-center text-left border-slate-100 select-none shadow-sm active:shadow-none transition-all"
+          >
             <div>
-              <span className="text-xl font-black text-slate-500 tabular-nums leading-none">{points}</span>
+              <span className="text-xl font-black text-slate-500 tabular-nums leading-none">
+                {points}
+              </span>
               <div className="mt-2 flex items-center gap-2">
-                <span className={`text-sm font-black ${fitness.color}`}>{fitness.percent}%</span>
-                <span className={`text-[9px] font-black uppercase tracking-tighter ${fitness.color}`}>{fitness.status}</span>
+                {/* Solo el porcentaje lleva el color de estado */}
+                <span className={`text-sm font-black ${fitness.color}`}>
+                  {fitness.percent}%
+                </span>
+                {/* El estado ahora es neutro para mayor elegancia */}
+                <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400">
+                  {fitness.status}
+                </span>
               </div>
-            </div>
-            <div className="mt-4 pt-3 border-t border-slate-50 text-[9px] font-bold text-slate-300 uppercase tracking-widest">
-              Stability mode
             </div>
           </div>
           
+          {/* MENÚ DE AJUSTE MANUAL */}
           {ptsMenu !== 'closed' && (
-            <div className="absolute top-full left-0 right-0 mt-2 bg-white border-2 border-slate-100 rounded-2xl p-3 shadow-xl z-50 flex flex-col gap-2">
-              <div className="flex gap-2">
-                <button onClick={(e) => { e.stopPropagation(); setPtsMenu('add'); }} className={`flex-1 py-3 rounded-xl font-black ${activeEraStyle}`}>+</button>
-                <button onClick={(e) => { e.stopPropagation(); setPtsMenu('sub'); }} className="flex-1 py-3 bg-slate-50 text-slate-400 rounded-xl font-black">-</button>
-              </div>
+            <div 
+              className="absolute top-full left-0 right-0 mt-2 bg-white border-2 border-slate-100 rounded-2xl p-3 shadow-xl z-50 flex flex-col gap-2 animate-in fade-in zoom-in-95"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {ptsMenu === 'main' && (
+                <div className="flex gap-2">
+                  <button onClick={() => setPtsMenu('add')} className={`flex-1 py-2 rounded-xl font-black text-center text-sm ${activeEraStyle}`}>+</button>
+                  <button onClick={() => setPtsMenu('sub')} className="flex-1 py-2 bg-slate-50 text-slate-400 rounded-xl font-black text-center text-sm">-</button>
+                </div>
+              )}
+
+              {ptsMenu === 'add' && (
+                <div className="flex flex-col gap-2">
+                  <div className="grid grid-cols-3 gap-1">
+                    <button onClick={() => { addPoints(5, "Manual adjustment"); setPtsMenu('closed'); }} className="py-2 bg-emerald-50 text-emerald-600 font-bold rounded-lg text-xs">+5</button>
+                    <button onClick={() => { addPoints(10, "Manual adjustment"); setPtsMenu('closed'); }} className="py-2 bg-emerald-50 text-emerald-600 font-bold rounded-lg text-xs">+10</button>
+                    <button onClick={() => { addPoints(25, "Manual adjustment"); setPtsMenu('closed'); }} className="py-2 bg-emerald-50 text-emerald-600 font-bold rounded-lg text-xs">+25</button>
+                  </div>
+                  <button onClick={() => setPtsMenu('main')} className="text-[9px] text-slate-400 font-bold uppercase mt-1 tracking-wider">Back</button>
+                </div>
+              )}
+
+              {ptsMenu === 'sub' && (
+                <div className="flex flex-col gap-2">
+                  <div className="grid grid-cols-3 gap-1">
+                    <button onClick={() => { addPoints(-5, "Manual adjustment reduction"); setPtsMenu('closed'); }} className="py-2 bg-rose-50 text-rose-600 font-bold rounded-lg text-xs">-5</button>
+                    <button onClick={() => { addPoints(-10, "Manual adjustment reduction"); setPtsMenu('closed'); }} className="py-2 bg-rose-50 text-rose-600 font-bold rounded-lg text-xs">-10</button>
+                    <button onClick={() => { addPoints(-25, "Manual adjustment reduction"); setPtsMenu('closed'); }} className="py-2 bg-rose-50 text-rose-600 font-bold rounded-lg text-xs">-25</button>
+                  </div>
+                  <button onClick={() => setPtsMenu('main')} className="text-[9px] text-slate-400 font-bold uppercase mt-1 tracking-wider">Back</button>
+                </div>
+              )}
             </div>
           )}
         </div>
 
-        {/* PASTILLA DERECHA: RACHA Y CORONA */}
+        {/* PASTILLA DERECHA: STREAK & CROWN */}
         <div className="bento-card p-4 flex items-center justify-around border-slate-100">
            <div className="text-center">
               <Icon name="Flame" size={20} className="text-orange-400 mx-auto mb-1" />
@@ -1071,12 +1107,11 @@ function ProgressMap({ points, level, xp, addPoints, streak, perfectWeeks, onVau
         </button>
       </div>
 
-      {/* MAPA: EL CÍRCULO AHORA ES EL PROGRESO */}
+      {/* MAPA DE NIVELES CON ANILLO DE PROGRESO */}
       <div className="flex flex-col items-center gap-14 relative mt-10">
         <div className="absolute top-0 bottom-0 w-1 bg-slate-50 rounded-full -z-10" />
         {[level+1, level, level-1, level-2].filter(l=>l>0).map(l => {
           const isCurrent = l === level;
-          const style = getEraStyle(l);
           if (isCurrent) {
             const radius = 34;
             const circumference = 2 * Math.PI * radius;
