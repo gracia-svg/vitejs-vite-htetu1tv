@@ -431,22 +431,17 @@ useEffect(() => {
 
 /* --- GESTIÓN DEL VAULT: VISTA PREVIA Y GALERÍA --- */
 
-// 1. Esta función abre el modal con una frase fija (0 puntos)
 const handleOpenVault = () => {
   if (vaultItems.length > 0) {
-    // Elegimos la frase una sola vez para que no parpadee
+    // La elección ocurre AQUÍ, una sola vez
     const randomIndex = Math.floor(Math.random() * vaultItems.length);
     setSelectedVaultItem(vaultItems[randomIndex]);
     setShowVaultModal(true);
   }
 };
 
-// 2. Esta función se activa al pulsar "Open Gallery" (+5 puntos)
 const handleOpenGallery = () => {
-  // Sumamos los puntos y el fitness detectará 'Vault'
   addPoints(5, "Vault: Exploring the gallery", { entity: 'vault' });
-  
-  // Cerramos el modal de la frase y abrimos la galería completa
   setShowVaultModal(false);
   setShowVaultCarousel(true);
 };
@@ -683,7 +678,7 @@ const handleOpenGallery = () => {
       `}</style>
 
       {/* MODAL DEL VAULT (TAMAÑO REDUCIDO Y MÁS ALEGRE) */}
-{/* Dentro del modal, sustituye el bloque de contenido por este */}
+
 <div className="mx-auto w-12 h-12 bg-amber-100 text-amber-500 rounded-full flex items-center justify-center mb-4 shadow-inner">
   <Icon name="Quote" size={20} />
 </div>
