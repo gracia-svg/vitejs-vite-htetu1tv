@@ -676,38 +676,48 @@ const handleOpenGallery = () => {
         .backface-hidden { backface-visibility: hidden; -webkit-backface-visibility: hidden; }
         .rotate-y-180 { transform: rotateY(180deg); }
       `}</style>
-
-      {/* MODAL DEL VAULT (TAMAÑO REDUCIDO Y MÁS ALEGRE) */}
-
-<div className="mx-auto w-12 h-12 bg-amber-100 text-amber-500 rounded-full flex items-center justify-center mb-4 shadow-inner">
-  <Icon name="Quote" size={20} />
-</div>
-<p className="text-[10px] font-black uppercase text-amber-500 tracking-[0.2em] mb-6">Daily Vault</p>
-
-{selectedVaultItem ? (
-  <div className="space-y-6">
-    <p className="text-xl text-slate-800 leading-tight font-black italic">
-      "{selectedVaultItem.text}"
-    </p>
-    <div className="inline-block px-3 py-1 bg-slate-50 rounded-lg border border-slate-100">
-      <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
-        {selectedVaultItem.reference}
-      </p>
-    </div>
-  </div>
-) : (
-  <p className="text-sm font-bold italic text-slate-400">Vault is empty. Import citations.</p>
-)}
-
-<button 
-  onClick={handleOpenGallery} 
-  className="mt-8 w-full py-3 bg-slate-900 text-white rounded-xl font-black text-xs uppercase tracking-widest shadow-lg active:scale-95 transition-all hover:bg-slate-800"
->
-  Open Gallery
-</button>
+      {/* 1. ASEGÚRATE DE QUE ESTA LÍNEA DE APERTURA ESTÉ COMPLETA */}
+{showVaultModal && (
+  <div className="modal-overlay animate-in fade-in z-[600]" onClick={() => setShowVaultModal(false)}>
+    <div className="bg-white rounded-[32px] p-8 max-w-sm w-full text-center shadow-2xl relative animate-in zoom-in-95 border-4 border-amber-100" onClick={e => e.stopPropagation()}>
+      
+      <button onClick={() => setShowVaultModal(false)} className="absolute top-4 right-4 text-slate-300 hover:text-rose-500 transition-colors">
+        <Icon name="X" size={24}/>
+      </button>
+      
+      <div className="mx-auto w-12 h-12 bg-amber-100 text-amber-500 rounded-full flex items-center justify-center mb-4 shadow-inner">
+        <Icon name="Quote" size={20} />
+      </div>
+      
+      <p className="text-[10px] font-black uppercase text-amber-500 tracking-[0.2em] mb-6">Daily Vault</p>
+      
+      {selectedVaultItem ? (
+        <div className="space-y-6">
+          <p className="text-xl text-slate-800 leading-tight font-black italic">
+            "{selectedVaultItem.text}"
+          </p>
+          <div className="inline-block px-3 py-1 bg-slate-50 rounded-lg border border-slate-100">
+            <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
+              {selectedVaultItem.reference}
+            </p>
           </div>
         </div>
+      ) : (
+        <p className="text-sm font-bold italic text-slate-400">Vault is empty. Import citations.</p>
       )}
+
+      <button 
+        onClick={handleOpenGallery} 
+        className="mt-8 w-full py-3 bg-slate-900 text-white rounded-xl font-black text-xs uppercase tracking-widest shadow-lg active:scale-95 transition-all hover:bg-slate-800"
+      >
+        Open Gallery
+      </button>
+    </div>
+  </div>
+)} {/* 2. ESTE ES EL CIERRE QUE DEBE COINCIDIR CON LA APERTURA */}
+
+
+      
       {showVaultCarousel && <VaultCarousel items={vaultItems} setItems={setVaultItems} onClose={() => setShowVaultCarousel(false)} />}
       {/* MODAL GLOBAL DE TEMA (Mantenido intacto por seguridad) */}
       {selectedTopicModal && (
