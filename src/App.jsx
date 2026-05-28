@@ -473,6 +473,80 @@ useEffect(() => {
     });
   };
 
+  // --- BLOQUE 1: MOTOR DE FITNESS ---
+  const getFitnessData = () => {
+    const now = Date.now();
+    const dayMs = 864e5;
+    
+    // Historial de 14 días
+    const logs14d = actionLogs.filter(log => now - log.timestamp <= dayMs * 14);
+    const logs7d = logs14d.filter(log => now - log.timestamp <= dayMs * 7);
+
+    // 1. VARIEDAD (Memoria de 10 días)
+    const lastTouch = (regex) => {
+      const lastLog = actionLogs.find(l => regex.test(l.description));
+      if (!lastLog) return 99; 
+      return (now - lastLog.timestamp) / dayMs;
+    };
+
+    const daysSince = {
+      syllabus: lastTouch(/anki|challenge|topic|exam|deck|redacción|simulacro|review/i),
+      planning: lastTouch(/planning|schedule|task/i),
+      practico: lastTouch(/practico|case study|supuesto/i),
+      vault: lastTouch(/vault|unlock/i)
+    };
+
+    const penalties = Object.values(daysSince).filter(d => d > 10).length;
+    const diversityScore = Math.max(0, 1 - (penalties * 0.25));
+
+    // 2. CONSTANCIA (Regla 5/6 días)
+    const activeLast7 = activityDays.filter(d => (now - new Date(d)) <= dayMs * 7).length;
+    const consistencyScore = activeLast7 >= 5 ? 1 : activeLast7 / 5;
+
+    // 3. VOLUMEN (Objetivo 300 puntos/semana)
+    const weeklyPts = logs7d.reduce((acc, l) => acc + (l.amount || 0), 0);
+    const volumeScore = Math.min(1, weeklyPts / 300);
+
+    const totalScore = Math.round((volumeScore * 0.3 + consistencyScore * 0.4 + diversityScore * 0.3) * 100);
+
+    // LÓGICA DE COLOR Y ESTADO
+    let color = 'text-emerald-500'; 
+    let status = 'Steady';
+
+    // Comparación con rendimiento previo para tendencia
+    if (totalScore < 40) {
+      color = 'text-rose-500';
+      status = 'Stagnant';
+    } else if (activeLast7 < 3) {
+      color = 'text-amber-500';
+      status = 'Declining';
+    } else if (totalScore > 80) {
+      status = 'Optimal';
+    }
+
+    return { percent: totalScore, color, status };
+  };
+
+// --- BLOQUE 3: REGISTRO DE DÍAS VERDES PARA LA CORONA ---
+  useEffect(() => {
+    const fitness = getFitnessData();
+    if (fitness.percent >= 70) {
+      const todayStr = new Date().toISOString().split('T')[0];
+      setWeeklyData(prev => {
+        const history = prev.greenDayHistory || [];
+        if (history.includes(todayStr)) return prev;
+        
+        const newHistory = [...history, todayStr];
+        // Si llegamos a 5 días verdes, ¡Corona!
+        if (newHistory.length >= 5 && !prev.crowned) {
+           setPerfectWeeks(pw => pw + 1);
+           return { ...prev, greenDayHistory: newHistory, crowned: true };
+        }
+        return { ...prev, greenDayHistory: newHistory };
+      });
+    }
+  }, [points]); // Se activa cada vez que tus puntos cambian
+  
   // --- 4. ACTUALIZACIÓN Y FINALIZACIÓN ---
   const handleUpdateCard = (deckId, cardId, newData) => {
     if (!deckId || !cardId) return;
@@ -830,7 +904,7 @@ useEffect(() => {
         />
       )}
 
-      {/* MAIN CONTAINER */}
+    {/* MAIN CONTAINER */}
       <main className="max-w-5xl mx-auto p-4 md:p-8">
         {activeTab === 'map' && (
           <ProgressMap 
@@ -841,6 +915,7 @@ useEffect(() => {
             streak={streak} 
             perfectWeeks={perfectWeeks} 
             onVaultOpen={() => setShowVaultModal(true)} 
+            fitness={getFitnessData()} {/* <--- ESTA ES LA LÍNEA NUEVA */}
           />
         )}
         {activeTab === 'syllabus' && (
@@ -928,87 +1003,61 @@ useEffect(() => {
 // 5. COMPONENTES DE VISTA (COMPLETOS)
 // ==========================================
 
-function ProgressMap({ points, level, xp, addPoints, streak, perfectWeeks, onVaultOpen }) {
+// --- BLOQUE 2: NUEVO DISEÑO VISUAL ---
+function ProgressMap({ points, level, xp, addPoints, streak, perfectWeeks, onVaultOpen, fitness }) {
   const [ptsMenu, setPtsMenu] = useState('closed');
 
   const getEraStyle = (lvl) => {
     const era = Math.floor((lvl - 1) / 10);
     const styles = [
-      'border-teal-400 text-teal-600 bg-teal-50',       
-      'border-cyan-400 text-cyan-600 bg-cyan-50',       
-      'border-blue-400 text-blue-600 bg-blue-50',       
-      'border-indigo-400 text-indigo-600 bg-indigo-50', 
-      'border-violet-400 text-violet-600 bg-violet-50', 
-      'border-fuchsia-400 text-fuchsia-600 bg-fuchsia-50',
-      'border-rose-400 text-rose-600 bg-rose-50',       
-      'border-orange-400 text-orange-600 bg-orange-50', 
-      'border-amber-400 text-amber-600 bg-amber-50',    
-      'border-slate-800 text-slate-800 bg-slate-100',   
+      'border-teal-400 text-teal-600 bg-teal-50', 'border-cyan-400 text-cyan-600 bg-cyan-50',
+      'border-blue-400 text-blue-600 bg-blue-50', 'border-indigo-400 text-indigo-600 bg-indigo-50',
+      'border-violet-400 text-violet-600 bg-violet-50', 'border-fuchsia-400 text-fuchsia-600 bg-fuchsia-50',
+      'border-rose-400 text-rose-600 bg-rose-50', 'border-orange-400 text-orange-600 bg-orange-50',
+      'border-amber-400 text-amber-600 bg-amber-50', 'border-slate-800 text-slate-800 bg-slate-100',
     ];
     return styles[era % styles.length];
   };
 
   const activeEraStyle = getEraStyle(level);
-  const textColorClass = activeEraStyle.split(' ')[1]; // Extrae el color del texto (ej: 'text-teal-600')
+  const textColorClass = activeEraStyle.split(' ')[1];
 
   return (
     <div className="space-y-8 max-w-xl mx-auto py-8 text-center animate-in fade-in relative">
-      
       <div className="grid grid-cols-2 gap-4">
         
-        {/* PASTILLA DE PUNTOS TOTALES Y FUNCIÓN FUTURA */}
+        {/* PASTILLA IZQUIERDA: FITNESS & SCORE */}
         <div className="relative">
-          <div 
-            onClick={() => setPtsMenu(ptsMenu === 'closed' ? 'main' : 'closed')} 
-            className="bento-card p-6 cursor-pointer h-full flex flex-col justify-between text-left"
-          >
-            <div className="flex flex-col">
-              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Total Pts</span>
-              <span className="text-3xl font-black text-slate-800 tabular-nums">{points}</span>
+          <div onClick={() => setPtsMenu(ptsMenu === 'closed' ? 'main' : 'closed')} className="bento-card p-5 cursor-pointer h-full flex flex-col justify-between text-left border-slate-100">
+            <div>
+              <span className="text-xl font-black text-slate-500 tabular-nums leading-none">{points}</span>
+              <div className="mt-2 flex items-center gap-2">
+                <span className={`text-sm font-black ${fitness.color}`}>{fitness.percent}%</span>
+                <span className={`text-[9px] font-black uppercase tracking-tighter ${fitness.color}`}>{fitness.status}</span>
+              </div>
             </div>
-            
-            {/* Espacio reservado para la función futura */}
-            <div className="mt-4 pt-3 border-t border-slate-100/70 text-[10px] font-bold text-slate-300 uppercase tracking-wider">
-              • Próxima función...
+            <div className="mt-4 pt-3 border-t border-slate-50 text-[9px] font-bold text-slate-300 uppercase tracking-widest">
+              Stability mode
             </div>
           </div>
           
-          {/* MENÚ DE AJUSTE DE PUNTOS (Se mantiene intacto para tu lógica) */}
           {ptsMenu !== 'closed' && (
-            <div className="absolute top-full left-0 right-0 mt-2 bg-white border-2 border-slate-100 rounded-2xl p-3 shadow-lg z-50 flex flex-col gap-2 animate-in zoom-in-95">
-              {ptsMenu === 'main' && (
-                <div className="flex gap-2">
-                  <button onClick={(e) => { e.stopPropagation(); setPtsMenu('add'); }} className={`flex-1 py-3 rounded-xl font-black transition-colors ${activeEraStyle}`}><Icon name="Plus" size={20} className="mx-auto" /></button>
-                  <button onClick={(e) => { e.stopPropagation(); setPtsMenu('sub'); }} className="flex-1 py-3 bg-slate-50 text-slate-500 rounded-xl font-black hover:bg-slate-100 transition-colors"><Icon name="Minus" size={20} className="mx-auto" /></button>
-                </div>
-              )}
-              {ptsMenu === 'add' && (
-                <div className="grid grid-cols-2 gap-2">
-                  {[5, 10, 15, 25].map(v => (
-                    <button key={v} onClick={(e) => { e.stopPropagation(); addPoints(v, `+${v} Pts`); setPtsMenu('closed'); }} className={`p-2 text-white rounded-xl font-black text-xs transition-colors ${activeEraStyle.split(' ')[1].replace('text-', 'bg-')}`}>+{v}</button>
-                  ))}
-                  <button onClick={(e) => { e.stopPropagation(); setPtsMenu('main'); }} className="col-span-2 p-2 bg-slate-100 text-slate-500 rounded-xl text-[10px] font-black uppercase">Volver</button>
-                </div>
-              )}
-              {ptsMenu === 'sub' && (
-                <div className="grid grid-cols-2 gap-2">
-                  {[5, 10, 15, 25].map(v => (
-                    <button key={v} onClick={(e) => { e.stopPropagation(); addPoints(-v, `-${v} Pts`); setPtsMenu('closed'); }} className="p-2 bg-slate-200 text-slate-600 rounded-xl font-black text-xs">-{v}</button>
-                  ))}
-                  <button onClick={(e) => { e.stopPropagation(); setPtsMenu('main'); }} className="col-span-2 p-2 bg-slate-100 text-slate-500 rounded-xl text-[10px] font-black uppercase">Volver</button>
-                </div>
-              )}
+            <div className="absolute top-full left-0 right-0 mt-2 bg-white border-2 border-slate-100 rounded-2xl p-3 shadow-xl z-50 flex flex-col gap-2">
+              <div className="flex gap-2">
+                <button onClick={(e) => { e.stopPropagation(); setPtsMenu('add'); }} className={`flex-1 py-3 rounded-xl font-black ${activeEraStyle}`}>+</button>
+                <button onClick={(e) => { e.stopPropagation(); setPtsMenu('sub'); }} className="flex-1 py-3 bg-slate-50 text-slate-400 rounded-xl font-black">-</button>
+              </div>
             </div>
           )}
         </div>
 
-        {/* TARJETA DERECHA (STREAK/WEEKS) - Intacta y limpia */}
-        <div className="bento-card p-4 flex items-center justify-around">
+        {/* PASTILLA DERECHA: RACHA Y CORONA */}
+        <div className="bento-card p-4 flex items-center justify-around border-slate-100">
            <div className="text-center">
-              <Icon name="Flame" size={22} className="text-orange-400 mx-auto mb-1" />
-              <p className="text-base font-black text-slate-800 leading-none">{streak}</p>
+              <Icon name="Flame" size={20} className="text-orange-400 mx-auto mb-1" />
+              <p className="text-base font-black text-slate-500 leading-none">{streak}</p>
            </div>
-           <div className="w-px h-8 bg-slate-100" />
+           <div className="w-px h-8 bg-slate-50" />
            <div className="text-center">
               <span className="text-xl leading-none block mb-1">👑</span>
               <p className="text-base font-black text-amber-500 leading-none">{perfectWeeks}</p>
@@ -1016,60 +1065,37 @@ function ProgressMap({ points, level, xp, addPoints, streak, perfectWeeks, onVau
         </div>
       </div>
 
-      {/* THE VAULT */}
       <div className="flex justify-center">
-        <button onClick={onVaultOpen} className="vault-pill py-2.5 px-6 rounded-full flex items-center gap-2 active:scale-95 transition-all">
-          <span className="text-xs">🗝️</span>
-          <span className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-500">The Vault</span>
+        <button onClick={onVaultOpen} className="vault-pill py-2 px-6 rounded-full flex items-center gap-2 active:scale-95 transition-all">
+          <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">The Vault</span>
         </button>
       </div>
 
-      {/* MAPA DE NIVELES CON ANILLO DE PROGRESO ESTILO APPLE WATCH */}
+      {/* MAPA: EL CÍRCULO AHORA ES EL PROGRESO */}
       <div className="flex flex-col items-center gap-14 relative mt-10">
-        <div className="absolute top-0 bottom-0 w-1 bg-slate-100 rounded-full -z-10" />
+        <div className="absolute top-0 bottom-0 w-1 bg-slate-50 rounded-full -z-10" />
         {[level+1, level, level-1, level-2].filter(l=>l>0).map(l => {
           const isCurrent = l === level;
           const style = getEraStyle(l);
-          
           if (isCurrent) {
-            // Cálculo matemático del cierre del anillo (Radio: 34, Circunferencia: ~213.6)
             const radius = 34;
             const circumference = 2 * Math.PI * radius;
             const strokeDashoffset = circumference - (Math.min(200, xp || 0) / 200) * circumference;
-            
             return (
               <div key={l} className="relative w-24 h-24 flex items-center justify-center scale-110">
-                {/* SVG del Anillo de Progreso */}
                 <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 80 80">
-                  {/* Fondo gris sutil del anillo */}
-                  <circle cx="40" cy="40" r={radius} className="stroke-slate-100 fill-none" strokeWidth="5" />
-                  {/* Anillo activo que se cierra dinámicamente */}
-                  <circle 
-                    cx="40" 
-                    cy="40" 
-                    r={radius} 
-                    className={`fill-none transition-all duration-1000 stroke-current ${textColorClass}`} 
-                    strokeWidth="5" 
-                    strokeDasharray={circumference}
-                    strokeDashoffset={strokeDashoffset}
-                    strokeLinecap="round"
-                  />
+                  <circle cx="40" cy="40" r={radius} className="stroke-slate-100 fill-none" strokeWidth="4" />
+                  <circle cx="40" cy="40" r={radius} className={`fill-none transition-all duration-1000 stroke-current ${textColorClass}`} strokeWidth="4" strokeDasharray={circumference} strokeDashoffset={strokeDashoffset} strokeLinecap="round" />
                 </svg>
-                
-                {/* Círculo central blanco con el número de nivel */}
-                <div className="w-14 h-14 rounded-full bg-white flex items-center justify-center shadow-md border border-slate-50">
+                <div className="w-14 h-14 rounded-full bg-white flex items-center justify-center shadow-sm">
                   <span className={`text-xl font-black tabular-nums ${textColorClass}`}>{l}</span>
                 </div>
-                
-                {/* Tortuguita animada */}
                 <Icon name="Turtle" size={20} className={`absolute -top-5 animate-bounce ${textColorClass}`} />
               </div>
             );
           }
-
-          // Resto de niveles del camino (Nivel +1, Nivel -1...)
           return (
-            <div key={l} className="w-16 h-16 rounded-full border-2 bg-white/60 border-slate-200 text-slate-300 flex items-center justify-center backdrop-blur-sm">
+            <div key={l} className="w-16 h-16 rounded-full border-2 bg-white/80 border-slate-100 text-slate-200 flex items-center justify-center">
               <span className="text-lg font-black tabular-nums">{l}</span>
             </div>
           );
