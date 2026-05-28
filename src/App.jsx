@@ -955,33 +955,22 @@ function ProgressMap({ points, level, xp, addPoints, streak, perfectWeeks, onVau
     <div className="space-y-8 max-w-xl mx-auto py-8 text-center animate-in fade-in relative">
       
       <div className="grid grid-cols-2 gap-4">
-        {/* TARJETA DE PROGRESO REDISEÑADA */}
+        {/* TARJETA ULTRA-LIMPIA */}
         <div className="relative">
-          <div onClick={() => setPtsMenu(ptsMenu === 'closed' ? 'main' : 'closed')} className="bento-card p-5 cursor-pointer h-full flex flex-col justify-between text-left">
+          <div onClick={() => setPtsMenu(ptsMenu === 'closed' ? 'main' : 'closed')} className="bento-card p-6 cursor-pointer h-full flex flex-col justify-center">
             
-            <div className="flex justify-between items-start mb-4">
-              <div className="flex flex-col">
-                <span className={`text-[10px] font-black uppercase tracking-wider mb-1 ${activeEraStyle.split(' ')[1]}`}>Era Actual</span>
-                <span className="text-3xl font-black text-slate-900 leading-none tabular-nums">Lv.{level}</span>
-              </div>
-              <div className="text-right">
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Total Points</span>
-                <span className="text-xl font-black text-slate-700 tabular-nums leading-none">{points}</span>
-              </div>
+            <div className="flex justify-between items-baseline mb-3">
+              <span className={`text-base font-black ${activeEraStyle.split(' ')[1]}`}>Lvl {level}</span>
+              <span className="text-sm font-black text-slate-700">{points} pts</span>
+              <span className="text-[10px] font-bold text-slate-300 tabular-nums">{xp || 0}/200</span>
             </div>
             
-            <div className="space-y-1.5">
-              <div className="flex justify-between items-end px-0.5">
-                <span className="text-[9px] font-black text-slate-400 uppercase">XP Progress</span>
-                <span className="text-[9px] font-black text-slate-500 tabular-nums">{xp || 0} / 200</span>
-              </div>
-              <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden shadow-inner">
-                <div className={`h-full transition-all duration-1000 ${barColorClass} shadow-sm`} style={{width:`${((xp||0)/200)*100}%`}}/>
-              </div>
+            <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+              <div className={`h-full transition-all duration-1000 ${barColorClass}`} style={{width:`${((xp||0)/200)*100}%`}}/>
             </div>
           </div>
           
-          {/* MENÚ DE PUNTOS (Se mantiene igual para no romper tu lógica) */}
+          {/* MENÚ DE PUNTOS (Intacto) */}
           {ptsMenu !== 'closed' && (
             <div className="absolute top-full left-0 right-0 mt-2 bg-white border-2 border-slate-100 rounded-2xl p-3 shadow-lg z-50 flex flex-col gap-2 animate-in zoom-in-95">
               {ptsMenu === 'main' && (
@@ -1010,6 +999,7 @@ function ProgressMap({ points, level, xp, addPoints, streak, perfectWeeks, onVau
           )}
         </div>
 
+        {/* TARJETA DERECHA (STREAK/WEEKS) - Intacta */}
         <div className="bento-card p-4 flex items-center justify-between">
            <div className="flex-1 flex flex-col items-center border-r border-slate-100">
               <Icon name="Flame" size={24} className="text-orange-400" />
@@ -1027,7 +1017,7 @@ function ProgressMap({ points, level, xp, addPoints, streak, perfectWeeks, onVau
       <div className="flex justify-center">
         <button onClick={onVaultOpen} className="vault-pill py-3 px-8 rounded-full flex items-center gap-3 active:scale-95 transition-all">
           <span className="text-sm">🗝️</span>
-          <span className="text-[10px] font-black uppercase tracking-widest">The Vault</span>
+          <span className="text-[10px] font-black uppercase tracking-widest text-slate-600">The Vault</span>
         </button>
       </div>
 
@@ -1036,7 +1026,6 @@ function ProgressMap({ points, level, xp, addPoints, streak, perfectWeeks, onVau
         {[level+1, level, level-1, level-2].filter(l=>l>0).map(l => {
           const isCurrent = l === level;
           const style = getEraStyle(l);
-          
           return (
             <div key={l} className={`w-20 h-20 rounded-full border-[3px] flex flex-col items-center justify-center transition-all relative ${isCurrent ? `bg-white scale-110 shadow-[0_0_0_8px_rgba(255,255,255,0.5)] ${style.split(' ')[0]}` : 'bg-white/60 backdrop-blur-sm border-slate-300 text-slate-400 opacity-70'}`}>
               <span className={`text-2xl font-black tabular-nums ${isCurrent ? style.split(' ')[1] : ''}`}>{l}</span>
