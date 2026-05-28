@@ -729,86 +729,84 @@ useEffect(() => {
       )}
 
       {/* CABECERO PREMIUM (Color Unificado a Teal/Turquesa suave) */}
-     {/* CABECERO PREMIUM */}
-    <header className="sticky top-0 z-[100] bg-white/80 backdrop-blur-md border-b-2 border-slate-100/50 p-2 shadow-sm">
-        <div className="max-w-5xl mx-auto flex justify-between items-center gap-1">
-          <div className="flex items-center gap-1.5 cursor-pointer shrink-0" onClick={() => setActiveTab('map')}>
-            <div className="p-1.5 bg-teal-600 rounded-lg text-white shadow-md"><Icon name="Turtle" size={18} /></div>
-            <span className="font-black text-teal-950 text-base tracking-tighter hidden sm:block">TurtleStudy</span>
-          </div>
+   {/* CABECERO PREMIUM - Corregido sin puntos totales */}
+  <header className="sticky top-0 z-[100] bg-white/80 backdrop-blur-md border-b-2 border-slate-100/50 p-3 shadow-sm">
+    <div className="max-w-5xl mx-auto flex justify-between items-center gap-1">
+      <div className="flex items-center gap-1.5 cursor-pointer shrink-0" onClick={() => setActiveTab('map')}>
+        <div className="p-1.5 bg-teal-600 rounded-lg text-white shadow-md"><Icon name="Turtle" size={18} /></div>
+        <span className="font-black text-teal-950 text-base tracking-tighter hidden sm:block">TurtleStudy</span>
+      </div>
 
-          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
-            
-            {/* DADOS: Solo las casillas, sin icono, diseño reducido */}
-            <button onClick={() => { const drawn = []; const pool = Array.from({length:69}, (_,i)=>i+1); for(let i=0; i<4; i++) drawn.push(pool.splice(Math.floor(Math.random()*pool.length),1)[0]); setLuckyNumbers(drawn.sort((a,b)=>a-b)); }} className="flex gap-0.5 p-1 bg-amber-50 rounded-lg border border-amber-100 active:scale-95 shrink-0">
-              {luckyNumbers.map((n,i)=><span key={i} className="text-[10px] font-black w-5 h-5 bg-white border border-amber-200 rounded flex items-center justify-center text-amber-700">{n||'?'}</span>)}
-            </button>
+      <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+        
+        {/* DADOS: Solo las casillas, sin icono, diseño reducido */}
+        <button onClick={() => { const drawn = []; const pool = Array.from({length:69}, (_,i)=>i+1); for(let i=0; i<4; i++) drawn.push(pool.splice(Math.floor(Math.random()*pool.length),1)[0]); setLuckyNumbers(drawn.sort((a,b)=>a-b)); }} className="flex gap-0.5 p-1 bg-amber-50 rounded-lg border border-amber-100 active:scale-95 shrink-0">
+          {luckyNumbers.map((n,i)=><span key={i} className="text-[10px] font-black w-5 h-5 bg-white border border-amber-200 rounded flex items-center justify-center text-amber-700">{n||'?'}</span>)}
+        </button>
 
-            <button onClick={() => { setActiveTab('stats'); setIsToolsExpanded(true); }} className="px-2 py-1.5 bg-teal-50 text-teal-700 rounded-xl border border-teal-100 font-black flex items-center gap-1 text-xs shrink-0">
-              <Icon name="Trophy" size={14} /><span>{points}</span>
-            </button>
-            
-            <div className="relative shrink-0">
-              <button onClick={() => setShowTimerMenu(!showTimerMenu)} className={`px-2 py-1.5 rounded-xl font-black flex items-center gap-1 border transition-all text-xs ${isTimerActive ? 'bg-teal-600 text-white shadow-teal-200 shadow-md' : 'bg-white text-teal-600 border-slate-200'}`}>
-                <Icon name="Clock" size={14} className={isTimerActive ? 'animate-spin' : ''} />
-                <span className="tabular-nums">{timeLeft > 0 ? (Math.floor(timeLeft/60)+":"+(timeLeft%60).toString().padStart(2,'0')) : '00:00'}</span>
-              </button>
-              {showTimerMenu && (
-                <div className="absolute top-full right-0 mt-2 bg-white border-2 border-slate-100 rounded-2xl p-4 shadow-2xl z-[200] w-64 animate-in zoom-in-95">
-                  <div className="grid grid-cols-2 gap-2 mb-3">
-                    <button onClick={()=>{setTimeLeft(7200); setEndTime(Date.now() + 7200000); setIsTimerActive(true); setShowTimerMenu(false)}} className="p-2 bg-slate-50 hover:bg-teal-50 rounded-xl text-[10px] font-black uppercase">2H Focus</button>
-                    <button onClick={()=>{setTimeLeft(3600); setEndTime(Date.now() + 3600000); setIsTimerActive(true); setShowTimerMenu(false)}} className="p-2 bg-slate-50 hover:bg-teal-50 rounded-xl text-[10px] font-black uppercase">1H Plan</button>
-                  </div>
-                  <div className="pt-2 border-t border-slate-100 flex gap-2 items-center">
-                    <input type="number" placeholder="Min..." className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-xs font-black outline-none focus:border-teal-300" value={customMinutes} onChange={e => setCustomMinutes(e.target.value)} />
-                    <button onClick={() => { const mins = parseInt(customMinutes); if(mins > 0) { setTimeLeft(mins * 60); setEndTime(Date.now() + (mins * 60 * 1000)); setIsTimerActive(true); setShowTimerMenu(false); setCustomMinutes(""); } }} className="bg-teal-600 text-white px-3 py-1 rounded-lg text-[10px] font-black">SET</button>
-                  </div>
-                  <button onClick={()=>{setTimeLeft(0); setEndTime(null); setIsTimerActive(false); setShowTimerMenu(false)}} className="w-full p-2 bg-red-50 text-red-600 rounded-xl text-[10px] font-black uppercase tracking-widest mt-2">Reset Timer</button>
-                </div>
-              )}
+        {/* Los puntos han sido eliminados de aquí para reubicarlos en la pastilla del mapa */}
+        
+        <div className="relative shrink-0">
+          <button onClick={() => setShowTimerMenu(!showTimerMenu)} className={`px-2 py-1.5 rounded-xl font-black flex items-center gap-1 border transition-all text-xs ${isTimerActive ? 'bg-teal-600 text-white shadow-teal-200 shadow-md' : 'bg-white text-teal-600 border-slate-200'}`}>
+            <Icon name="Clock" size={14} className={isTimerActive ? 'animate-spin' : ''} />
+            <span className="tabular-nums">{timeLeft > 0 ? (Math.floor(timeLeft/60)+":"+(timeLeft%60).toString().padStart(2,'0')) : '00:00'}</span>
+          </button>
+          {showTimerMenu && (
+            <div className="absolute top-full right-0 mt-2 bg-white border-2 border-slate-100 rounded-2xl p-4 shadow-2xl z-[200] w-64 animate-in zoom-in-95">
+              <div className="grid grid-cols-2 gap-2 mb-3">
+                <button onClick={()=>{setTimeLeft(7200); setEndTime(Date.now() + 7200000); setIsTimerActive(true); setShowTimerMenu(false)}} className="p-2 bg-slate-50 hover:bg-teal-50 rounded-xl text-[10px] font-black uppercase">2H Focus</button>
+                <button onClick={()=>{setTimeLeft(3600); setEndTime(Date.now() + 3600000); setIsTimerActive(true); setShowTimerMenu(false)}} className="p-2 bg-slate-50 hover:bg-teal-50 rounded-xl text-[10px] font-black uppercase">1H Plan</button>
+              </div>
+              <div className="pt-2 border-t border-slate-100 flex gap-2 items-center">
+                <input type="number" placeholder="Min..." className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-xs font-black outline-none focus:border-teal-300" value={customMinutes} onChange={e => setCustomMinutes(e.target.value)} />
+                <button onClick={() => { const mins = parseInt(customMinutes); if(mins > 0) { setTimeLeft(mins * 60); setEndTime(Date.now() + (mins * 60 * 1000)); setIsTimerActive(true); setShowTimerMenu(false); setCustomMinutes(""); } }} className="bg-teal-600 text-white px-3 py-1 rounded-lg text-[10px] font-black">SET</button>
+              </div>
+              <button onClick={()=>{setTimeLeft(0); setEndTime(null); setIsTimerActive(false); setShowTimerMenu(false)}} className="w-full p-2 bg-red-50 text-red-600 rounded-xl text-[10px] font-black uppercase tracking-widest mt-2">Reset Timer</button>
             </div>
-            
-            <button onClick={() => setShowGlobalSettings(true)} className="p-1.5 bg-slate-100 text-slate-500 rounded-lg hover:bg-slate-200 transition-colors shadow-sm shrink-0">
-              <Icon name="Settings" size={16} />
-            </button>
+          )}
+        </div>
+        
+        <button onClick={() => setShowGlobalSettings(true)} className="p-1.5 bg-slate-100 text-slate-500 rounded-lg hover:bg-slate-200 transition-colors shadow-sm shrink-0">
+          <Icon name="Settings" size={16} />
+        </button>
 
-            <button onClick={() => setIsToolsExpanded(!isToolsExpanded)} className={`p-1.5 rounded-lg transition-all shrink-0 ${isToolsExpanded ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-500'}`}>
-              <Icon name="ChevronDown" size={16} className={isToolsExpanded ? 'rotate-180' : ''} />
-            </button>
-          </div>
+        <button onClick={() => setIsToolsExpanded(!isToolsExpanded)} className={`p-1.5 rounded-lg transition-all shrink-0 ${isToolsExpanded ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-500'}`}>
+          <Icon name="ChevronDown" size={16} className={isToolsExpanded ? 'rotate-180' : ''} />
+        </button>
+      </div>
+    </div>
+
+    {isToolsExpanded && (
+      <div className="max-w-5xl mx-auto pt-4 border-t border-slate-100 mt-4 animate-in slide-in-from-top-2">
+        <div className="grid grid-cols-5 gap-2 mb-4">
+          <HeaderToolBtn active={activeTab==='badges'} icon="Award" label="LOGROS" color="amber" onClick={()=>setActiveTab('badges')} />
+          <HeaderToolBtn active={activeTab==='flashcards'} icon="Library" label="CARDS" color="teal" onClick={()=>setActiveTab('flashcards')} />
+          <HeaderToolBtn active={activeTab==='notes'} icon="StickyNote" label="NOTAS" color="yellow" onClick={()=>setActiveTab('notes')} />
+          <HeaderToolBtn active={activeTab==='todo'} icon="ListTodo" label="TAREAS" color="orange" onClick={()=>setActiveTab('todo')} />
+          <HeaderToolBtn active={activeTab==='stats'} icon="BarChart3" label="STATS" color="violet" onClick={()=>setActiveTab('stats')} />
         </div>
 
-        {isToolsExpanded && (
-          <div className="max-w-5xl mx-auto pt-4 border-t border-slate-100 mt-4 animate-in slide-in-from-top-2">
-            <div className="grid grid-cols-5 gap-2 mb-4">
-              <HeaderToolBtn active={activeTab==='badges'} icon="Award" label="LOGROS" color="amber" onClick={()=>setActiveTab('badges')} />
-              <HeaderToolBtn active={activeTab==='flashcards'} icon="Library" label="CARDS" color="teal" onClick={()=>setActiveTab('flashcards')} />
-              <HeaderToolBtn active={activeTab==='notes'} icon="StickyNote" label="NOTAS" color="yellow" onClick={()=>setActiveTab('notes')} />
-              <HeaderToolBtn active={activeTab==='todo'} icon="ListTodo" label="TAREAS" color="orange" onClick={()=>setActiveTab('todo')} />
-              <HeaderToolBtn active={activeTab==='stats'} icon="BarChart3" label="STATS" color="violet" onClick={()=>setActiveTab('stats')} />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 p-4 bg-slate-50/50 rounded-3xl border border-slate-100">
-               <div className="space-y-2">
-                 <div className="flex justify-between items-center"><span className="text-xs font-black uppercase text-slate-700">Misión 1: 500 Puntos</span><span className="text-[10px] font-bold text-slate-400">{weeklyData.points}/500</span></div>
-                 <div className="h-2 bg-slate-200 rounded-full overflow-hidden"><div className="h-full bg-teal-500 transition-all duration-500" style={{width: `${Math.min(100, (weeklyData.points/500)*100)}%`}}></div></div>
-                 {weeklyData.points >= 500 && !weeklyData.claimed1 && <button onClick={()=>claimMission(1)} className="w-full py-1.5 bg-teal-600 text-white rounded-lg text-[10px] font-black uppercase shadow-md active:scale-95 transition-all">Reclamar +50 Pts</button>}
-                 {weeklyData.claimed1 && <div className="text-center text-[10px] font-black text-teal-600 uppercase">¡Completada!</div>}
-               </div>
-               <div className="space-y-2">
-                 <div className="flex justify-between items-center"><span className="text-xs font-black uppercase text-slate-700">Misión 2: Constancia</span><span className="text-[10px] font-bold text-slate-400">{weeklyData.dailyChallengesDone}/5 Retos</span></div>
-                 <div className="flex gap-2 justify-between mt-1">
-                    <span className={`text-[9px] font-black uppercase ${weeklyData.topicsTouched ? 'text-teal-600' : 'text-slate-400'}`}>Temas {weeklyData.topicsTouched ? '✓' : ''}</span>
-                    <span className={`text-[9px] font-black uppercase ${weeklyData.progTouched ? 'text-teal-600' : 'text-slate-400'}`}>Prog {weeklyData.progTouched ? '✓' : ''}</span>
-                    <span className={`text-[9px] font-black uppercase ${weeklyData.practicoTouched ? 'text-teal-600' : 'text-slate-400'}`}>Práctico {weeklyData.practicoTouched ? '✓' : ''}</span>
-                 </div>
-                 {weeklyData.topicsTouched && weeklyData.progTouched && weeklyData.practicoTouched && weeklyData.dailyChallengesDone >= 5 && !weeklyData.claimed2 && <button onClick={()=>claimMission(2)} className="w-full py-1.5 bg-teal-600 text-white rounded-lg text-[10px] font-black uppercase shadow-md active:scale-95 transition-all">Reclamar +50 Pts</button>}
-                 {weeklyData.claimed2 && <div className="text-center text-[10px] font-black text-teal-600 uppercase">¡Completada!</div>}
-               </div>
-            </div>
-          </div>
-        )}
-      </header>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 p-4 bg-slate-50/50 rounded-3xl border border-slate-100">
+           <div className="space-y-2">
+             <div className="flex justify-between items-center"><span className="text-xs font-black uppercase text-slate-700">Misión 1: 500 Puntos</span><span className="text-[10px] font-bold text-slate-400">{weeklyData.points}/500</span></div>
+             <div className="h-2 bg-slate-200 rounded-full overflow-hidden"><div className="h-full bg-teal-500 transition-all duration-500" style={{width: `${Math.min(100, (weeklyData.points/500)*100)}%`}}></div></div>
+             {weeklyData.points >= 500 && !weeklyData.claimed1 && <button onClick={()=>claimMission(1)} className="w-full py-1.5 bg-teal-600 text-white rounded-lg text-[10px] font-black uppercase shadow-md active:scale-95 transition-all">Reclamar +50 Pts</button>}
+             {weeklyData.claimed1 && <div className="text-center text-[10px] font-black text-teal-600 uppercase">¡Completada!</div>}
+           </div>
+           <div className="space-y-2">
+             <div className="flex justify-between items-center"><span className="text-xs font-black uppercase text-slate-700">Misión 2: Constancia</span><span className="text-[10px] font-bold text-slate-400">{weeklyData.dailyChallengesDone}/5 Retos</span></div>
+             <div className="flex gap-2 justify-between mt-1">
+                <span className={`text-[9px] font-black uppercase ${weeklyData.topicsTouched ? 'text-teal-600' : 'text-slate-400'}`}>Temas {weeklyData.topicsTouched ? '✓' : ''}</span>
+                <span className={`text-[9px] font-black uppercase ${weeklyData.progTouched ? 'text-teal-600' : 'text-slate-400'}`}>Prog {weeklyData.progTouched ? '✓' : ''}</span>
+                <span className={`text-[9px] font-black uppercase ${weeklyData.practicoTouched ? 'text-teal-600' : 'text-slate-400'}`}>Práctico {weeklyData.practicoTouched ? '✓' : ''}</span>
+             </div>
+             {weeklyData.topicsTouched && weeklyData.progTouched && weeklyData.practicoTouched && weeklyData.dailyChallengesDone >= 5 && !weeklyData.claimed2 && <button onClick={()=>claimMission(2)} className="w-full py-1.5 bg-teal-600 text-white rounded-lg text-[10px] font-black uppercase shadow-md active:scale-95 transition-all">Reclamar +50 Pts</button>}
+             {weeklyData.claimed2 && <div className="text-center text-[10px] font-black text-teal-600 uppercase">¡Completada!</div>}
+           </div>
+        </div>
+      </div>
+    )}
+  </header>
 
       {showGlobalSettings && (
         <GlobalSettingsModal 
@@ -880,18 +878,48 @@ useEffect(() => {
         {activeTab === 'stats' && <StatsView actionLogs={actionLogs} undoAction={undoAction} topics={topics} planning={planning} units={units} levelDates={levelDates} />}
       </main>
 
-{/* NAV FOOTER FIXED: Compacto para liberar espacio vertical */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t-2 border-slate-100 p-2 pb-safe z-50 shadow-[0_-10px_40px_rgba(0,0,0,0.03)]">
-        <div className="max-w-md mx-auto flex justify-around">
-          <NavBtn active={activeTab==='map'} icon="MapIcon" label="MAPA" color="teal" onClick={()=>setActiveTab('map')} />
-          <NavBtn active={activeTab==='syllabus'} icon="BookOpen" label="TEMAS" color="amber" onClick={()=>setActiveTab('syllabus')} />
-          <NavBtn active={activeTab==='planning'} icon="FileText" label="PROG" color="teal" onClick={()=>setActiveTab('planning')} />
-          <NavBtn active={activeTab==='practico'} icon="Target" label="PRACT" color="indigo" onClick={()=>setActiveTab('practico')} />
+{/* NAV FOOTER FIXED: Diseño de píldora horizontal para maximizar espacio de pantalla */}
+      <nav className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t border-slate-100 p-2 pb-safe z-50 shadow-[0_-10px_40px_rgba(0,0,0,0.03)]">
+        <div className="max-w-md mx-auto flex justify-around items-center">
+          
+          {/* MAPA */}
+          <button 
+            onClick={() => setActiveTab('map')} 
+            className={`flex items-center gap-2 px-4 py-2 rounded-2xl transition-all duration-300 ${activeTab === 'map' ? 'bg-teal-100 text-teal-700' : 'text-slate-400 hover:text-slate-600'}`}
+          >
+            <Icon name="MapIcon" size={20} />
+            {activeTab === 'map' && <span className="text-xs font-black tracking-wide">MAPA</span>}
+          </button>
+
+          {/* TEMAS */}
+          <button 
+            onClick={() => setActiveTab('syllabus')} 
+            className={`flex items-center gap-2 px-4 py-2 rounded-2xl transition-all duration-300 ${activeTab === 'syllabus' ? 'bg-amber-100 text-amber-700' : 'text-slate-400 hover:text-slate-600'}`}
+          >
+            <Icon name="BookOpen" size={20} />
+            {activeTab === 'syllabus' && <span className="text-xs font-black tracking-wide">TEMAS</span>}
+          </button>
+
+          {/* PROG */}
+          <button 
+            onClick={() => setActiveTab('planning')} 
+            className={`flex items-center gap-2 px-4 py-2 rounded-2xl transition-all duration-300 ${activeTab === 'planning' ? 'bg-teal-100 text-teal-700' : 'text-slate-400 hover:text-slate-600'}`}
+          >
+            <Icon name="FileText" size={20} />
+            {activeTab === 'planning' && <span className="text-xs font-black tracking-wide">PROG</span>}
+          </button>
+
+          {/* PRACT */}
+          <button 
+            onClick={() => setActiveTab('practico')} 
+            className={`flex items-center gap-2 px-4 py-2 rounded-2xl transition-all duration-300 ${activeTab === 'practico' ? 'bg-indigo-100 text-indigo-700' : 'text-slate-400 hover:text-slate-600'}`}
+          >
+            <Icon name="Target" size={20} />
+            {activeTab === 'practico' && <span className="text-xs font-black tracking-wide">PRACT</span>}
+          </button>
+
         </div>
       </nav>
-    </div>
-  );
-}
 
 // ==========================================
 // 5. COMPONENTES DE VISTA (COMPLETOS)
@@ -932,10 +960,14 @@ function ProgressMap({ points, level, xp, addPoints, streak, perfectWeeks, onVau
       <div className="grid grid-cols-2 gap-4">
         <div className="relative">
           <div onClick={() => setPtsMenu(ptsMenu === 'closed' ? 'main' : 'closed')} className="bento-card p-6 cursor-pointer h-full flex flex-col items-center justify-center">
+            
+            {/* Cabecera de la tarjeta reorganizada con los puntos totales en el centro */}
             <div className="flex justify-between items-end w-full mb-2">
               <span className={`text-sm font-black uppercase ${activeEraStyle.split(' ')[1]}`}>Lvl {level}</span>
+              <span className="text-xs font-black text-slate-600 tabular-nums">{points} PTS</span>
               <span className="text-[10px] font-black text-slate-400 tabular-nums">{xp || 0}/200</span>
             </div>
+            
             <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
               <div className={`h-full transition-all duration-1000 ${barColorClass}`} style={{width:`${((xp||0)/200)*100}%`}}/>
             </div>
