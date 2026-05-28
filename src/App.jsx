@@ -920,6 +920,9 @@ useEffect(() => {
 
         </div>
       </nav>
+      </div>
+  );
+}
 
 // ==========================================
 // 5. COMPONENTES DE VISTA (COMPLETOS)
