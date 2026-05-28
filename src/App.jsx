@@ -429,6 +429,15 @@ useEffect(() => {
     });
   };
 
+  // Esta función hace dos cosas: suma puntos y abre la ventana del Vault
+const handleOpenVault = () => {
+  // 1. Sumamos 2 puntos y ponemos un texto que el Fitness reconozca ("Reading")
+  addPoints(2, "Vault: Reading a daily pill", { entity: 'vault' });
+  
+  // 2. Abrimos el modal (la ventana) del Vault como hacíamos antes
+  setShowVaultModal(true);
+};
+
   useEffect(() => {
     if (activityDays.length === 0) { setStreak(0); return; }
     const sorted = [...activityDays].sort((a, b) => new Date(b) - new Date(a));
@@ -474,58 +483,55 @@ useEffect(() => {
   };
 
   // --- BLOQUE 1: MOTOR DE FITNESS ---
-  const getFitnessData = () => {
-    const now = Date.now();
-    const dayMs = 864e5;
-    
-    // Historial de 14 días
-    const logs14d = actionLogs.filter(log => now - log.timestamp <= dayMs * 14);
-    const logs7d = logs14d.filter(log => now - log.timestamp <= dayMs * 7);
+ const getFitnessData = () => {
+  const now = Date.now();
+  const dayMs = 864e5;
+  
+  const logs14d = actionLogs.filter(log => now - log.timestamp <= dayMs * 14);
+  const logs7d = logs14d.filter(log => now - log.timestamp <= dayMs * 7);
 
-    // 1. VARIEDAD (Memoria de 10 días)
-    const lastTouch = (regex) => {
-      const lastLog = actionLogs.find(l => regex.test(l.description));
-      if (!lastLog) return 99; 
-      return (now - lastLog.timestamp) / dayMs;
-    };
-
-    const daysSince = {
-      syllabus: lastTouch(/anki|challenge|topic|exam|deck|redacción|simulacro|review/i),
-      planning: lastTouch(/planning|schedule|task/i),
-      practico: lastTouch(/practico|case study|supuesto/i),
-      vault: lastTouch(/vault|unlock/i)
-    };
-
-    const penalties = Object.values(daysSince).filter(d => d > 10).length;
-    const diversityScore = Math.max(0, 1 - (penalties * 0.25));
-
-    // 2. CONSTANCIA (Regla 5/6 días)
-    const activeLast7 = activityDays.filter(d => (now - new Date(d)) <= dayMs * 7).length;
-    const consistencyScore = activeLast7 >= 5 ? 1 : activeLast7 / 5;
-
-    // 3. VOLUMEN (Objetivo 300 puntos/semana)
-    const weeklyPts = logs7d.reduce((acc, l) => acc + (l.amount || 0), 0);
-    const volumeScore = Math.min(1, weeklyPts / 300);
-
-    const totalScore = Math.round((volumeScore * 0.3 + consistencyScore * 0.4 + diversityScore * 0.3) * 100);
-
-    // LÓGICA DE COLOR Y ESTADO
-    let color = 'text-emerald-500'; 
-    let status = 'Steady';
-
-    // Comparación con rendimiento previo para tendencia
-    if (totalScore < 40) {
-      color = 'text-rose-500';
-      status = 'Stagnant';
-    } else if (activeLast7 < 3) {
-      color = 'text-amber-500';
-      status = 'Declining';
-    } else if (totalScore > 80) {
-      status = 'Optimal';
-    }
-
-    return { percent: totalScore, color, status };
+  const lastTouch = (regex) => {
+    const lastLog = actionLogs.find(l => regex.test(l.description));
+    if (!lastLog) return 99; 
+    return (now - lastLog.timestamp) / dayMs;
   };
+
+  const daysSince = {
+    // Añadimos 'anki' y 'deck' que son tus flashcards
+    syllabus: lastTouch(/anki|challenge|topic|exam|deck|redacción|simulacro|review/i),
+    // Ahora 'todo' también cuenta como haber trabajado en la organización/planning
+    planning: lastTouch(/planning|schedule|task|todo/i), 
+    practico: lastTouch(/practico|case study|supuesto/i),
+    // 'reading' detectará cuando abras el baúl
+    vault: lastTouch(/vault|unlock|reading/i)
+  };
+
+  const penalties = Object.values(daysSince).filter(d => d > 10).length;
+  const diversityScore = Math.max(0, 1 - (penalties * 0.25));
+
+  const activeLast7 = activityDays.filter(d => (now - new Date(d)) <= dayMs * 7).length;
+  const consistencyScore = activeLast7 >= 5 ? 1 : activeLast7 / 5;
+
+  const weeklyPts = logs7d.reduce((acc, l) => acc + (l.amount || 0), 0);
+  const volumeScore = Math.min(1, weeklyPts / 300);
+
+  const totalScore = Math.round((volumeScore * 0.3 + consistencyScore * 0.4 + diversityScore * 0.3) * 100);
+
+  let color = 'text-emerald-500'; 
+  let status = 'Steady';
+
+  if (totalScore < 40) {
+    color = 'text-rose-500';
+    status = 'Stagnant';
+  } else if (activeLast7 < 3) {
+    color = 'text-amber-500';
+    status = 'Declining';
+  } else if (totalScore > 80) {
+    status = 'Optimal';
+  }
+
+  return { percent: totalScore, color, status };
+};
 
 // --- BLOQUE 3: REGISTRO DE DÍAS VERDES PARA LA CORONA ---
   useEffect(() => {
@@ -802,86 +808,64 @@ useEffect(() => {
         </div>
       )}
 
-      {/* CABECERO PREMIUM (Color Unificado a Teal/Turquesa suave) */}
-   {/* CABECERO PREMIUM - Corregido sin puntos totales */}
-  <header className="sticky top-0 z-[100] bg-white/80 backdrop-blur-md border-b-2 border-slate-100/50 p-3 shadow-sm">
-    <div className="max-w-5xl mx-auto flex justify-between items-center gap-1">
-      <div className="flex items-center gap-1.5 cursor-pointer shrink-0" onClick={() => setActiveTab('map')}>
-        <div className="p-1.5 bg-teal-600 rounded-lg text-white shadow-md"><Icon name="Turtle" size={18} /></div>
-        <span className="font-black text-teal-950 text-base tracking-tighter hidden sm:block">TurtleStudy</span>
-      </div>
-
-      <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
-        
-        {/* DADOS: Solo las casillas, sin icono, diseño reducido */}
-        <button onClick={() => { const drawn = []; const pool = Array.from({length:69}, (_,i)=>i+1); for(let i=0; i<4; i++) drawn.push(pool.splice(Math.floor(Math.random()*pool.length),1)[0]); setLuckyNumbers(drawn.sort((a,b)=>a-b)); }} className="flex gap-0.5 p-1 bg-amber-50 rounded-lg border border-amber-100 active:scale-95 shrink-0">
-          {luckyNumbers.map((n,i)=><span key={i} className="text-[10px] font-black w-5 h-5 bg-white border border-amber-200 rounded flex items-center justify-center text-amber-700">{n||'?'}</span>)}
-        </button>
-
-        {/* Los puntos han sido eliminados de aquí para reubicarlos en la pastilla del mapa */}
-        
-        <div className="relative shrink-0">
-          <button onClick={() => setShowTimerMenu(!showTimerMenu)} className={`px-2 py-1.5 rounded-xl font-black flex items-center gap-1 border transition-all text-xs ${isTimerActive ? 'bg-teal-600 text-white shadow-teal-200 shadow-md' : 'bg-white text-teal-600 border-slate-200'}`}>
-            <Icon name="Clock" size={14} className={isTimerActive ? 'animate-spin' : ''} />
-            <span className="tabular-nums">{timeLeft > 0 ? (Math.floor(timeLeft/60)+":"+(timeLeft%60).toString().padStart(2,'0')) : '00:00'}</span>
-          </button>
-          {showTimerMenu && (
-            <div className="absolute top-full right-0 mt-2 bg-white border-2 border-slate-100 rounded-2xl p-4 shadow-2xl z-[200] w-64 animate-in zoom-in-95">
-              <div className="grid grid-cols-2 gap-2 mb-3">
-                <button onClick={()=>{setTimeLeft(7200); setEndTime(Date.now() + 7200000); setIsTimerActive(true); setShowTimerMenu(false)}} className="p-2 bg-slate-50 hover:bg-teal-50 rounded-xl text-[10px] font-black uppercase">2H Focus</button>
-                <button onClick={()=>{setTimeLeft(3600); setEndTime(Date.now() + 3600000); setIsTimerActive(true); setShowTimerMenu(false)}} className="p-2 bg-slate-50 hover:bg-teal-50 rounded-xl text-[10px] font-black uppercase">1H Plan</button>
-              </div>
-              <div className="pt-2 border-t border-slate-100 flex gap-2 items-center">
-                <input type="number" placeholder="Min..." className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-xs font-black outline-none focus:border-teal-300" value={customMinutes} onChange={e => setCustomMinutes(e.target.value)} />
-                <button onClick={() => { const mins = parseInt(customMinutes); if(mins > 0) { setTimeLeft(mins * 60); setEndTime(Date.now() + (mins * 60 * 1000)); setIsTimerActive(true); setShowTimerMenu(false); setCustomMinutes(""); } }} className="bg-teal-600 text-white px-3 py-1 rounded-lg text-[10px] font-black">SET</button>
-              </div>
-              <button onClick={()=>{setTimeLeft(0); setEndTime(null); setIsTimerActive(false); setShowTimerMenu(false)}} className="w-full p-2 bg-red-50 text-red-600 rounded-xl text-[10px] font-black uppercase tracking-widest mt-2">Reset Timer</button>
-            </div>
-          )}
-        </div>
-        
-        <button onClick={() => setShowGlobalSettings(true)} className="p-1.5 bg-slate-100 text-slate-500 rounded-lg hover:bg-slate-200 transition-colors shadow-sm shrink-0">
-          <Icon name="Settings" size={16} />
-        </button>
-
-        <button onClick={() => setIsToolsExpanded(!isToolsExpanded)} className={`p-1.5 rounded-lg transition-all shrink-0 ${isToolsExpanded ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-500'}`}>
-          <Icon name="ChevronDown" size={16} className={isToolsExpanded ? 'rotate-180' : ''} />
-        </button>
-      </div>
+  {/* CABECERO PREMIUM - Limpiado de misiones antiguas */}
+<header className="sticky top-0 z-[100] bg-white/80 backdrop-blur-md border-b-2 border-slate-100/50 p-3 shadow-sm">
+  <div className="max-w-5xl mx-auto flex justify-between items-center gap-1">
+    <div className="flex items-center gap-1.5 cursor-pointer shrink-0" onClick={() => setActiveTab('map')}>
+      <div className="p-1.5 bg-teal-600 rounded-lg text-white shadow-md"><Icon name="Turtle" size={18} /></div>
+      <span className="font-black text-teal-950 text-base tracking-tighter hidden sm:block">TurtleStudy</span>
     </div>
 
-    {isToolsExpanded && (
-      <div className="max-w-5xl mx-auto pt-4 border-t border-slate-100 mt-4 animate-in slide-in-from-top-2">
-        <div className="grid grid-cols-5 gap-2 mb-4">
-          <HeaderToolBtn active={activeTab==='badges'} icon="Award" label="LOGROS" color="amber" onClick={()=>setActiveTab('badges')} />
-          <HeaderToolBtn active={activeTab==='flashcards'} icon="Library" label="CARDS" color="teal" onClick={()=>setActiveTab('flashcards')} />
-          <HeaderToolBtn active={activeTab==='notes'} icon="StickyNote" label="NOTAS" color="yellow" onClick={()=>setActiveTab('notes')} />
-          <HeaderToolBtn active={activeTab==='todo'} icon="ListTodo" label="TAREAS" color="orange" onClick={()=>setActiveTab('todo')} />
-          <HeaderToolBtn active={activeTab==='stats'} icon="BarChart3" label="STATS" color="violet" onClick={()=>setActiveTab('stats')} />
-        </div>
+    <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+      {/* DADOS */}
+      <button onClick={() => { const drawn = []; const pool = Array.from({length:69}, (_,i)=>i+1); for(let i=0; i<4; i++) drawn.push(pool.splice(Math.floor(Math.random()*pool.length),1)[0]); setLuckyNumbers(drawn.sort((a,b)=>a-b)); }} className="flex gap-0.5 p-1 bg-amber-50 rounded-lg border border-amber-100 active:scale-95 shrink-0">
+        {luckyNumbers.map((n,i)=><span key={i} className="text-[10px] font-black w-5 h-5 bg-white border border-amber-200 rounded flex items-center justify-center text-amber-700">{n||'?'}</span>)}
+      </button>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 p-4 bg-slate-50/50 rounded-3xl border border-slate-100">
-           <div className="space-y-2">
-             <div className="flex justify-between items-center"><span className="text-xs font-black uppercase text-slate-700">Misión 1: 500 Puntos</span><span className="text-[10px] font-bold text-slate-400">{weeklyData.points}/500</span></div>
-             <div className="h-2 bg-slate-200 rounded-full overflow-hidden"><div className="h-full bg-teal-500 transition-all duration-500" style={{width: `${Math.min(100, (weeklyData.points/500)*100)}%`}}></div></div>
-             {weeklyData.points >= 500 && !weeklyData.claimed1 && <button onClick={()=>claimMission(1)} className="w-full py-1.5 bg-teal-600 text-white rounded-lg text-[10px] font-black uppercase shadow-md active:scale-95 transition-all">Reclamar +50 Pts</button>}
-             {weeklyData.claimed1 && <div className="text-center text-[10px] font-black text-teal-600 uppercase">¡Completada!</div>}
-           </div>
-           <div className="space-y-2">
-             <div className="flex justify-between items-center"><span className="text-xs font-black uppercase text-slate-700">Misión 2: Constancia</span><span className="text-[10px] font-bold text-slate-400">{weeklyData.dailyChallengesDone}/5 Retos</span></div>
-             <div className="flex gap-2 justify-between mt-1">
-                <span className={`text-[9px] font-black uppercase ${weeklyData.topicsTouched ? 'text-teal-600' : 'text-slate-400'}`}>Temas {weeklyData.topicsTouched ? '✓' : ''}</span>
-                <span className={`text-[9px] font-black uppercase ${weeklyData.progTouched ? 'text-teal-600' : 'text-slate-400'}`}>Prog {weeklyData.progTouched ? '✓' : ''}</span>
-                <span className={`text-[9px] font-black uppercase ${weeklyData.practicoTouched ? 'text-teal-600' : 'text-slate-400'}`}>Práctico {weeklyData.practicoTouched ? '✓' : ''}</span>
-             </div>
-             {weeklyData.topicsTouched && weeklyData.progTouched && weeklyData.practicoTouched && weeklyData.dailyChallengesDone >= 5 && !weeklyData.claimed2 && <button onClick={()=>claimMission(2)} className="w-full py-1.5 bg-teal-600 text-white rounded-lg text-[10px] font-black uppercase shadow-md active:scale-95 transition-all">Reclamar +50 Pts</button>}
-             {weeklyData.claimed2 && <div className="text-center text-[10px] font-black text-teal-600 uppercase">¡Completada!</div>}
-           </div>
-        </div>
+      {/* TIMER */}
+      <div className="relative shrink-0">
+        <button onClick={() => setShowTimerMenu(!showTimerMenu)} className={`px-2 py-1.5 rounded-xl font-black flex items-center gap-1 border transition-all text-xs ${isTimerActive ? 'bg-teal-600 text-white shadow-teal-200 shadow-md' : 'bg-white text-teal-600 border-slate-200'}`}>
+          <Icon name="Clock" size={14} className={isTimerActive ? 'animate-spin' : ''} />
+          <span className="tabular-nums">{timeLeft > 0 ? (Math.floor(timeLeft/60)+":"+(timeLeft%60).toString().padStart(2,'0')) : '00:00'}</span>
+        </button>
+        {showTimerMenu && (
+          <div className="absolute top-full right-0 mt-2 bg-white border-2 border-slate-100 rounded-2xl p-4 shadow-2xl z-[200] w-64 animate-in zoom-in-95">
+            <div className="grid grid-cols-2 gap-2 mb-3">
+              <button onClick={()=>{setTimeLeft(7200); setEndTime(Date.now() + 7200000); setIsTimerActive(true); setShowTimerMenu(false)}} className="p-2 bg-slate-50 hover:bg-teal-50 rounded-xl text-[10px] font-black uppercase">2H Focus</button>
+              <button onClick={()=>{setTimeLeft(3600); setEndTime(Date.now() + 3600000); setIsTimerActive(true); setShowTimerMenu(false)}} className="p-2 bg-slate-50 hover:bg-teal-50 rounded-xl text-[10px] font-black uppercase">1H Plan</button>
+            </div>
+            <div className="pt-2 border-t border-slate-100 flex gap-2 items-center">
+              <input type="number" placeholder="Min..." className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-xs font-black outline-none focus:border-teal-300" value={customMinutes} onChange={e => setCustomMinutes(e.target.value)} />
+              <button onClick={() => { const mins = parseInt(customMinutes); if(mins > 0) { setTimeLeft(mins * 60); setEndTime(Date.now() + (mins * 60 * 1000)); setIsTimerActive(true); setShowTimerMenu(false); setCustomMinutes(""); } }} className="bg-teal-600 text-white px-3 py-1 rounded-lg text-[10px] font-black">SET</button>
+            </div>
+            <button onClick={()=>{setTimeLeft(0); setEndTime(null); setIsTimerActive(false); setShowTimerMenu(false)}} className="w-full p-2 bg-red-50 text-red-600 rounded-xl text-[10px] font-black uppercase tracking-widest mt-2">Reset Timer</button>
+          </div>
+        )}
       </div>
-    )}
-  </header>
+      
+      <button onClick={() => setShowGlobalSettings(true)} className="p-1.5 bg-slate-100 text-slate-500 rounded-lg hover:bg-slate-200 transition-colors shadow-sm shrink-0">
+        <Icon name="Settings" size={16} />
+      </button>
 
+      <button onClick={() => setIsToolsExpanded(!isToolsExpanded)} className={`p-1.5 rounded-lg transition-all shrink-0 ${isToolsExpanded ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-500'}`}>
+        <Icon name="ChevronDown" size={16} className={isToolsExpanded ? 'rotate-180' : ''} />
+      </button>
+    </div>
+  </div>
+
+  {isToolsExpanded && (
+    <div className="max-w-5xl mx-auto pt-4 border-t border-slate-100 mt-4 animate-in slide-in-from-top-2">
+      {/* Solo mantenemos los botones de acceso rápido a las secciones */}
+      <div className="grid grid-cols-5 gap-2 mb-2">
+        <HeaderToolBtn active={activeTab==='badges'} icon="Award" label="LOGROS" color="amber" onClick={()=>setActiveTab('badges')} />
+        <HeaderToolBtn active={activeTab==='flashcards'} icon="Library" label="CARDS" color="teal" onClick={()=>setActiveTab('flashcards')} />
+        <HeaderToolBtn active={activeTab==='notes'} icon="StickyNote" label="NOTAS" color="yellow" onClick={()=>setActiveTab('notes')} />
+        <HeaderToolBtn active={activeTab==='todo'} icon="ListTodo" label="TAREAS" color="orange" onClick={()=>setActiveTab('todo')} />
+        <HeaderToolBtn active={activeTab==='stats'} icon="BarChart3" label="STATS" color="violet" onClick={()=>setActiveTab('stats')} />
+      </div>
+    </div>
+  )}
+</header>
       {showGlobalSettings && (
         <GlobalSettingsModal 
           onClose={() => setShowGlobalSettings(false)}
@@ -914,7 +898,7 @@ useEffect(() => {
             addPoints={addPoints} 
             streak={streak} 
             perfectWeeks={perfectWeeks} 
-            onVaultOpen={() => setShowVaultModal(true)} 
+            onVaultOpen={handleOpenVault}
             fitness={getFitnessData()} 
           />
         )}
@@ -946,11 +930,24 @@ useEffect(() => {
           />
         )}
         
-        {activeTab === 'flashcards' && (activeDeckId || examDeck) && <DeckStudyView deck={examDeck || decks.find(d=>d.id.toString()===activeDeckId)} onBack={()=>{setActiveDeckId(null); setExamDeck(null);}} addPoints={addPoints} onUpdateCard={handleUpdateCard} onFinishChallenge={handleChallengeFinish} />}
-        {activeTab === 'todo' && <TodoView todos={todos} setTodos={setTodos} addPoints={addPoints} />}
-        {activeTab === 'notes' && <NotesView notes={notes} setNotes={setNotes} />}
-        {activeTab === 'badges' && <BadgesView points={points} streak={streak} maxStreak={maxStreak} topics={topics} planning={planning} units={units} skills={skills} perfectWeeks={perfectWeeks} totalDailyChallenges={totalDailyChallenges} />}
-        {activeTab === 'stats' && <StatsView actionLogs={actionLogs} undoAction={undoAction} topics={topics} planning={planning} units={units} levelDates={levelDates} />}
+       {activeTab === 'flashcards' && (activeDeckId || examDeck) && <DeckStudyView deck={examDeck || decks.find(d=>d.id.toString()===activeDeckId)} onBack={()=>{setActiveDeckId(null); setExamDeck(null);}} addPoints={addPoints} onUpdateCard={handleUpdateCard} onFinishChallenge={handleChallengeFinish} />}
+{activeTab === 'todo' && <TodoView todos={todos} setTodos={setTodos} addPoints={addPoints} />}
+{activeTab === 'notes' && <NotesView notes={notes} setNotes={setNotes} />}
+{activeTab === 'badges' && (
+  <BadgesView 
+    points={points} 
+    streak={streak} 
+    maxStreak={maxStreak} 
+    topics={topics} 
+    planning={planning} 
+    units={units} 
+    skills={skills} 
+    perfectWeeks={perfectWeeks} 
+    totalDailyChallenges={totalDailyChallenges} 
+    fitness={getFitnessData()} 
+  />
+)}
+{activeTab === 'stats' && <StatsView actionLogs={actionLogs} undoAction={undoAction} topics={topics} planning={planning} units={units} levelDates={levelDates} />}
       </main>
 
 {/* NAV FOOTER FIXED: Diseño de píldora horizontal para maximizar espacio de pantalla */}
@@ -1796,7 +1793,7 @@ function DeckStudyView({ deck, onBack, addPoints, onUpdateCard, onFinishChalleng
     </div>
   );
 }
-function BadgesView({ points, streak, maxStreak, topics, planning, units, skills, perfectWeeks, totalDailyChallenges }) {
+function BadgesView({ points, streak, maxStreak, topics, planning, units, skills, perfectWeeks, totalDailyChallenges, fitness }) {
   const doneTopics = topics.filter(t=>t.finished).length;
   const studiedTopics = topics.filter(t=>t.estudiado > 0).length;
   const writtenTopics = topics.filter(t=>t.redactado).length;
@@ -1815,6 +1812,11 @@ function BadgesView({ points, streak, maxStreak, topics, planning, units, skills
     { icon: '🏕️', title: 'Camper', desc: '7 Day Streak', cond: maxStreak >= 7 },
     { icon: '🕰️', title: 'Meet me at midnight', desc: '13 Day Streak', cond: maxStreak >= 13 },
     { icon: '🏔️', title: 'Mountain', desc: '60 Day Streak', cond: maxStreak >= 60 },
+
+    /* --- NUEVOS LOGROS DE FITNESS --- */
+    { icon: '🏹', title: 'The Archer', desc: 'Fitness > 50%', cond: fitness?.percent > 50 },
+    { icon: '🌿', title: 'Clean', desc: 'Fitness > 80%', cond: fitness?.percent > 80 },
+    { icon: '💎', title: 'End Game', desc: 'Fitness > 95%', cond: fitness?.percent > 95 },
 
     { icon: '✍️', title: 'Writer', desc: '1 Topic Written', cond: writtenTopics >= 1 },
     { icon: '📚', title: 'Author', desc: '10 Topics Written', cond: writtenTopics >= 10 },
@@ -1837,7 +1839,11 @@ function BadgesView({ points, streak, maxStreak, topics, planning, units, skills
 
   return (
     <div className="space-y-8 text-left animate-in fade-in slide-in-from-bottom-6">
-      <div className="bento-card bg-white p-8 border-4 border-amber-50 text-center space-y-2 shadow-inner"><Icon name="Flame" size={48} className="fill-orange-500 text-orange-500 mx-auto" /><p className="text-5xl font-black text-slate-900 tabular-nums">{maxStreak}</p><p className="text-[10px] font-bold text-orange-500 uppercase tracking-widest leading-none">Max Consecutive Days</p></div>
+      <div className="bento-card bg-white p-8 border-4 border-amber-50 text-center space-y-2 shadow-inner">
+        <Icon name="Flame" size={48} className="fill-orange-500 text-orange-500 mx-auto" />
+        <p className="text-5xl font-black text-slate-900 tabular-nums">{maxStreak}</p>
+        <p className="text-[10px] font-bold text-orange-500 uppercase tracking-widest leading-none">Max Consecutive Days</p>
+      </div>
       <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-4">
         {BADGES.map((b, i) => (
           <div key={i} className={`bento-card bg-white p-4 flex flex-col items-center text-center transition-all ${b.cond ? 'bg-amber-50 border-amber-200 shadow-md scale-105' : 'opacity-20 grayscale scale-95 shadow-none border-dashed'}`}>
@@ -2169,33 +2175,58 @@ function StatsView({ actionLogs, undoAction, topics, planning, units, levelDates
 function TodoView({ todos, setTodos, addPoints }) {
   const [type, setType] = useState('goal');
   const [inp, setInp] = useState("");
+
   return (
     <div className="space-y-6 text-left">
       <div className="flex p-1 bg-slate-100 rounded-2xl shadow-inner">
         <button onClick={()=>setType('goal')} className={`flex-1 py-3 rounded-xl text-xs font-black transition-all ${type==='goal'?'bg-white text-orange-600 shadow-md':'text-slate-400'}`}>GOALS</button>
         <button onClick={()=>setType('review')} className={`flex-1 py-3 rounded-xl text-xs font-black transition-all ${type==='review'?'bg-white text-orange-600 shadow-md':'text-slate-400'}`}>REVIEWS</button>
       </div>
+
       <form onSubmit={e=>{e.preventDefault(); if(inp.trim()){setTodos([{id:Date.now().toString(),text:inp,completed:false,type}, ...todos]); setInp("");}}} className="flex gap-2">
-        {/* --- SWIFTIE REFERENCE START --- */}
-        <input placeholder="Got a blank space, baby... ¡añade una tarea!" value={inp} onChange={e=>setInp(e.target.value)} className="flex-1 bento-card bg-white px-4 py-3 text-sm font-black outline-none border-orange-50 focus:border-orange-200 shadow-sm" />
-        {/* --- SWIFTIE REFERENCE END --- */}
-        <button type="submit" className="p-3 bg-orange-600 text-white rounded-xl shadow-lg shadow-orange-100 active:scale-95 transition-all"><Icon name="Plus" size={24}/></button>
+        <input 
+          placeholder="Got a blank space, baby... ¡añade una tarea!" 
+          value={inp} 
+          onChange={e=>setInp(e.target.value)} 
+          className="flex-1 bento-card bg-white px-4 py-3 text-sm font-black outline-none border-orange-50 focus:border-orange-200 shadow-sm" 
+        />
+        <button type="submit" className="p-3 bg-orange-600 text-white rounded-xl shadow-lg shadow-orange-100 active:scale-95 transition-all">
+          <Icon name="Plus" size={24}/>
+        </button>
       </form>
+
       <div className="space-y-3">
         {todos.filter(t=>t.type===type).map(t=>(
           <div key={t.id} className="bento-card bg-white p-4 flex items-center justify-between shadow-sm hover:shadow-md transition-all">
             <div className="flex items-center gap-3">
-              <button onClick={()=>{const isDone = !t.completed; setTodos(todos.map(pt=>pt.id===t.id?{...pt,completed:isDone}:pt)); addPoints(isDone ? 5 : -5, t.text, { entity: 'todo', id: t.id, prevValue: t.completed });}} className={`w-8 h-8 rounded-lg border-2 flex items-center justify-center transition-all ${t.completed?'bg-emerald-500 border-emerald-500 text-white shadow-sm':'border-orange-100 hover:border-orange-300'}`}>{t.completed && <Icon name="Check" size={16}/>}</button>
-              <span className={`text-sm font-black text-left transition-all ${t.completed?'line-through text-slate-300':'text-slate-700'}`}>{t.text}</span>
+              <button 
+                onClick={()=>{
+                  const isDone = !t.completed;
+                  setTodos(todos.map(pt=>pt.id===t.id?{...pt,completed:isDone}:pt));
+                  // Mantenemos tus 5 puntos pero aseguramos que la entidad sea clara para el fitness
+                  addPoints(isDone ? 5 : -5, `Tarea: ${t.text}`, { 
+                    entity: 'todo', 
+                    id: t.id, 
+                    type: t.type 
+                  });
+                }} 
+                className={`w-8 h-8 rounded-lg border-2 flex items-center justify-center transition-all ${t.completed?'bg-emerald-500 border-emerald-500 text-white shadow-sm':'border-orange-100 hover:border-orange-300'}`}
+              >
+                {t.completed && <Icon name="Check" size={16}/>}
+              </button>
+              <span className={`text-sm font-black text-left transition-all ${t.completed?'line-through text-slate-300':'text-slate-700'}`}>
+                {t.text}
+              </span>
             </div>
-            <button onClick={()=>setTodos(todos.filter(x=>x.id!==t.id))} className="text-slate-200 hover:text-red-500 transition-colors active:scale-90"><Icon name="Trash2" size={18}/></button>
+            <button onClick={()=>setTodos(todos.filter(x=>x.id!==t.id))} className="text-slate-200 hover:text-red-500 transition-colors active:scale-90">
+              <Icon name="Trash2" size={18}/>
+            </button>
           </div>
         ))}
       </div>
     </div>
   );
 }
-
 function HeaderToolBtn({ active, icon, label, color, onClick }) {
   const c = active ? `bg-${color}-50 text-${color}-600 shadow-md` : `bg-white text-slate-600 border border-slate-100 hover:bg-slate-50`;
   return <button onClick={onClick} className={`flex flex-col items-center gap-1.5 p-2 rounded-xl transition-all active:scale-95 ${c}`}><Icon name={icon} size={16} /><span className="text-[7px] font-black uppercase tracking-widest leading-none mt-0.5">{label}</span></button>;
