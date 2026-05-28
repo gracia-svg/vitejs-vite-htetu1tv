@@ -928,10 +928,6 @@ useEffect(() => {
 // 5. COMPONENTES DE VISTA (COMPLETOS)
 // ==========================================
 
-// ==========================================
-// COMPONENTES DE VISTA (COMPLETOS)
-// ==========================================
-
 function ProgressMap({ points, level, xp, addPoints, streak, perfectWeeks, onVaultOpen }) {
   const [ptsMenu, setPtsMenu] = useState('closed');
 
@@ -958,24 +954,34 @@ function ProgressMap({ points, level, xp, addPoints, streak, perfectWeeks, onVau
   return (
     <div className="space-y-8 max-w-xl mx-auto py-8 text-center animate-in fade-in relative">
       
-      {/* Eliminadas las acuarelas para dejar brillar los puntitos de fondo */}
-
       <div className="grid grid-cols-2 gap-4">
+        {/* TARJETA DE PROGRESO REDISEÑADA */}
         <div className="relative">
-          <div onClick={() => setPtsMenu(ptsMenu === 'closed' ? 'main' : 'closed')} className="bento-card p-6 cursor-pointer h-full flex flex-col items-center justify-center">
+          <div onClick={() => setPtsMenu(ptsMenu === 'closed' ? 'main' : 'closed')} className="bento-card p-5 cursor-pointer h-full flex flex-col justify-between text-left">
             
-            {/* Cabecera de la tarjeta reorganizada con los puntos totales en el centro */}
-            <div className="flex justify-between items-end w-full mb-2">
-              <span className={`text-sm font-black uppercase ${activeEraStyle.split(' ')[1]}`}>Lvl {level}</span>
-              <span className="text-xs font-black text-slate-600 tabular-nums">{points} PTS</span>
-              <span className="text-[10px] font-black text-slate-400 tabular-nums">{xp || 0}/200</span>
+            <div className="flex justify-between items-start mb-4">
+              <div className="flex flex-col">
+                <span className={`text-[10px] font-black uppercase tracking-wider mb-1 ${activeEraStyle.split(' ')[1]}`}>Era Actual</span>
+                <span className="text-3xl font-black text-slate-900 leading-none tabular-nums">Lv.{level}</span>
+              </div>
+              <div className="text-right">
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Total Points</span>
+                <span className="text-xl font-black text-slate-700 tabular-nums leading-none">{points}</span>
+              </div>
             </div>
             
-            <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
-              <div className={`h-full transition-all duration-1000 ${barColorClass}`} style={{width:`${((xp||0)/200)*100}%`}}/>
+            <div className="space-y-1.5">
+              <div className="flex justify-between items-end px-0.5">
+                <span className="text-[9px] font-black text-slate-400 uppercase">XP Progress</span>
+                <span className="text-[9px] font-black text-slate-500 tabular-nums">{xp || 0} / 200</span>
+              </div>
+              <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden shadow-inner">
+                <div className={`h-full transition-all duration-1000 ${barColorClass} shadow-sm`} style={{width:`${((xp||0)/200)*100}%`}}/>
+              </div>
             </div>
           </div>
           
+          {/* MENÚ DE PUNTOS (Se mantiene igual para no romper tu lógica) */}
           {ptsMenu !== 'closed' && (
             <div className="absolute top-full left-0 right-0 mt-2 bg-white border-2 border-slate-100 rounded-2xl p-3 shadow-lg z-50 flex flex-col gap-2 animate-in zoom-in-95">
               {ptsMenu === 'main' && (
