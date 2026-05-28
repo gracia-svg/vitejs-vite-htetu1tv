@@ -904,7 +904,7 @@ useEffect(() => {
         />
       )}
 
-    {/* MAIN CONTAINER */}
+  {/* MAIN CONTAINER */}
       <main className="max-w-5xl mx-auto p-4 md:p-8">
         {activeTab === 'map' && (
           <ProgressMap 
@@ -915,7 +915,7 @@ useEffect(() => {
             streak={streak} 
             perfectWeeks={perfectWeeks} 
             onVaultOpen={() => setShowVaultModal(true)} 
-            fitness={getFitnessData()} {/* <--- ESTA ES LA LÍNEA NUEVA */}
+            fitness={getFitnessData()} 
           />
         )}
         {activeTab === 'syllabus' && (
