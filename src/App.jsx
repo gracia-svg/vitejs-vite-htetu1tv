@@ -2273,7 +2273,7 @@ function GlobalSettingsModal({
   decks, setDecks, vaultItems, setVaultItems,
   examDate, setExamDate, submissionDate, setSubmissionDate,
   addPoints, onResetTopics, onResetPlanning, onResetPractico, onLogout,
-  topics = [] // Recibe los temas como fallback seguro para renderizar los tags del mazo nuevo
+  topics = []
 }) {
   const [activeTab, setActiveTab] = useState('logs');
   const [logTab, setLogTab] = useState('hist');
@@ -2287,9 +2287,14 @@ function GlobalSettingsModal({
   const [newDeckTopics, setNewDeckTopics] = useState([]);
   const [bulkText, setBulkText] = useState("");
 
+  // <-- SOLUCIÓN BLINDADA: Si topics no llega como prop, generamos los ID del 1 al 69 automáticamente
+  const topicPool = useMemo(() => {
+    if (topics && topics.length > 0) return topics.slice(0, 69);
+    return Array.from({ length: 69 }, (_, i) => ({ id: i + 1 }));
+  }, [topics]);
+
   // --- LÓGICA SISTEMA FLASHCARDS (3 BOTONES) ---
 
-  // 1. AÑADIR MAZO: Procesa el formulario manual idéntico al de la sección Flashcards
   const handleAddDeckLocal = () => {
     if (!newDeckName.trim()) return;
     const cards = bulkText.split('\n').filter(l => l.includes(':')).map(l => ({
@@ -2303,7 +2308,6 @@ function GlobalSettingsModal({
     alert("¡Mazo creado con éxito desde el Centro de Mando!");
   };
 
-  // 2. IMPORTAR MAZOS: Sobreescribe por completo con confirmación previa
   const handleDeckOverwrite = () => {
     if (!deckImportTxt.trim()) return;
     try {
@@ -2322,7 +2326,6 @@ function GlobalSettingsModal({
     }
   };
 
-  // 3. EXPORTAR MAZOS: Vuelca el JSON en la caja y lo copia al portapapeles
   const handleDeckExport = () => {
     if (!decks || decks.length === 0) {
       alert("No hay ningún mazo en la biblioteca para exportar.");
@@ -2539,34 +2542,10 @@ function GlobalSettingsModal({
         </div>
       </div>
 
-      {/* VENTANA EMERGENTE LOCAL: SUB-MODAL DE AGREGAR NUEVO MAZO */}
+      {/* VENTANA EMERGENTE LOCAL: SUB-MODAL DE AGREGAR NUEVO MAZO CORREGIDO */}
       {showAddDeckForm && (
         <div className="modal-overlay animate-in fade-in z-[700]" onClick={() => setShowAddDeckForm(false)}>
           <div className="bg-white rounded-[40px] p-8 max-w-3xl w-full shadow-2xl animate-in zoom-in-95 max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-xl font-black text-slate-800">New Deck (Centro de Mando)</h3>
-              <button onClick={() => setShowAddDeckForm(false)} className="p-2 text-slate-400 hover:text-red-500 transition-colors"><Icon name="X" size={20}/></button>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
-              <div className="space-y-4">
-                <input placeholder="Deck Name..." value={newDeckName} onChange={e => setNewDeckName(e.target.value)} className="w-full bg-slate-50 rounded-2xl px-4 py-3 text-sm font-bold border-2 border-transparent focus:border-rose-200 outline-none" />
-                <select value={newDeckCat} onChange={e => setNewDeckCat(e.target.value)} className="w-full bg-slate-50 rounded-2xl px-4 py-3 text-sm font-black appearance-none outline-none border-2 border-transparent focus:border-rose-200">
-                  {["General", "Meth.", "Comm.", "Phon.", "Gram.", "Disc.", "Brit Lit", "Amer Lit", "Cult."].map(c => <option key={c} value={c}>{c}</option>)}
-                </select>
-                <div className="grid grid-cols-5 gap-1 p-2 bg-slate-50 rounded-2xl max-h-40 overflow-y-auto border border-slate-100">
-                  {topics.slice(0, 69).map(t => (
-                    <button key={t.id} onClick={() => setNewDeckTopics(p => p.includes(t.id) ? p.filter(x => x !== t.id) : [...p, t.id])} className={`p-1.5 rounded-lg text-[8px] font-black border transition-all ${newDeckTopics.includes(t.id) ? 'bg-rose-600 text-white border-rose-600' : 'bg-white text-slate-400 border-transparent'}`}>{t.id}</button>
-                  ))}
-                </div>
-              </div>
-              <div className="space-y-4 flex flex-col">
-                <textarea placeholder="Bulk Import (Q : A)..." value={bulkText} onChange={e => setBulkText(e.target.value)} className="w-full flex-1 min-h-[200px] bg-slate-50 rounded-2xl p-4 text-xs font-bold outline-none border-2 border-transparent focus:border-rose-200 resize-none" />
-                <button onClick={handleAddDeckLocal} className="w-full py-4 bg-slate-900 text-white rounded-2xl font-black shadow-lg uppercase text-xs">Create Deck</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
+              <button onClick={() => setShowAddDeck
