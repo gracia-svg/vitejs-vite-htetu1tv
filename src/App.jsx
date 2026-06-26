@@ -2277,21 +2277,20 @@ function GlobalSettingsModal({
   const [activeTab, setActiveTab] = useState('logs');
   const [logTab, setLogTab] = useState('hist');
   const [vaultImportTxt, setVaultImportTxt] = useState("");
-  const [deckImportTxt, setDeckImportTxt] = useState(""); // <-- NUEVO: Estado local para recolectar el texto sin límites
+  const [deckImportTxt, setDeckImportTxt] = useState("");
 
   const exportDecks = () => {
     const json = JSON.stringify(decks);
     navigator.clipboard.writeText(json).then(() => alert("¡Mazos copiados al portapapeles!"));
   };
 
-  // <-- CORREGIDO: Proceso de importación robusto sin prompt()
   const handleDeckImport = () => {
     if (!deckImportTxt.trim()) return;
     try {
       const imported = JSON.parse(deckImportTxt);
       if (Array.isArray(imported)) { 
         setDecks(prev => [...prev, ...imported]); 
-        setDeckImportTxt(""); // Limpiamos el contenedor tras el éxito
+        setDeckImportTxt("");
         alert("¡Mazos importados con éxito!"); 
       } else {
         alert("El formato copiado no es una lista válida de mazos.");
@@ -2301,15 +2300,49 @@ function GlobalSettingsModal({
     }
   };
 
-  const handleVaultImport = () => {
+  // 1. BOTÓN AÑADIR: Anexa el contenido de la caja a lo que ya tienes
+  const handleVaultAppend = () => {
+    if (!vaultImportTxt.trim()) return;
     try {
       const parsed = JSON.parse(vaultImportTxt);
       if (Array.isArray(parsed)) {
-        setVaultItems(parsed);
+        setVaultItems(prev => [...(prev || []), ...parsed]);
+        alert(`¡Se han añadido ${parsed.length} nuevas citas al Vault con éxito!`);
         setVaultImportTxt("");
-        alert("Vault actualizado con éxito!");
+      } else {
+        alert("El formato JSON no es una lista [] válida.");
       }
     } catch(e) { alert("Formato JSON inválido. Revisa tu código."); }
+  };
+
+  // 2. BOTÓN IMPORTAR: Sobreescribe todo el Vault pidiendo confirmación blindada
+  const handleVaultOverwrite = () => {
+    if (!vaultImportTxt.trim()) return;
+    try {
+      const parsed = JSON.parse(vaultImportTxt);
+      if (Array.isArray(parsed)) {
+        if (window.confirm("🚨 ATENCIÓN: ¿Seguro que quieres BORRAR todas las citas actuales del Vault y sobreescribirlas con este nuevo bloque? Esta acción no se puede deshacer.")) {
+          setVaultItems(parsed);
+          alert("Vault sobreescrito por completo.");
+          setVaultImportTxt("");
+        }
+      } else {
+        alert("El formato JSON no es una lista [] válida.");
+      }
+    } catch(e) { alert("Formato JSON inválido. Revisa tu código."); }
+  };
+
+  // 3. BOTÓN EXPORTAR: Extrae tus citas actuales, las mete en la caja y las copia al portapapeles
+  const handleVaultExport = () => {
+    if (!vaultItems || vaultItems.length === 0) {
+      alert("El Vault está vacío actualmente. No hay nada que exportar.");
+      return;
+    }
+    const jsonStr = JSON.stringify(vaultItems, null, 2);
+    setVaultImportTxt(jsonStr);
+    navigator.clipboard.writeText(jsonStr).then(() => {
+      alert("¡Código del Vault cargado en la caja de texto y copiado automáticamente al portapapeles!");
+    });
   };
 
   return (
@@ -2376,7 +2409,6 @@ function GlobalSettingsModal({
            {/* TAB 2: DATA & BACKUP */}
            {activeTab === 'data' && (
              <div className="space-y-6">
-                {/* SECCIÓN FLASHCARDS RE-DISEÑADA SIN LIMITES DE ENTRADA */}
                 <div className="p-5 bg-rose-50 rounded-3xl border border-rose-100 space-y-4 text-left shadow-inner">
                    <h3 className="text-sm font-black text-rose-900 flex items-center gap-2"><Icon name="Library" size={16}/> Flashcards Library</h3>
                    <div className="flex gap-2">
@@ -2391,10 +2423,15 @@ function GlobalSettingsModal({
                    <button onClick={handleDeckImport} className="w-full py-3 bg-rose-600 text-white rounded-xl font-black text-[10px] uppercase shadow-md active:scale-95 transition-all">Import JSON</button>
                 </div>
 
+                {/* TU NUEVA SECCIÓN DE VAULT CON LOS 3 BOTONES COMPLETA */}
                 <div className="p-5 bg-slate-900 rounded-3xl border border-slate-800 space-y-4 text-left shadow-inner">
                    <h3 className="text-sm font-black text-white flex items-center gap-2"><Icon name="Target" size={16}/> Vault Citations</h3>
                    <textarea className="w-full h-24 bg-slate-800 border border-slate-700 rounded-xl p-3 text-white font-mono text-[10px] outline-none focus:border-amber-500 custom-scrollbar" placeholder='[{"category": "...", "reference": "...", "text": "..."}]' value={vaultImportTxt} onChange={e => setVaultImportTxt(e.target.value)} />
-                   <button onClick={handleVaultImport} className="w-full py-3 bg-amber-500 text-slate-900 rounded-xl font-black text-[10px] uppercase shadow-md active:scale-95 transition-all">Update Vault</button>
+                   <div className="grid grid-cols-3 gap-2">
+                     <button onClick={handleVaultAppend} className="py-3 bg-amber-500 text-slate-900 rounded-xl font-black text-[10px] uppercase shadow-md active:scale-95 transition-all text-center">Añadir</button>
+                     <button onClick={handleVaultOverwrite} className="py-3 bg-red-600 text-white rounded-xl font-black text-[10px] uppercase shadow-md active:scale-95 transition-all text-center">Importar</button>
+                     <button onClick={handleVaultExport} className="py-3 bg-slate-800 text-slate-300 rounded-xl font-black text-[10px] uppercase border border-slate-700 hover:bg-slate-700 hover:text-white transition-all text-center">Exportar</button>
+                   </div>
                 </div>
              </div>
            )}
