@@ -1858,14 +1858,22 @@ function VaultCarousel({ items, setItems, onClose }) {
   const [importOpen, setImportOpen] = useState(false);
   const [importTxt, setImportTxt] = useState("");
 
-  const handleImport = () => {
+  const handleImport = (mode = 'append') => {
+    if (!importTxt.trim()) return;
     try {
       const parsed = JSON.parse(importTxt);
       if (Array.isArray(parsed)) {
-        setItems(parsed);
+        if (mode === 'replace') {
+          if (!window.confirm("¿Seguro que quieres borrar la galería actual y cambiarla por esta?")) return;
+          setItems(parsed);
+        } else {
+          setItems(prev => [...(prev || []), ...parsed]);
+        }
         setImportOpen(false);
         setImportTxt("");
         alert("¡Vault actualizado con éxito!");
+      } else {
+        alert("Formato de lista inválido.");
       }
     } catch(e) { alert("Formato JSON inválido. Revisa el código."); }
   };
@@ -1901,7 +1909,10 @@ function VaultCarousel({ items, setItems, onClose }) {
          <div className="w-full max-w-md space-y-4 animate-in zoom-in-95">
            <p className="text-white text-center font-black uppercase text-xs tracking-widest">Import citations (JSON)</p>
            <textarea className="w-full h-64 bg-slate-800 border-2 border-slate-700 rounded-2xl p-4 text-white font-mono text-xs outline-none focus:border-amber-500" placeholder='[{"category": "...", "reference": "...", "text": "..."}]' value={importTxt} onChange={e => setImportTxt(e.target.value)} />
-           <button onClick={handleImport} className="w-full py-4 bg-amber-500 text-slate-950 font-black rounded-2xl uppercase shadow-xl">Update Vault</button>
+           <div className="flex gap-2">
+             <button onClick={() => handleImport('append')} className="flex-1 py-4 bg-amber-500 text-slate-950 font-black rounded-2xl uppercase shadow-xl">Añadir al Vault</button>
+             <button onClick={() => handleImport('replace')} className="py-4 px-4 bg-slate-800 text-slate-400 font-black rounded-2xl uppercase border border-slate-700 hover:text-red-400 transition-all">Sustituir</button>
+           </div>
          </div>
        ) : (
          <div className="w-full max-w-2xl flex flex-col items-center gap-12">
@@ -1920,7 +1931,6 @@ function VaultCarousel({ items, setItems, onClose }) {
     </div>
   );
 }
-
 /* --- SWIFTIE REFERENCE: Strategic planning tool based on Mastermind logic --- */
 /* --- SWIFTIE REFERENCE: Strategic planning tool based on Mastermind logic --- */
 function StrategicPlanning({ topics }) {
