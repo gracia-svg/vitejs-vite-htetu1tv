@@ -2272,35 +2272,72 @@ function GlobalSettingsModal({
   onClose, actionLogs, undoAction, levelDates,
   decks, setDecks, vaultItems, setVaultItems,
   examDate, setExamDate, submissionDate, setSubmissionDate,
-  addPoints, onResetTopics, onResetPlanning, onResetPractico, onLogout
+  addPoints, onResetTopics, onResetPlanning, onResetPractico, onLogout,
+  topics = [] // Recibe los temas como fallback seguro para renderizar los tags del mazo nuevo
 }) {
   const [activeTab, setActiveTab] = useState('logs');
   const [logTab, setLogTab] = useState('hist');
   const [vaultImportTxt, setVaultImportTxt] = useState("");
   const [deckImportTxt, setDeckImportTxt] = useState("");
 
-  const exportDecks = () => {
-    const json = JSON.stringify(decks);
-    navigator.clipboard.writeText(json).then(() => alert("¡Mazos copiados al portapapeles!"));
+  // ESTADOS LOCALES PARA LA VENTANA DE CREACIÓN DE MAZO (Añadir)
+  const [showAddDeckForm, setShowAddDeckForm] = useState(false);
+  const [newDeckName, setNewDeckName] = useState("");
+  const [newDeckCat, setNewDeckCat] = useState("General");
+  const [newDeckTopics, setNewDeckTopics] = useState([]);
+  const [bulkText, setBulkText] = useState("");
+
+  // --- LÓGICA SISTEMA FLASHCARDS (3 BOTONES) ---
+
+  // 1. AÑADIR MAZO: Procesa el formulario manual idéntico al de la sección Flashcards
+  const handleAddDeckLocal = () => {
+    if (!newDeckName.trim()) return;
+    const cards = bulkText.split('\n').filter(l => l.includes(':')).map(l => ({
+      id: Math.random().toString(36), q: l.split(':')[0].trim(), a: l.split(':')[1].trim(), interval: 0, ease: 2.5
+    }));
+    setDecks([...decks, { id: Date.now().toString(), name: newDeckName.trim(), category: newDeckCat, cards, topicIds: newDeckTopics }]);
+    setNewDeckName(""); 
+    setBulkText(""); 
+    setNewDeckTopics([]); 
+    setShowAddDeckForm(false);
+    alert("¡Mazo creado con éxito desde el Centro de Mando!");
   };
 
-  const handleDeckImport = () => {
+  // 2. IMPORTAR MAZOS: Sobreescribe por completo con confirmación previa
+  const handleDeckOverwrite = () => {
     if (!deckImportTxt.trim()) return;
     try {
       const imported = JSON.parse(deckImportTxt);
-      if (Array.isArray(imported)) { 
-        setDecks(prev => [...prev, ...imported]); 
-        setDeckImportTxt("");
-        alert("¡Mazos importados con éxito!"); 
+      if (Array.isArray(imported)) {
+        if (window.confirm("🚨 ATENCIÓN: ¿Seguro que quieres BORRAR todos los mazos actuales e importar este bloque? Esta acción sobreescribirá por completo tus tarjetas y progresos actuales.")) {
+          setDecks(imported);
+          alert("Biblioteca de Flashcards importada y sobreescrita por completo.");
+          setDeckImportTxt("");
+        }
       } else {
-        alert("El formato copiado no es una lista válida de mazos.");
+        alert("El formato JSON no es una lista [] válida.");
       }
-    } catch (e) { 
-      alert("Error al importar el código. El contenido está incompleto o corrupto."); 
+    } catch (e) {
+      alert("Error al importar el código. Formato JSON inválido.");
     }
   };
 
-  // 1. BOTÓN AÑADIR: Anexa el contenido de la caja a lo que ya tienes
+  // 3. EXPORTAR MAZOS: Vuelca el JSON en la caja y lo copia al portapapeles
+  const handleDeckExport = () => {
+    if (!decks || decks.length === 0) {
+      alert("No hay ningún mazo en la biblioteca para exportar.");
+      return;
+    }
+    const jsonStr = JSON.stringify(decks, null, 2);
+    setDeckImportTxt(jsonStr);
+    navigator.clipboard.writeText(jsonStr).then(() => {
+      alert("¡Código de Flashcards cargado en la caja de texto y copiado automáticamente al portapapeles!");
+    });
+  };
+
+
+  // --- LÓGICA SISTEMA VAULT (3 BOTONES) ---
+
   const handleVaultAppend = () => {
     if (!vaultImportTxt.trim()) return;
     try {
@@ -2315,7 +2352,6 @@ function GlobalSettingsModal({
     } catch(e) { alert("Formato JSON inválido. Revisa tu código."); }
   };
 
-  // 2. BOTÓN IMPORTAR: Sobreescribe todo el Vault pidiendo confirmación blindada
   const handleVaultOverwrite = () => {
     if (!vaultImportTxt.trim()) return;
     try {
@@ -2332,7 +2368,6 @@ function GlobalSettingsModal({
     } catch(e) { alert("Formato JSON inválido. Revisa tu código."); }
   };
 
-  // 3. BOTÓN EXPORTAR: Extrae tus citas actuales, las mete en la caja y las copia al portapapeles
   const handleVaultExport = () => {
     if (!vaultItems || vaultItems.length === 0) {
       alert("El Vault está vacío actualmente. No hay nada que exportar.");
@@ -2409,21 +2444,23 @@ function GlobalSettingsModal({
            {/* TAB 2: DATA & BACKUP */}
            {activeTab === 'data' && (
              <div className="space-y-6">
+                {/* SECCIÓN FLASHCARDS RE-DISEÑADA CON 3 BOTONES ASIMILADOS */}
                 <div className="p-5 bg-rose-50 rounded-3xl border border-rose-100 space-y-4 text-left shadow-inner">
                    <h3 className="text-sm font-black text-rose-900 flex items-center gap-2"><Icon name="Library" size={16}/> Flashcards Library</h3>
-                   <div className="flex gap-2">
-                     <button onClick={exportDecks} className="w-full py-3 bg-white text-rose-700 rounded-xl font-black text-[10px] uppercase shadow-sm border border-rose-100 hover:border-rose-300 transition-all">Export JSON to Clipboard</button>
-                   </div>
                    <textarea 
                      className="w-full h-24 bg-white border border-rose-200 rounded-xl p-3 text-slate-800 font-mono text-[10px] outline-none focus:border-rose-400 custom-scrollbar" 
                      placeholder="Pega aquí el JSON completo de tus mazos exportados..." 
                      value={deckImportTxt} 
                      onChange={e => setDeckImportTxt(e.target.value)} 
                    />
-                   <button onClick={handleDeckImport} className="w-full py-3 bg-rose-600 text-white rounded-xl font-black text-[10px] uppercase shadow-md active:scale-95 transition-all">Import JSON</button>
+                   <div className="grid grid-cols-3 gap-2">
+                     <button onClick={() => setShowAddDeckForm(true)} className="py-3 bg-rose-600 text-white rounded-xl font-black text-[10px] uppercase shadow-md active:scale-95 transition-all text-center">Añadir</button>
+                     <button onClick={handleDeckOverwrite} className="py-3 bg-red-600 text-white rounded-xl font-black text-[10px] uppercase shadow-md active:scale-95 transition-all text-center">Importar</button>
+                     <button onClick={handleDeckExport} className="py-3 bg-slate-800 text-slate-300 rounded-xl font-black text-[10px] uppercase border border-slate-700 hover:bg-slate-700 hover:text-white transition-all text-center">Exportar</button>
+                   </div>
                 </div>
 
-                {/* TU NUEVA SECCIÓN DE VAULT CON LOS 3 BOTONES COMPLETA */}
+                {/* SECCIÓN VAULT CITATIONS CON LOS 3 BOTONES */}
                 <div className="p-5 bg-slate-900 rounded-3xl border border-slate-800 space-y-4 text-left shadow-inner">
                    <h3 className="text-sm font-black text-white flex items-center gap-2"><Icon name="Target" size={16}/> Vault Citations</h3>
                    <textarea className="w-full h-24 bg-slate-800 border border-slate-700 rounded-xl p-3 text-white font-mono text-[10px] outline-none focus:border-amber-500 custom-scrollbar" placeholder='[{"category": "...", "reference": "...", "text": "..."}]' value={vaultImportTxt} onChange={e => setVaultImportTxt(e.target.value)} />
@@ -2501,6 +2538,35 @@ function GlobalSettingsModal({
            )}
         </div>
       </div>
+
+      {/* VENTANA EMERGENTE LOCAL: SUB-MODAL DE AGREGAR NUEVO MAZO */}
+      {showAddDeckForm && (
+        <div className="modal-overlay animate-in fade-in z-[700]" onClick={() => setShowAddDeckForm(false)}>
+          <div className="bg-white rounded-[40px] p-8 max-w-3xl w-full shadow-2xl animate-in zoom-in-95 max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-black text-slate-800">New Deck (Centro de Mando)</h3>
+              <button onClick={() => setShowAddDeckForm(false)} className="p-2 text-slate-400 hover:text-red-500 transition-colors"><Icon name="X" size={20}/></button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
+              <div className="space-y-4">
+                <input placeholder="Deck Name..." value={newDeckName} onChange={e => setNewDeckName(e.target.value)} className="w-full bg-slate-50 rounded-2xl px-4 py-3 text-sm font-bold border-2 border-transparent focus:border-rose-200 outline-none" />
+                <select value={newDeckCat} onChange={e => setNewDeckCat(e.target.value)} className="w-full bg-slate-50 rounded-2xl px-4 py-3 text-sm font-black appearance-none outline-none border-2 border-transparent focus:border-rose-200">
+                  {["General", "Meth.", "Comm.", "Phon.", "Gram.", "Disc.", "Brit Lit", "Amer Lit", "Cult."].map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+                <div className="grid grid-cols-5 gap-1 p-2 bg-slate-50 rounded-2xl max-h-40 overflow-y-auto border border-slate-100">
+                  {topics.slice(0, 69).map(t => (
+                    <button key={t.id} onClick={() => setNewDeckTopics(p => p.includes(t.id) ? p.filter(x => x !== t.id) : [...p, t.id])} className={`p-1.5 rounded-lg text-[8px] font-black border transition-all ${newDeckTopics.includes(t.id) ? 'bg-rose-600 text-white border-rose-600' : 'bg-white text-slate-400 border-transparent'}`}>{t.id}</button>
+                  ))}
+                </div>
+              </div>
+              <div className="space-y-4 flex flex-col">
+                <textarea placeholder="Bulk Import (Q : A)..." value={bulkText} onChange={e => setBulkText(e.target.value)} className="w-full flex-1 min-h-[200px] bg-slate-50 rounded-2xl p-4 text-xs font-bold outline-none border-2 border-transparent focus:border-rose-200 resize-none" />
+                <button onClick={handleAddDeckLocal} className="w-full py-4 bg-slate-900 text-white rounded-2xl font-black shadow-lg uppercase text-xs">Create Deck</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
