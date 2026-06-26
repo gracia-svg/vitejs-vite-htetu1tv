@@ -2267,19 +2267,27 @@ function GlobalSettingsModal({
   const [activeTab, setActiveTab] = useState('logs');
   const [logTab, setLogTab] = useState('hist');
   const [vaultImportTxt, setVaultImportTxt] = useState("");
+  const [deckImportTxt, setDeckImportTxt] = useState(""); // <-- NUEVO: Estado local para recolectar el texto sin límites
 
   const exportDecks = () => {
     const json = JSON.stringify(decks);
     navigator.clipboard.writeText(json).then(() => alert("¡Mazos copiados al portapapeles!"));
   };
 
-  const importDecks = () => {
-    const input = prompt("Pega el código de tus mazos exportados:");
-    if (input) {
-      try {
-        const imported = JSON.parse(input);
-        if (Array.isArray(imported)) { setDecks(prev => [...prev, ...imported]); alert("¡Mazos importados con éxito!"); }
-      } catch (e) { alert("Error al importar el código."); }
+  // <-- CORREGIDO: Proceso de importación robusto sin prompt()
+  const handleDeckImport = () => {
+    if (!deckImportTxt.trim()) return;
+    try {
+      const imported = JSON.parse(deckImportTxt);
+      if (Array.isArray(imported)) { 
+        setDecks(prev => [...prev, ...imported]); 
+        setDeckImportTxt(""); // Limpiamos el contenedor tras el éxito
+        alert("¡Mazos importados con éxito!"); 
+      } else {
+        alert("El formato copiado no es una lista válida de mazos.");
+      }
+    } catch (e) { 
+      alert("Error al importar el código. El contenido está incompleto o corrupto."); 
     }
   };
 
@@ -2318,7 +2326,7 @@ function GlobalSettingsModal({
         {/* CONTENEDOR CENTRAL */}
         <div className="p-6 overflow-y-auto custom-scrollbar flex-1 bg-white">
            
-           {/* TAB 1: LOGS (Movido desde StatsView) */}
+           {/* TAB 1: LOGS */}
            {activeTab === 'logs' && (
              <div className="space-y-4">
                 <div className="flex bg-slate-100 p-1 rounded-xl w-fit">
@@ -2358,13 +2366,21 @@ function GlobalSettingsModal({
            {/* TAB 2: DATA & BACKUP */}
            {activeTab === 'data' && (
              <div className="space-y-6">
+                {/* SECCIÓN FLASHCARDS RE-DISEÑADA SIN LIMITES DE ENTRADA */}
                 <div className="p-5 bg-rose-50 rounded-3xl border border-rose-100 space-y-4 text-left shadow-inner">
                    <h3 className="text-sm font-black text-rose-900 flex items-center gap-2"><Icon name="Library" size={16}/> Flashcards Library</h3>
                    <div className="flex gap-2">
-                     <button onClick={exportDecks} className="flex-1 py-3 bg-white text-rose-700 rounded-xl font-black text-[10px] uppercase shadow-sm border border-rose-100 hover:border-rose-300 transition-all">Export JSON</button>
-                     <button onClick={importDecks} className="flex-1 py-3 bg-rose-600 text-white rounded-xl font-black text-[10px] uppercase shadow-md active:scale-95 transition-all">Import JSON</button>
+                     <button onClick={exportDecks} className="w-full py-3 bg-white text-rose-700 rounded-xl font-black text-[10px] uppercase shadow-sm border border-rose-100 hover:border-rose-300 transition-all">Export JSON to Clipboard</button>
                    </div>
+                   <textarea 
+                     className="w-full h-24 bg-white border border-rose-200 rounded-xl p-3 text-slate-800 font-mono text-[10px] outline-none focus:border-rose-400 custom-scrollbar" 
+                     placeholder="Pega aquí el JSON completo de tus mazos exportados..." 
+                     value={deckImportTxt} 
+                     onChange={e => setDeckImportTxt(e.target.value)} 
+                   />
+                   <button onClick={handleDeckImport} className="w-full py-3 bg-rose-600 text-white rounded-xl font-black text-[10px] uppercase shadow-md active:scale-95 transition-all">Import JSON</button>
                 </div>
+
                 <div className="p-5 bg-slate-900 rounded-3xl border border-slate-800 space-y-4 text-left shadow-inner">
                    <h3 className="text-sm font-black text-white flex items-center gap-2"><Icon name="Target" size={16}/> Vault Citations</h3>
                    <textarea className="w-full h-24 bg-slate-800 border border-slate-700 rounded-xl p-3 text-white font-mono text-[10px] outline-none focus:border-amber-500 custom-scrollbar" placeholder='[{"category": "...", "reference": "...", "text": "..."}]' value={vaultImportTxt} onChange={e => setVaultImportTxt(e.target.value)} />
